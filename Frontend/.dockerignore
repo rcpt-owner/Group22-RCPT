@@ -1,0 +1,26 @@
+# Ignore node_modules inside rcpt
+/rcpt/node_modules
+# Ignore build output
+/rcpt/build
+/rcpt/dist
+# Ignore logs and lock files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+# Environment files
+/.env
+/rcpt/.env
+# Cache and temp
+/.cache
+/rcpt/.cache
+# OS files
+.DS_Store
+# Git
+.git
+# IDE files
+*.iml
+.idea/
+# Dockerfile and local README notes
+Dockerfile
+README.Docker.md
