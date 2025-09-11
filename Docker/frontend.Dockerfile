@@ -14,6 +14,8 @@ ENV PORT=3000
 ENV HOST=0.0.0.0
 ENV CHOKIDAR_USEPOLLING=true
 
+# Exposes container port 3000 for Docker networking.
 EXPOSE 3000
 
+# Start the React development server
 CMD ["npm", "start"]
