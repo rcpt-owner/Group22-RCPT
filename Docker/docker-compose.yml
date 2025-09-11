@@ -1,0 +1,13 @@
+services:
+  backend:
+    build:
+      context: ../Backend
+      dockerfile: ../Docker/backend.Dockerfile
+    ports:
+      - "8080:8080"
+  frontend:
+    build:
+      context: ../Frontend
+      dockerfile: ../Docker/frontend.Dockerfile
+    ports:
+      - "3000:3000"
