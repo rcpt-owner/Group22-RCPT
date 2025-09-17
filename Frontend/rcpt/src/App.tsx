@@ -1,4 +1,4 @@
-import { ResearchCostingTool } from "./components/ResearchCostingTool";
+import { ResearchCostingTool } from "./features/ResearchCostingTool";
 
 function AppContent() {
 

@@ -1,0 +1,1 @@
+//A component to show a live preview of the generated report before export.
