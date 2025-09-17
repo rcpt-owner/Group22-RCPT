@@ -50,55 +50,78 @@
 
   /* Border radius */
   --radius: 0.625rem;
-}
 
-/* ----------------------------------
-   Inline theme mappings
------------------------------------ */
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-border: var(--border);
-  --color-ring: var(--ring);
-
-  --radius-lg: var(--radius);
+  /* Text sizes */
+    --text-2xl: 1.5rem; /* h1 */
+  --text-xl: 1.25rem; /* h2 */
+  --text-lg: 1.125rem; /* h3 */
+  --text-base: 1rem; /* h4 / p / label / input */
 }
 
 /* ----------------------------------
    Base element styles
 ----------------------------------- */
-@layer base {
-  html {
-    font-size: var(--font-size);
-  }
-
-  body {
-    @apply bg-background text-foreground;
-  }
-
-  * {
-    @apply border-color-[var(--border)] outline-[var(--ring)]/50;
-  }
-
-  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
-    h1 { font-size: var(--text-2xl); font-weight: var(--font-weight-medium); line-height: 1.5; }
-    h2 { font-size: var(--text-xl); font-weight: var(--font-weight-medium); line-height: 1.5; }
-    h3 { font-size: var(--text-lg); font-weight: var(--font-weight-medium); line-height: 1.5; }
-    h4 { font-size: var(--text-base); font-weight: var(--font-weight-medium); line-height: 1.5; }
-    p { font-size: var(--text-base); font-weight: var(--font-weight-normal); line-height: 1.5; }
-    label { font-size: var(--text-base); font-weight: var(--font-weight-medium); line-height: 1.5; }
-    button { font-size: var(--text-base); font-weight: var(--font-weight-medium); line-height: 1.5; }
-    input { font-size: var(--text-base); font-weight: var(--font-weight-normal); line-height: 1.5; }
-  }
+html {
+  font-size: 14px; 
 }
 
-/* ----------------------------------
-   Namespaced utility classes (avoid collisions)
------------------------------------ */
-.card-bg { background-color: var(--card); }
-.card-text { color: var(--card-foreground); }
-.card-text-muted { color: var(--muted-foreground); }
-.card-border { border-color: var(--border); }
-.card-rounded-xl { border-radius: var(--radius); }
+body {
+  background-color: var(--background); 
+  color: var(--foreground); 
+  margin:0; 
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; 
+}
+
+* {
+   box-sizing: border-box; 
+   border-color: var(--border); 
+   outline-color: var(--ring); 
+}
+
+  h1 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+h2 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+h3 {
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+h4 {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+p {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+}
+
+label {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+button {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+input {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+}
