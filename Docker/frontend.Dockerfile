@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
@@ -18,4 +18,4 @@ ENV CHOKIDAR_USEPOLLING=true
 EXPOSE 3000
 
 # Start the React development server
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]

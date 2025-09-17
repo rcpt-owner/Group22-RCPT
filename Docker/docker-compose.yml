@@ -11,3 +11,6 @@ services:
       dockerfile: ../Docker/frontend.Dockerfile
     ports:
       - "3000:3000"
+networks:
+  default:
+    driver: bridge
