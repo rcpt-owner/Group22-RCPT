@@ -2,9 +2,8 @@ import { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertDialogDemo } from "@/components/AlertDialogDemo";
 import { DialogDemo } from "@/components/DialogDemo";
-import { Badge } from "lucide-react";
 import { BadgeDemo } from "@/components/BadgeDemo";
-import { NavigationMenuDemo } from "@/components/NavigationMenuDemo";
+import { CheckboxDemo } from "@/components/CheckboxDemo";
 
 /*  Placeholder component for the Research Costing Tool. Replace with actual implementation. 
     Use this to test styling and layout within the components.
@@ -41,6 +40,8 @@ export function ResearchCostingTool() {
       <AlertDialogDemo />
       <DialogDemo />
       <BadgeDemo />
+
+      <CheckboxDemo />
 
       
     </div>
