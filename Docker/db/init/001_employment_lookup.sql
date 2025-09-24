@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS salary_rate_multiplier (
   multiplier NUMERIC(12,6) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS employment_classification (
+CREATE TABLE IF NOT EXISTS salary_rate (
   id BIGSERIAL PRIMARY KEY,
 
   -- Business key + UI label
@@ -32,7 +32,7 @@ INSERT INTO salary_rate_multiplier (unit, multiplier) VALUES
 ON CONFLICT (unit) DO UPDATE SET multiplier = EXCLUDED.multiplier;
 
 ---------- Fortnight and Academic ----------
-INSERT INTO employment_classification (code, name, payroll_type, category, fte_rate)
+INSERT INTO salary_rate (code, name, payroll_type, category, fte_rate)
 VALUES
   ('FortnightAcademicRA Grade 1.1', 'RA Grade 1.1', 'Fortnight', 'Academic', 78115.00),
   ('FortnightAcademicRA Grade 1.2', 'RA Grade 1.2', 'Fortnight', 'Academic', 80661.00),
@@ -70,7 +70,7 @@ VALUES
 ON CONFLICT (code) DO NOTHING;
 
 ----------- Fortnight and Professional ----------
-INSERT INTO employment_classification (code, name, payroll_type, category, fte_rate)
+INSERT INTO salary_rate (code, name, payroll_type, category, fte_rate)
 VALUES
   ('FortnightProfessionalUOM 1.1','UOM 1.1','Fortnight','Professional', 60073.00),
   ('FortnightProfessionalUOM 1.2','UOM 1.2','Fortnight','Professional', 61284.00),
@@ -127,7 +127,7 @@ VALUES
 ON CONFLICT (code) DO NOTHING;
 
 ---------- Casual and Professional (Hourly) ----------
-INSERT INTO employment_classification (code, name, payroll_type, category, hourly_rate)
+INSERT INTO salary_rate (code, name, payroll_type, category, hourly_rate)
 VALUES
   ('CasualProfessionalUOM 1.1','UOM 1.1','Casual','Professional', 39.04),
   ('CasualProfessionalUOM 1.2','UOM 1.2','Casual','Professional', 39.83),
@@ -184,7 +184,7 @@ VALUES
 ON CONFLICT (code) DO NOTHING;
 
 ---------- Casual and Academic (Hourly) ----------
-INSERT INTO employment_classification (code, name, payroll_type, category, hourly_rate)
+INSERT INTO salary_rate (code, name, payroll_type, category, hourly_rate)
 VALUES
   ('CasualAcademicRA Grade 1.1','RA Grade 1.1','Casual','Academic', 50.77),
   ('CasualAcademicRA Grade 1.2','RA Grade 1.2','Casual','Academic', 52.42),
@@ -222,4 +222,4 @@ VALUES
 ON CONFLICT (code) DO NOTHING;
 
 ---------- Helpful indexes ----------
-CREATE INDEX IF NOT EXISTS ec_idx_lookup ON employment_classification (payroll_type, category, name);
+CREATE INDEX IF NOT EXISTS ec_idx_lookup ON salary_rate (payroll_type, category, name);
