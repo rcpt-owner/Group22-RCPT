@@ -1,4 +1,4 @@
--- ---------- Tables ----------
+--------- Tables ---------
 CREATE TABLE IF NOT EXISTS salary_rate_multiplier (
   unit TEXT PRIMARY KEY,      -- 'FTE' | 'Daily' | 'Hourly'
   multiplier NUMERIC(12,6) NOT NULL
@@ -24,14 +24,14 @@ CREATE TABLE IF NOT EXISTS employment_classification (
   effective_to   DATE
 );
 
--- ---------- Multipliers (from your “Salary Rate Multipliers” table) ----------
+--------- Multipliers (from “Salary Rate Multipliers” table) ----------
 INSERT INTO salary_rate_multiplier (unit, multiplier) VALUES
   ('FTE',    1.000000),
   ('Daily',  0.004545),  -- ≈ 1 / 220 workdays
   ('Hourly', 1.000000)
 ON CONFLICT (unit) DO UPDATE SET multiplier = EXCLUDED.multiplier;
 
--- ---------- Fortnight • Academic ----------
+---------- Fortnight and Academic ----------
 INSERT INTO employment_classification (code, name, payroll_type, category, fte_rate)
 VALUES
   ('FortnightAcademicRA Grade 1.1', 'RA Grade 1.1', 'Fortnight', 'Academic', 78115.00),
@@ -69,7 +69,7 @@ VALUES
   ('FortnightAcademicLevel E.1', 'Level E.1', 'Fortnight', 'Academic', 232180.00)
 ON CONFLICT (code) DO NOTHING;
 
--- ---------- Fortnight • Professional (UOM 1.1 .. 10) ----------
+----------- Fortnight and Professional ----------
 INSERT INTO employment_classification (code, name, payroll_type, category, fte_rate)
 VALUES
   ('FortnightProfessionalUOM 1.1','UOM 1.1','Fortnight','Professional', 60073.00),
@@ -126,7 +126,7 @@ VALUES
   ('FortnightProfessionalUOM 10','UOM 10','Fortnight','Professional', 153412.00)
 ON CONFLICT (code) DO NOTHING;
 
--- ---------- Casual • Professional (Hourly) ----------
+---------- Casual and Professional (Hourly) ----------
 INSERT INTO employment_classification (code, name, payroll_type, category, hourly_rate)
 VALUES
   ('CasualProfessionalUOM 1.1','UOM 1.1','Casual','Professional', 39.04),
@@ -183,7 +183,7 @@ VALUES
   ('CasualProfessionalUOM 10','UOM 10','Casual','Professional', 99.68)
 ON CONFLICT (code) DO NOTHING;
 
--- ---------- Casual • Academic (Hourly) ----------
+---------- Casual and Academic (Hourly) ----------
 INSERT INTO employment_classification (code, name, payroll_type, category, hourly_rate)
 VALUES
   ('CasualAcademicRA Grade 1.1','RA Grade 1.1','Casual','Academic', 50.77),
@@ -221,5 +221,5 @@ VALUES
   ('CasualAcademicLevel E.1','Level E.1','Casual','Academic',150.85)
 ON CONFLICT (code) DO NOTHING;
 
--- ---------- Helpful indexes ----------
+---------- Helpful indexes ----------
 CREATE INDEX IF NOT EXISTS ec_idx_lookup ON employment_classification (payroll_type, category, name);
