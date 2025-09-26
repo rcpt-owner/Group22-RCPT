@@ -5,14 +5,49 @@
 # - api-service (Spring Boot; serves API + SPA static files)
 
 services:
+  postgres:
+    container_name: rcpt-postgres
+    image: postgres:16
+    environment:
+      # Creates a "lookups" DB with a basic user for local dev
+      POSTGRES_DB: lookups
+      POSTGRES_USER: rcpt
+      POSTGRES_PASSWORD: rcptpw
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rcpt -d lookups"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+#  mongo:
+#    container_name: rcpt-mongo
+#    image: mongo:7
+#    command: ["--auth"]
+#    environment:
+#     # Root admin for local dev only (do NOT use in prod)
+#      MONGO_INITDB_ROOT_USERNAME: root
+#      MONGO_INITDB_ROOT_PASSWORD: rootpw
+#    volumes:
+#      - mongodata:/data/db
+#      - ./mongo/init:/docker-entrypoint-initdb.d:ro
+#    healthcheck:
+#      test: ["CMD-SHELL", "mongosh -u root -p rootpw --authenticationDatabase admin --eval 'db.runCommand({ping:1})' || exit 1"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 6
+
+
   backend:
     build:
       context: ../Backend                      # points at Maven root (pom.xml, mvnw, src/)
       dockerfile: ../Docker/backend.Dockerfile # your multi-stage Spring Boot Dockerfile
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/rcpt
-      SPRING_DATASOURCE_USERNAME: rcpt_user
-      SPRING_DATASOURCE_PASSWORD: rcpt_pass
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/lookups
+      SPRING_DATASOURCE_USERNAME: rcpt
+      SPRING_DATASOURCE_PASSWORD: rcptpw
       SPRING_PROFILES_ACTIVE: docker
       CORS_ALLOWED_ORIGINS: http://localhost:3000
       JAVA_TOOL_OPTIONS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75"
@@ -21,8 +56,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      mongo:
-        condition: service_healthy
+#      mongo:
+#        condition: service_healthy
 
   frontend:
     build:
@@ -50,82 +85,47 @@ services:
       retries: 30
       start_period: 20s
 
-  postgres:
-    container_name: rcpt-postgres
-    image: postgres:16
-    environment:
-      # Creates a "lookups" DB with a basic user for local dev
-      POSTGRES_DB: lookups
-      POSTGRES_USER: rcpt
-      POSTGRES_PASSWORD: rcptpw
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./postgres/init:/docker-entrypoint-initdb.d:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rcpt -d lookups"]
-      interval: 10s
-      timeout: 5s
-      retries: 6
+  #  lookup-service:
+  # Small service that exposes lookup/reference data over HTTP
+  # so the API doesn't need to connect to two databases directly.
+  #    build: ./lookup-service
+  #    environment:
+  #      DB_URL: jdbc:postgresql://postgres:5432/lookups
+  #      DB_USER: rcpt
+  #      DB_PASSWORD: rcptpw
+  #      SERVER_PORT: "8081"
+  #    depends_on:
+  #      postgres:
+  #        condition: service_healthy
+  #    healthcheck:
+  #      test: ["CMD", "curl", "-fsS", "http://localhost:8081/health"]
+  #      interval: 10s
+  #      timeout: 5s
+  #      retries: 5
 
-  mongo:
-    container_name: rcpt-mongo
-    image: mongo:7
-    command: ["--auth"]
-    environment:
-     # Root admin for local dev only (do NOT use in prod)
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: rootpw
-    volumes:
-      - mongodata:/data/db
-      - ./mongo/init:/docker-entrypoint-initdb.d:ro
-    healthcheck:
-      test: ["CMD-SHELL", "mongosh -u root -p rootpw --authenticationDatabase admin --eval 'db.runCommand({ping:1})' || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 6
-
-#  lookup-service:
-    # Small service that exposes lookup/reference data over HTTP
-    # so the API doesn't need to connect to two databases directly.
-#    build: ./lookup-service
-#    environment:
-#      DB_URL: jdbc:postgresql://postgres:5432/lookups
-#      DB_USER: rcpt
-#      DB_PASSWORD: rcptpw
-#      SERVER_PORT: "8081"
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#    healthcheck:
-#      test: ["CMD", "curl", "-fsS", "http://localhost:8081/health"]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
-
-    #api-service:
-    # Spring Boot app that:
-    # - Serves REST API (/api/…)
-    # - Serves the SPA static build (index.html + assets)
-    # - Calls lookup-service for reference data
-    #build: ./api
-    #environment:
-      #MONGO_URI: mongodb://rcptapp:rcptapppw@mongo:27017/rcpt?authSource=admin
-      #LOOKUP_BASE_URL: http://lookup-service:8081
-      #SERVER_PORT: "8080"
-      #CORS_ORIGINS: http://localhost:8080
-    #ports:
-      #- "8080:8080"
-    #depends_on:
-      #mongo:
-        #condition: service_healthy
-      #lookup-service:
-        #condition: service_healthy
-    #healthcheck:
-      #test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
-      #interval: 10s
-      #timeout: 5s
-      #retries: 5
-
+  #api-service:
+  # Spring Boot app that:
+  # - Serves REST API (/api/…)
+  # - Serves the SPA static build (index.html + assets)
+  # - Calls lookup-service for reference data
+  #build: ./api
+  #environment:
+  #MONGO_URI: mongodb://rcptapp:rcptapppw@mongo:27017/rcpt?authSource=admin
+  #LOOKUP_BASE_URL: http://lookup-service:8081
+  #SERVER_PORT: "8080"
+  #CORS_ORIGINS: http://localhost:8080
+  #ports:
+  #- "8080:8080"
+  #depends_on:
+  #mongo:
+  #condition: service_healthy
+  #lookup-service:
+  #condition: service_healthy
+  #healthcheck:
+  #test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+  #interval: 10s
+  #timeout: 5s
+  #retries: 5
 volumes:
   pgdata:
-  mongodata:
+#  mongodata:
