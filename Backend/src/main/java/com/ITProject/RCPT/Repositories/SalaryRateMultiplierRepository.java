@@ -1,4 +1,4 @@
-package com.ITProject.RCPT.Repositorys;
+package com.ITProject.RCPT.Repositories;
 
 import com.ITProject.RCPT.Entities.SalaryRateMultiplier;
 import org.springframework.data.jpa.repository.JpaRepository;

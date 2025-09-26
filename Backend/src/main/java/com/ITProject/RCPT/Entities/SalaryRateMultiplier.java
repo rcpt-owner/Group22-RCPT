@@ -14,9 +14,6 @@ public class SalaryRateMultiplier {
     @Column(name = "multiplier", nullable = false, precision = 12, scale = 6)
     private BigDecimal multiplier;
 
-    // Constructors
-    public SalaryRateMultiplier() {}
-
     public SalaryRateMultiplier(String unit, BigDecimal multiplier) {
         this.unit = unit;
         this.multiplier = multiplier;

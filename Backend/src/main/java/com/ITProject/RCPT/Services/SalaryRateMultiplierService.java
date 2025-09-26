@@ -1,7 +1,7 @@
 package com.ITProject.RCPT.Services;
 
 import com.ITProject.RCPT.Entities.SalaryRateMultiplier;
-import com.ITProject.RCPT.Repositorys.SalaryRateMultiplierRepository;
+import com.ITProject.RCPT.Repositories.SalaryRateMultiplierRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
