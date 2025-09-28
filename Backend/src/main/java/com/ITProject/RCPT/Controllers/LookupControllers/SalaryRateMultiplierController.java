@@ -21,6 +21,7 @@ public class SalaryRateMultiplierController {
 
     @GetMapping("/salary-rates")
     public List<SalaryRateMultiplier> getAllRates() {
+        System.out.println("HERE");
         return service.getAll();
     }
 

@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-@EnableJpaRepositories("com.ITProject.RCPT.Repositorys")
+@EnableJpaRepositories("com.ITProject.RCPT.Repositories")
 @EntityScan("com.ITProject.RCPT.Entities")
 public class RcptApplication {
 

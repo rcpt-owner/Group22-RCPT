@@ -1,5 +1,6 @@
 package com.ITProject.RCPT.Entities;
 
+import com.ITProject.RCPT.Services.SalaryRateMultiplierService;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
@@ -18,6 +19,7 @@ public class SalaryRateMultiplier {
         this.unit = unit;
         this.multiplier = multiplier;
     }
+    public SalaryRateMultiplier(){}
 
     // Getters and Setters
     public String getUnit() {
