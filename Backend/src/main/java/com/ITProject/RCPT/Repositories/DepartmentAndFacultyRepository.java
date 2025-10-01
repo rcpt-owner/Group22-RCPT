@@ -1,0 +1,15 @@
+package com.ITProject.RCPT.Repositories;
+
+import com.ITProject.RCPT.Entities.DepartmentAndFaculty;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface DepartmentAndFacultyRepository extends JpaRepository<DepartmentAndFaculty, String> {
+
+    @Query(value = "SELECT department FROM department_and_faculties", nativeQuery = true)
+    List<String> findAllDepartments();
+}

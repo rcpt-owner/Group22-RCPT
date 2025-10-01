@@ -42,8 +42,8 @@ services:
 
   backend:
     build:
-      context: ../Backend                      # points at Maven root (pom.xml, mvnw, src/)
-      dockerfile: ../Docker/backend.Dockerfile # your multi-stage Spring Boot Dockerfile
+      context: ../Backend
+      dockerfile: ../Docker/backend.Dockerfile
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/lookups
       SPRING_DATASOURCE_USERNAME: rcpt
@@ -61,7 +61,7 @@ services:
 
   frontend:
     build:
-      context: ../Frontend                     # this folder contains the "rcpt/" app
+      context: ../Frontend
       dockerfile: ../Docker/frontend.Dockerfile
     environment:
       # CRA uses REACT_APP_* ; Vite uses VITE_* (we set both)
@@ -76,8 +76,8 @@ services:
       backend:
         condition: service_started
     volumes:
-      - ../Frontend/rcpt:/app                  # live-reload: map your sources
-      - /app/node_modules                      # keep node_modules inside the container
+      - ../Frontend/rcpt:/app
+      - /app/node_modules
     healthcheck:
       test: [ "CMD-SHELL", "wget -qO- http://localhost:3000 >/dev/null 2>&1 || exit 1" ]
       interval: 5s

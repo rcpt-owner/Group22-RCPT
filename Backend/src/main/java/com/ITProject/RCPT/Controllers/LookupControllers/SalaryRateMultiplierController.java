@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/salary-rates")
 public class SalaryRateMultiplierController {
 
     private final SalaryRateMultiplierService service;
@@ -19,13 +19,13 @@ public class SalaryRateMultiplierController {
         this.service = service;
     }
 
-    @GetMapping("/salary-rates")
+    @GetMapping()
     public List<SalaryRateMultiplier> getAllRates() {
         System.out.println("HERE");
         return service.getAll();
     }
 
-    @GetMapping("/salary-rates/{unit}")
+    @GetMapping("/{unit}")
     public SalaryRateMultiplier getRate(@PathVariable String unit) {
         return service.getByUnit(unit);
     }

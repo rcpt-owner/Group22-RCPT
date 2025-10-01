@@ -13,14 +13,4 @@ CREATE INDEX IF NOT EXISTS idx_user_email ON "users"(email);
 CREATE INDEX IF NOT EXISTS idx_user_admin ON "users"(is_admin);
 CREATE INDEX IF NOT EXISTS idx_user_approver ON "users"(is_approver);
 
--- Insert example user
-INSERT INTO "users" (userid, name, email, password, is_admin, is_approver)
-VALUES (
-    'u001',
-    'Alice Example',
-    'alice@example.com',
-    'password123',  -- In real apps, this should be hashed!
-    TRUE,           -- is_admin
-    FALSE           -- is_approver
-);
 

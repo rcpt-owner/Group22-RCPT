@@ -7,9 +7,8 @@ CREATE TABLE IF NOT EXISTS salary_rate_multiplier (
 CREATE TABLE IF NOT EXISTS salary_rate (
   id BIGSERIAL PRIMARY KEY,
 
-  -- Business key + UI label
-  code TEXT NOT NULL UNIQUE,        -- Vlookup ID from sheet
-  name TEXT NOT NULL,               -- Classification label from sheet
+  code TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
 
   payroll_type TEXT NOT NULL,       -- 'Fortnight' or 'Casual'
   category TEXT NOT NULL,           -- 'Academic' or 'Professional'
@@ -27,7 +26,7 @@ CREATE TABLE IF NOT EXISTS salary_rate (
 --------- Multipliers (from “Salary Rate Multipliers” table) ----------
 INSERT INTO salary_rate_multiplier (unit, multiplier) VALUES
   ('FTE',    1.000000),
-  ('Daily',  0.004545),  -- ≈ 1 / 220 workdays
+  ('Daily',  0.004545),  -- ~ 1 / 220 workdays
   ('Hourly', 1.000000)
 ON CONFLICT (unit) DO UPDATE SET multiplier = EXCLUDED.multiplier;
 
@@ -221,5 +220,5 @@ VALUES
   ('CasualAcademicLevel E.1','Level E.1','Casual','Academic',150.85)
 ON CONFLICT (code) DO NOTHING;
 
----------- Helpful indexes ----------
+---------- Indexes ----------
 CREATE INDEX IF NOT EXISTS ec_idx_lookup ON salary_rate (payroll_type, category, name);
