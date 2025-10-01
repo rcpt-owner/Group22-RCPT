@@ -1,4 +1,4 @@
--- Create user table
+--------- Table ---------
 CREATE TABLE IF NOT EXISTS "users" (
     userid VARCHAR(255) NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,

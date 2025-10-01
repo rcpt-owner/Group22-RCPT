@@ -1,4 +1,4 @@
--- Create Table
+--------- Table ---------
 CREATE TABLE IF NOT EXISTS department_and_faculty (
     department TEXT PRIMARY KEY,
     dept_code TEXT,
@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS department_and_faculty (
     faculty TEXT
 );
 
--- Insert Values
+--------- Insert Values ---------
 INSERT INTO department_and_faculty (department, dept_code, school, school_code, faculty_code, faculty) VALUES
 ('Faculty of Arts - Admin', 'CCH_H1_5_01', 'Faculty of Arts, Admin, Centres and Institute', 'CCH_H1_4_01', 'Faculty of Arts', 'CCH_H1_3_01'),
 ('Faculty of Arts - Centres and Institutes', 'CCH_H1_5_02', 'Faculty of Arts, Admin, Centres and Institute', 'CCH_H1_4_01', 'Faculty of Arts', 'CCH_H1_3_01'),

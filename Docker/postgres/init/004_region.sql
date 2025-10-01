@@ -1,9 +1,10 @@
-
-CREATE TABLE Region (
+--------- Tables ---------
+CREATE TABLE IF NOT EXISTS Region (
     name VARCHAR(100) PRIMARY KEY,
     region_code VARCHAR(20) NOT NULL UNIQUE
 );
 
+--------- Insert Values ---------
 INSERT INTO Region (name, region_code) VALUES
 ('Parkville', 'RE_001'),
 ('Creswick', 'RE_002'),
