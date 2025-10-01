@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/salary-rates")
+@RequestMapping("/api/salary-rates-multiplier")
 public class SalaryRateMultiplierController {
 
     private final SalaryRateMultiplierService service;
@@ -21,7 +21,6 @@ public class SalaryRateMultiplierController {
 
     @GetMapping()
     public List<SalaryRateMultiplier> getAllRates() {
-        System.out.println("HERE");
         return service.getAll();
     }
 

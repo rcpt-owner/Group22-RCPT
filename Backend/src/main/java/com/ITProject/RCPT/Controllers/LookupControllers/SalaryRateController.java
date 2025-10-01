@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 //TODO: Add all API endpoints
 
 @RestController
-@RequestMapping("api/salary-rates")
+@RequestMapping("/api/salary-rates")
 public class SalaryRateController {
 
     private final SalaryRateService service;

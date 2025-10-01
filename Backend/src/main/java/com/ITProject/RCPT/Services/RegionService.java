@@ -1,0 +1,40 @@
+package com.ITProject.RCPT.Services;
+
+import com.ITProject.RCPT.Entities.Region;
+import com.ITProject.RCPT.Repositories.RegionRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class RegionService {
+
+    private final RegionRepository repository;
+
+    public RegionService(RegionRepository repository) {
+        this.repository = repository;
+    }
+
+    // Get all regions
+    public List<Region> getAll() {
+        return repository.findAll();
+    }
+
+    // Get by ID
+    public Region getByName(String name) {
+        return repository.getByName(name);
+    }
+
+
+    // Create new region
+    public Region create(Region region) {
+        return repository.save(region);
+    }
+
+
+    // Delete region
+    public void delete(String name) {
+        repository.deleteById(name);
+    }
+}
