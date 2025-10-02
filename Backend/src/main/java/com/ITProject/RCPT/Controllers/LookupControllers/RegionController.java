@@ -29,7 +29,7 @@ public class RegionController {
     }
 
 
-    // POST = create
+    // POST
     @PostMapping
     public Region createRegion(@RequestBody Region region) {
         return service.create(region);
@@ -37,7 +37,7 @@ public class RegionController {
 
 
     // DELETE
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{name}")
     public void deleteRegion(@PathVariable String name) {
         service.delete(name);
     }
