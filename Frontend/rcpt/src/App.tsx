@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ResearchCostingTool } from "./features/ResearchCostingTool";
-import { NavigationMenuDemo } from "./components/NavigationMenuDemo";
+import { NavigationMenuDemo } from "./components/demos/NavigationMenuDemo";
 
 // pages
 import Login from "./pages/Login";
