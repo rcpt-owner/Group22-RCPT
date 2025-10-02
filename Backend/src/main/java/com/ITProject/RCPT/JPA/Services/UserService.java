@@ -5,42 +5,33 @@ import com.ITProject.RCPT.JPA.Repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
+    private final UserRepository repository;
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserService(UserRepository repository) {
+        this.repository = repository;
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<User> getAll() {
+        return repository.findAll();
     }
 
-    public Optional<User> getUserById(String userid) {
-        return userRepository.findByUserid(userid);
+    public User getById(String userId) {
+        return repository.findById(userId).orElse(null);
     }
 
-    public Optional<User> getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public User getByEmail(String email) {
+        return repository.findByEmail(email);
     }
 
-    public User saveUser(User user) {
-        return userRepository.save(user);
+    public User save(User user) {
+        return repository.save(user);
     }
 
-    public void deleteUser(String userid) {
-        userRepository.deleteById(userid);
-    }
-
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
-    }
-
-    public boolean existsByUserid(String userid) {
-        return userRepository.existsByUserid(userid);
+    public void delete(String userId) {
+        repository.deleteById(userId);
     }
 }

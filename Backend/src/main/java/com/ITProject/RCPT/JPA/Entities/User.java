@@ -7,37 +7,35 @@ import jakarta.persistence.*;
 public class User {
 
     @Id
-    @Column(name = "userid", nullable = false)
-    private String userid;
+    @Column(name = "userid", nullable = false, unique = true)
+    private String userId;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password", nullable = false)
-    private String password;
-
     @Column(name = "is_admin", nullable = false)
-    private Boolean isAdmin = false;
+    private boolean isAdmin;
 
     @Column(name = "is_approver", nullable = false)
-    private Boolean isApprover = false;
+    private boolean isApprover;
 
-    // Getters and Setters
-    public String getUserid() {
-        return userid;
+    // Constructor
+    public User() {}
+
+    // Getters & Setters
+    public String getUserId() {
+        return userId;
     }
-
-    public void setUserid(String userid) {
-        this.userid = userid;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -45,32 +43,21 @@ public class User {
     public String getEmail() {
         return email;
     }
-
     public void setEmail(String email) {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Boolean getIsAdmin() {
+    public boolean getIsAdmin() {
         return isAdmin;
     }
-
-    public void setIsAdmin(Boolean isAdmin) {
-        this.isAdmin = isAdmin;
+    public void setIsAdmin(boolean admin) {
+        isAdmin = admin;
     }
 
-    public Boolean getIsApprover() {
+    public boolean getIsApprover() {
         return isApprover;
     }
-
-    public void setIsApprover(Boolean isApprover) {
-        this.isApprover = isApprover;
+    public void setIsApprover(boolean approver) {
+        isApprover = approver;
     }
 }

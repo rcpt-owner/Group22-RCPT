@@ -2,69 +2,47 @@ package com.ITProject.RCPT.Controllers.LookupControllers;
 
 import com.ITProject.RCPT.JPA.Entities.User;
 import com.ITProject.RCPT.JPA.Services.UserService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserService userService;
+    private final UserService service;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
+    public UserController(UserService service) {
+        this.service = service;
     }
 
+    // GET all users
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public List<User> getAll() {
+        return service.getAll();
     }
 
-    @GetMapping("/{userid}")
-    public ResponseEntity<User> getUserById(@PathVariable String userid) {
-        Optional<User> user = userService.getUserById(userid);
-        return user.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    // GET user by ID
+    @GetMapping("/{id}")
+    public User getById(@PathVariable("id") String id) {
+        return service.getById(id);
     }
 
+    // GET user by email
     @GetMapping("/email/{email}")
-    public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
-        Optional<User> user = userService.getUserByEmail(email);
-        return user.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public User getByEmail(@PathVariable("email") String email) {
+        return service.getByEmail(email);
     }
 
+    // POST
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        if (userService.existsByUserid(user.getUserid())) {
-            return ResponseEntity.badRequest().build();
-        }
-        if (userService.existsByEmail(user.getEmail())) {
-            return ResponseEntity.badRequest().build();
-        }
-        User savedUser = userService.saveUser(user);
-        return ResponseEntity.ok(savedUser);
+    public User createOrUpdate(@RequestBody User user) {
+        return service.save(user);
     }
 
-    @PutMapping("/{userid}")
-    public ResponseEntity<User> updateUser(@PathVariable String userid, @RequestBody User user) {
-        if (!userService.existsByUserid(userid)) {
-            return ResponseEntity.notFound().build();
-        }
-        user.setUserid(userid);
-        User updatedUser = userService.saveUser(user);
-        return ResponseEntity.ok(updatedUser);
-    }
-
-    @DeleteMapping("/{userid}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String userid) {
-        if (!userService.existsByUserid(userid)) {
-            return ResponseEntity.notFound().build();
-        }
-        userService.deleteUser(userid);
-        return ResponseEntity.noContent().build();
+    // DELETE
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable("id") String id) {
+        service.delete(id);
     }
 }
