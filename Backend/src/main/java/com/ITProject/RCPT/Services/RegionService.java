@@ -21,7 +21,7 @@ public class RegionService {
         return repository.findAll();
     }
 
-    // Get by ID
+    // Get by Name
     public Region getByName(String name) {
         return repository.getByName(name);
     }
