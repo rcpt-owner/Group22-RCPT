@@ -3,6 +3,7 @@ package com.ITProject.RCPT.Services;
 import com.ITProject.RCPT.Entities.SalaryRate;
 import com.ITProject.RCPT.Repositories.SalaryRateRepository;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -19,22 +20,14 @@ public class SalaryRateService {
     }
 
     public SalaryRate getByCode(String code) {
-        return repository.findByCode(code);
+        return repository.findById(code).orElse(null);
     }
 
-    public List<SalaryRate> getByCategory(String category) {
-        return repository.findByCategory(category);
+    public SalaryRate save(SalaryRate salaryRate) {
+        return repository.save(salaryRate); // insert or update
     }
 
-    public List<SalaryRate> getByPayrollType(String payrollType) {
-        return repository.findByPayrollType(payrollType);
-    }
-
-    public SalaryRate save(SalaryRate rate) {
-        return repository.save(rate);
-    }
-
-    public void delete(Long id) {
-        repository.deleteById(id);
+    public void delete(String code) {
+        repository.deleteById(code);
     }
 }

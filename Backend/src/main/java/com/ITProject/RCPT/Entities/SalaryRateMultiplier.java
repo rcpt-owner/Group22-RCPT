@@ -1,6 +1,5 @@
 package com.ITProject.RCPT.Entities;
 
-import com.ITProject.RCPT.Services.SalaryRateMultiplierService;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
@@ -10,16 +9,10 @@ public class SalaryRateMultiplier {
 
     @Id
     @Column(name = "unit", nullable = false)
-    private String unit;   // 'FTE' | 'Daily' | 'Hourly'
+    private String unit;
 
     @Column(name = "multiplier", nullable = false, precision = 12, scale = 6)
     private BigDecimal multiplier;
-
-    public SalaryRateMultiplier(String unit, BigDecimal multiplier) {
-        this.unit = unit;
-        this.multiplier = multiplier;
-    }
-    public SalaryRateMultiplier(){}
 
     // Getters and Setters
     public String getUnit() {

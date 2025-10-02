@@ -1,30 +1,25 @@
 package com.ITProject.RCPT.Entities;
 
+
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Entity
 @Table(name = "salary_rate")
 public class SalaryRate {
 
-    public SalaryRate(){}
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(nullable = false, unique = true)
-    private String code;   // Vlookup ID
+    private String code;
 
     @Column(nullable = false)
-    private String name;   // Classification label
+    private String name;
 
     @Column(name = "payroll_type", nullable = false)
-    private String payrollType; // Fortnight or Casual
+    private String payrollType;
 
     @Column(nullable = false)
-    private String category; // Academic or Professional
+    private String category;
 
     @Column(name = "fte_rate", precision = 12, scale = 2)
     private BigDecimal fteRate;
@@ -35,57 +30,60 @@ public class SalaryRate {
     @Column(name = "hourly_rate", precision = 12, scale = 2)
     private BigDecimal hourlyRate;
 
-    private String currency;
-
-    @Column(name = "effective_from")
-    private LocalDate effectiveFrom;
-
-    @Column(name = "effective_to")
-    private LocalDate effectiveTo;
-
     // Getters and Setters
+    public String getCode() {
+        return code;
+    }
 
-    public LocalDate getEffectiveTo() { return effectiveTo;}
+    public void setCode(String code) {
+        this.code = code;
+    }
 
-    public void setEffectiveTo(LocalDate effectiveTo) { this.effectiveTo = effectiveTo;}
+    public String getName() {
+        return name;
+    }
 
-    public LocalDate getEffectiveFrom() { return effectiveFrom;}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public void setEffectiveFrom(LocalDate effectiveFrom) { this.effectiveFrom = effectiveFrom;}
+    public String getPayrollType() {
+        return payrollType;
+    }
 
-    public String getCurrency() { return currency;}
+    public void setPayrollType(String payrollType) {
+        this.payrollType = payrollType;
+    }
 
-    public void setCurrency(String currency) { this.currency = currency;}
+    public String getCategory() {
+        return category;
+    }
 
-    public BigDecimal getHourlyRate() { return hourlyRate;}
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
-    public void setHourlyRate(BigDecimal hourlyRate) { this.hourlyRate = hourlyRate;}
+    public BigDecimal getFteRate() {
+        return fteRate;
+    }
 
-    public BigDecimal getDailyRate() { return dailyRate;}
+    public void setFteRate(BigDecimal fteRate) {
+        this.fteRate = fteRate;
+    }
 
-    public void setDailyRate(BigDecimal dailyRate) { this.dailyRate = dailyRate;}
+    public BigDecimal getDailyRate() {
+        return dailyRate;
+    }
 
-    public BigDecimal getFteRate() { return fteRate;}
+    public void setDailyRate(BigDecimal dailyRate) {
+        this.dailyRate = dailyRate;
+    }
 
-    public void setFteRate(BigDecimal fteRate) { this.fteRate = fteRate;}
+    public BigDecimal getHourlyRate() {
+        return hourlyRate;
+    }
 
-    public String getCategory() { return category;}
-
-    public void setCategory(String category) { this.category = category;}
-
-    public String getPayrollType() { return payrollType;}
-
-    public void setPayrollType(String payrollType) { this.payrollType = payrollType;}
-
-    public String getName() { return name;}
-
-    public void setName(String name) { this.name = name;}
-
-    public String getCode() { return code;}
-
-    public void setCode(String code) { this.code = code;}
-
-    public Long getId() { return id;}
-
-    public void setId(Long id) {this.id = id;}
+    public void setHourlyRate(BigDecimal hourlyRate) {
+        this.hourlyRate = hourlyRate;
+    }
 }

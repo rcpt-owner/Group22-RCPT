@@ -25,18 +25,6 @@ public class User {
     @Column(name = "is_approver", nullable = false)
     private Boolean isApprover = false;
 
-    // Constructors
-    public User() {}
-
-    public User(String userid, String name, String email, String password, Boolean isAdmin, Boolean isApprover) {
-        this.userid = userid;
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.isAdmin = isAdmin;
-        this.isApprover = isApprover;
-    }
-
     // Getters and Setters
     public String getUserid() {
         return userid;

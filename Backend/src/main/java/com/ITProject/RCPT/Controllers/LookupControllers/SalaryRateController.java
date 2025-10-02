@@ -4,7 +4,7 @@ import com.ITProject.RCPT.Entities.SalaryRate;
 import com.ITProject.RCPT.Services.SalaryRateService;
 import org.springframework.web.bind.annotation.*;
 
-//TODO: Add all API endpoints
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/salary-rates")
@@ -16,19 +16,27 @@ public class SalaryRateController {
         this.service = service;
     }
 
+    // GET all
+    @GetMapping
+    public List<SalaryRate> getAll() {
+        return service.getAll();
+    }
+
+    // GET by code
+    @GetMapping("/{code}")
+    public SalaryRate getByCode(@PathVariable String code) {
+        return service.getByCode(code);
+    }
+
+    // POST
     @PostMapping
-    public SalaryRate create(@RequestBody SalaryRate rate) {
-        return service.save(rate);
+    public SalaryRate createOrUpdate(@RequestBody SalaryRate salaryRate) {
+        return service.save(salaryRate);
     }
 
-    @PutMapping("/{id}")
-    public SalaryRate update(@PathVariable Long id, @RequestBody SalaryRate rate) {
-        rate.setId(id);
-        return service.save(rate);
-    }
-
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    // DELETE
+    @DeleteMapping("/{code}")
+    public void delete(@PathVariable String code) {
+        service.delete(code);
     }
 }

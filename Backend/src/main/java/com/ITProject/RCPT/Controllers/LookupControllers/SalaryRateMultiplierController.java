@@ -2,15 +2,12 @@ package com.ITProject.RCPT.Controllers.LookupControllers;
 
 import com.ITProject.RCPT.Entities.SalaryRateMultiplier;
 import com.ITProject.RCPT.Services.SalaryRateMultiplierService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/salary-rates-multiplier")
+@RequestMapping("/api/salary-rate-multipliers")
 public class SalaryRateMultiplierController {
 
     private final SalaryRateMultiplierService service;
@@ -19,14 +16,28 @@ public class SalaryRateMultiplierController {
         this.service = service;
     }
 
-    @GetMapping()
-    public List<SalaryRateMultiplier> getAllRates() {
+    // GET all
+    @GetMapping
+    public List<SalaryRateMultiplier> getAll() {
         return service.getAll();
     }
 
+    // GET by unit
     @GetMapping("/{unit}")
-    public SalaryRateMultiplier getRate(@PathVariable String unit) {
+    public SalaryRateMultiplier getByUnit(@PathVariable String unit) {
         return service.getByUnit(unit);
+    }
+
+    // POST
+    @PostMapping
+    public SalaryRateMultiplier createOrUpdate(@RequestBody SalaryRateMultiplier multiplier) {
+        return service.save(multiplier);
+    }
+
+    // DELETE
+    @DeleteMapping("/{unit}")
+    public void delete(@PathVariable String unit) {
+        service.delete(unit);
     }
 }
 

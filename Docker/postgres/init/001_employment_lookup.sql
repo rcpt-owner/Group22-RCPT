@@ -5,22 +5,16 @@ CREATE TABLE IF NOT EXISTS salary_rate_multiplier (
 );
 
 CREATE TABLE IF NOT EXISTS salary_rate (
-  id BIGSERIAL PRIMARY KEY,
-
-  code TEXT NOT NULL UNIQUE,
+  code TEXT PRIMARY KEY,
   name TEXT NOT NULL,
 
-  payroll_type TEXT NOT NULL,       -- 'Fortnight' or 'Casual'
-  category TEXT NOT NULL,           -- 'Academic' or 'Professional'
+  payroll_type TEXT NOT NULL,
+  category TEXT NOT NULL,
 
   -- Rates: Fortnight rows store FTE (annual); Casual rows store Hourly.
   fte_rate   NUMERIC(12,2),
   daily_rate NUMERIC(12,2),
-  hourly_rate NUMERIC(12,2),
-
-  currency TEXT DEFAULT 'AUD',
-  effective_from DATE DEFAULT DATE '2025-05-01',  
-  effective_to   DATE
+  hourly_rate NUMERIC(12,2)
 );
 
 --------- Multipliers (from “Salary Rate Multipliers” table) ----------
@@ -65,8 +59,7 @@ VALUES
   ('FortnightAcademicLevel D.3', 'Level D.3', 'Fortnight', 'Academic', 192466.00),
   ('FortnightAcademicLevel D.4', 'Level D.4', 'Fortnight', 'Academic', 198584.00),
 
-  ('FortnightAcademicLevel E.1', 'Level E.1', 'Fortnight', 'Academic', 232180.00)
-ON CONFLICT (code) DO NOTHING;
+  ('FortnightAcademicLevel E.1', 'Level E.1', 'Fortnight', 'Academic', 232180.00);
 
 ----------- Fortnight and Professional ----------
 INSERT INTO salary_rate (code, name, payroll_type, category, fte_rate)
@@ -122,8 +115,7 @@ VALUES
   ('FortnightProfessionalUOM 9.2','UOM 9.2','Fortnight','Professional', 146043.00),
   ('FortnightProfessionalUOM 9.3','UOM 9.3','Fortnight','Professional', 148972.00),
 
-  ('FortnightProfessionalUOM 10','UOM 10','Fortnight','Professional', 153412.00)
-ON CONFLICT (code) DO NOTHING;
+  ('FortnightProfessionalUOM 10','UOM 10','Fortnight','Professional', 153412.00);
 
 ---------- Casual and Professional (Hourly) ----------
 INSERT INTO salary_rate (code, name, payroll_type, category, hourly_rate)
@@ -179,8 +171,7 @@ VALUES
   ('CasualProfessionalUOM 9.2','UOM 9.2','Casual','Professional', 94.89),
   ('CasualProfessionalUOM 9.3','UOM 9.3','Casual','Professional', 96.79),
 
-  ('CasualProfessionalUOM 10','UOM 10','Casual','Professional', 99.68)
-ON CONFLICT (code) DO NOTHING;
+  ('CasualProfessionalUOM 10','UOM 10','Casual','Professional', 99.68);
 
 ---------- Casual and Academic (Hourly) ----------
 INSERT INTO salary_rate (code, name, payroll_type, category, hourly_rate)
@@ -217,8 +208,7 @@ VALUES
   ('CasualAcademicLevel D.3','Level D.3','Casual','Academic',125.05),
   ('CasualAcademicLevel D.4','Level D.4','Casual','Academic',129.03),
 
-  ('CasualAcademicLevel E.1','Level E.1','Casual','Academic',150.85)
-ON CONFLICT (code) DO NOTHING;
+  ('CasualAcademicLevel E.1','Level E.1','Casual','Academic',150.85);
 
 ---------- Indexes ----------
 CREATE INDEX IF NOT EXISTS ec_idx_lookup ON salary_rate (payroll_type, category, name);
