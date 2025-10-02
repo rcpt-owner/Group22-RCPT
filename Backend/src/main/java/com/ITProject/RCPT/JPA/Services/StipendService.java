@@ -1,7 +1,7 @@
-package com.ITProject.RCPT.Services;
+package com.ITProject.RCPT.JPA.Services;
 
-import com.ITProject.RCPT.Entities.Stipend;
-import com.ITProject.RCPT.Repositories.StipendRepository;
+import com.ITProject.RCPT.JPA.Entities.Stipend;
+import com.ITProject.RCPT.JPA.Repositories.StipendRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

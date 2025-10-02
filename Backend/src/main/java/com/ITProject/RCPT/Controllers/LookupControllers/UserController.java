@@ -1,7 +1,7 @@
 package com.ITProject.RCPT.Controllers.LookupControllers;
 
-import com.ITProject.RCPT.Entities.User;
-import com.ITProject.RCPT.Services.UserService;
+import com.ITProject.RCPT.JPA.Entities.User;
+import com.ITProject.RCPT.JPA.Services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

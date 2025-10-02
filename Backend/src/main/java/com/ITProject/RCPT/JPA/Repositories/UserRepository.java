@@ -1,6 +1,6 @@
-package com.ITProject.RCPT.Repositories;
+package com.ITProject.RCPT.JPA.Repositories;
 
-import com.ITProject.RCPT.Entities.User;
+import com.ITProject.RCPT.JPA.Entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

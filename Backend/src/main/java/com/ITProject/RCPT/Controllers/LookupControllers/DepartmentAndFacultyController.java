@@ -1,7 +1,7 @@
 package com.ITProject.RCPT.Controllers.LookupControllers;
 
-import com.ITProject.RCPT.Entities.DepartmentAndFaculty;
-import com.ITProject.RCPT.Services.DepartmentAndFacultyService;
+import com.ITProject.RCPT.JPA.Entities.DepartmentAndFaculty;
+import com.ITProject.RCPT.JPA.Services.DepartmentAndFacultyService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

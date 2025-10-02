@@ -1,7 +1,7 @@
-package com.ITProject.RCPT.Services;
+package com.ITProject.RCPT.JPA.Services;
 
-import com.ITProject.RCPT.Entities.User;
-import com.ITProject.RCPT.Repositories.UserRepository;
+import com.ITProject.RCPT.JPA.Entities.User;
+import com.ITProject.RCPT.JPA.Repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,8 +1,7 @@
 package com.ITProject.RCPT.Controllers.LookupControllers;
 
-import com.ITProject.RCPT.Entities.Region;
-import com.ITProject.RCPT.Services.RegionService;
-import org.springframework.http.ResponseEntity;
+import com.ITProject.RCPT.JPA.Entities.Region;
+import com.ITProject.RCPT.JPA.Services.RegionService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

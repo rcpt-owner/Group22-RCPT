@@ -1,7 +1,7 @@
-package com.ITProject.RCPT.Services;
+package com.ITProject.RCPT.JPA.Services;
 
-import com.ITProject.RCPT.Entities.EBA;
-import com.ITProject.RCPT.Repositories.EBARepository;
+import com.ITProject.RCPT.JPA.Entities.EBA;
+import com.ITProject.RCPT.JPA.Repositories.EBARepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

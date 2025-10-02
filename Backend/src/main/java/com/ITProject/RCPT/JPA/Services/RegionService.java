@@ -1,11 +1,10 @@
-package com.ITProject.RCPT.Services;
+package com.ITProject.RCPT.JPA.Services;
 
-import com.ITProject.RCPT.Entities.Region;
-import com.ITProject.RCPT.Repositories.RegionRepository;
+import com.ITProject.RCPT.JPA.Entities.Region;
+import com.ITProject.RCPT.JPA.Repositories.RegionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class RegionService {

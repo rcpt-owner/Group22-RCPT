@@ -1,7 +1,7 @@
 package com.ITProject.RCPT.Controllers.LookupControllers;
 
-import com.ITProject.RCPT.Entities.SalaryRateMultiplier;
-import com.ITProject.RCPT.Services.SalaryRateMultiplierService;
+import com.ITProject.RCPT.JPA.Entities.SalaryRateMultiplier;
+import com.ITProject.RCPT.JPA.Services.SalaryRateMultiplierService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

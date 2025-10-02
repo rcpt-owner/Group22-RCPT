@@ -1,4 +1,4 @@
-package com.ITProject.RCPT.Entities;
+package com.ITProject.RCPT.JPA.Entities;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;

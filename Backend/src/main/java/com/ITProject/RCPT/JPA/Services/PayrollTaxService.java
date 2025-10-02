@@ -1,7 +1,7 @@
-package com.ITProject.RCPT.Services;
+package com.ITProject.RCPT.JPA.Services;
 
-import com.ITProject.RCPT.Entities.PayrollTax;
-import com.ITProject.RCPT.Repositories.PayrollTaxRepository;
+import com.ITProject.RCPT.JPA.Entities.PayrollTax;
+import com.ITProject.RCPT.JPA.Repositories.PayrollTaxRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

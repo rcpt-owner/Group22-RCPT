@@ -1,7 +1,7 @@
 package com.ITProject.RCPT.Controllers.LookupControllers;
 
-import com.ITProject.RCPT.Entities.EBA;
-import com.ITProject.RCPT.Services.EBAService;
+import com.ITProject.RCPT.JPA.Entities.EBA;
+import com.ITProject.RCPT.JPA.Services.EBAService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

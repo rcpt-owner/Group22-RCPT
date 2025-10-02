@@ -1,7 +1,7 @@
-package com.ITProject.RCPT.Services;
+package com.ITProject.RCPT.JPA.Services;
 
-import com.ITProject.RCPT.Entities.DepartmentAndFaculty;
-import com.ITProject.RCPT.Repositories.DepartmentAndFacultyRepository;
+import com.ITProject.RCPT.JPA.Entities.DepartmentAndFaculty;
+import com.ITProject.RCPT.JPA.Repositories.DepartmentAndFacultyRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

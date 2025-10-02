@@ -1,7 +1,7 @@
 package com.ITProject.RCPT.Controllers.LookupControllers;
 
-import com.ITProject.RCPT.Entities.PayrollTax;
-import com.ITProject.RCPT.Services.PayrollTaxService;
+import com.ITProject.RCPT.JPA.Entities.PayrollTax;
+import com.ITProject.RCPT.JPA.Services.PayrollTaxService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

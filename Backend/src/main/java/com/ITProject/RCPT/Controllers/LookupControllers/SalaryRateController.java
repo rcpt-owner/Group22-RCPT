@@ -1,7 +1,7 @@
 package com.ITProject.RCPT.Controllers.LookupControllers;
 
-import com.ITProject.RCPT.Entities.SalaryRate;
-import com.ITProject.RCPT.Services.SalaryRateService;
+import com.ITProject.RCPT.JPA.Entities.SalaryRate;
+import com.ITProject.RCPT.JPA.Services.SalaryRateService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

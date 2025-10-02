@@ -1,7 +1,7 @@
 package com.ITProject.RCPT.Controllers.LookupControllers;
 
-import com.ITProject.RCPT.Entities.StaffBenefits;
-import com.ITProject.RCPT.Services.StaffBenefitsService;
+import com.ITProject.RCPT.JPA.Entities.StaffBenefits;
+import com.ITProject.RCPT.JPA.Services.StaffBenefitsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

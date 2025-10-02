@@ -1,20 +1,20 @@
-package com.ITProject.RCPT.Entities;
+package com.ITProject.RCPT.JPA.Entities;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "stipend")
-public class Stipend {
+@Table(name = "payroll_tax")
+public class PayrollTax {
 
     @Id
     @Column(nullable = false)
     private Integer year;
 
-    @Column(nullable = false)
+    @Column(precision = 5, scale = 4)
     private BigDecimal rate;
 
-    // Getters and Setters
+    // --- Getters and Setters ---
     public Integer getYear() {
         return year;
     }

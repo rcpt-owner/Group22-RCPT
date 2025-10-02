@@ -1,7 +1,7 @@
-package com.ITProject.RCPT.Services;
+package com.ITProject.RCPT.JPA.Services;
 
-import com.ITProject.RCPT.Entities.SalaryRate;
-import com.ITProject.RCPT.Repositories.SalaryRateRepository;
+import com.ITProject.RCPT.JPA.Entities.SalaryRate;
+import com.ITProject.RCPT.JPA.Repositories.SalaryRateRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
