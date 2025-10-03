@@ -9,14 +9,17 @@ import {
   Form,
   FormItem,
 } from "@/components/ui/form"
-import { FormTextInput } from "@/components/forms/FormTextInput"
 import { Card } from "../ui/card"
+import { FormTextInput } from "@/components/forms/FormTextInput"
 import { FormTextArea } from "../forms/FormTextArea"
+import { FormSelect } from "../forms/FormSelect"
 
 // 1. Define a Zod schema for validation
 const ProjectFormSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
+  "mini-description": z.string().optional(),
   description: z.string().optional(),
+  category: z.string().nonempty({ message: "Category is required." }),
 })
 
 // 2. Infer TypeScript types from Zod schema
@@ -28,7 +31,9 @@ export const ProjectFormDemo = () => {
     resolver: zodResolver(ProjectFormSchema),
     defaultValues: {
       title: "",
+      "mini-description": "",
       description: "",
+      category: "",
     },
   })
 
@@ -62,6 +67,18 @@ export const ProjectFormDemo = () => {
             label="Description"
             placeholder="Description of the project"
             message="Descriptive summary of the project"
+          />
+          <FormSelect
+            control={form.control}
+            name="category"
+            label="Category"
+            placeholder="Select a category"
+            message="Select a category for the project"
+            options={[
+              { value: "research", label: "Research" },
+              { value: "development", label: "Development" },
+              { value: "design", label: "Design" },
+            ]}
           />
           <FormItem>
             <Button type="submit">Submit Project</Button>
