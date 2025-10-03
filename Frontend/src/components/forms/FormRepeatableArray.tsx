@@ -33,7 +33,7 @@ export const FormRepeatableArray = ({
           {fields.map(({ name: fieldName, label, placeholder }) => (
             <FormTextInput
               key={fieldName}
-              name={`${name}.${index}.${fieldName}`}
+              name={`${name}.${index}.${fieldName}`} // Ensure nested field names are handled correctly
               label={label}
               placeholder={placeholder}
               control={control}

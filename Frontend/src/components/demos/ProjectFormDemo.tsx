@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -17,13 +18,14 @@ import { FormCheckbox } from "../forms/FormCheckbox"
 import { FormNumberInput } from "../forms/FormNumberInput"
 import { FormDateInput } from "../forms/FormDateInput"
 import { FormRepeatableArray } from "../forms/FormRepeatableArray"
+import { useProjectContext } from "@/context/ProjectContext"
 
 // Project form demo using React Hook Form and Zod for validation
 
 // 1. Define a Zod schema for validation
 const ProjectFormSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
-  "mini-description": z.string().optional(),
+  miniDescription: z.string().optional(), // Changed from "mini-description" to "miniDescription"
   description: z.string().optional(),
   category: z.string().nonempty({ message: "Category is required." }),
   terms: z.boolean().refine((val) => val === true, { message: "You must accept the terms and conditions." }),
@@ -41,27 +43,42 @@ const ProjectFormSchema = z.object({
 type ProjectFormValues = z.infer<typeof ProjectFormSchema>
 
 export const ProjectFormDemo = () => {
-  // 3. Initialize RHF with Zod resolver
+  const { projectData, updateProjectData } = useProjectContext();
+
+  // 1. Initialize RHF with Zod resolver
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(ProjectFormSchema),
-    defaultValues: {
-      title: "",
-      "mini-description": "",
-      description: "",
-      category: "",
-    },
-  })
+    defaultValues: projectData, // Initialize with projectData
+  });
 
-  // 4. Submit handler
+  // 2. Update form values when projectData changes
+  useEffect(() => {
+    if (projectData) {
+      form.reset(projectData); // Reset form when projectData changes
+    }
+  }, [projectData, form]);
+
+  // 3. Submit handler
   const onSubmit = (values: ProjectFormValues) => {
-    // TODO: replace with context update or API call
-    console.log("Project form submitted:", values)
+    console.log("Project form submitted:", values);
+  };
+
+  const handleFormChange = (values: Partial<ProjectFormValues>) => {
+    updateProjectData(values); // Update context on form change
+  };
+
+  if (!projectData) {
+    return <p>Loading...</p>; // Show loading state while data is being fetched
   }
 
   return (
     <Card className="w-2/3 p-6">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          onChange={() => handleFormChange(form.getValues())}
+          className="w-2/3 space-y-6"
+        >
           <FormTextInput
             control={form.control}
             name="title"
@@ -71,7 +88,7 @@ export const ProjectFormDemo = () => {
           />
           <FormTextInput
             control={form.control}
-            name="mini-description"
+            name="miniDescription"
             label="Mini Description"
             placeholder="Brief project summary"
             message="A short, descriptive summary of the project"
@@ -110,12 +127,12 @@ export const ProjectFormDemo = () => {
             prefix="$"
           />
           <FormDateInput
-            control={form.control} 
+            control={form.control}
             name="deadline"
             label="Deadline"
             placeholder="Select a deadline"
             message="Select the project deadline"
-          /> 
+          />
           <FormRepeatableArray
             control={form.control}
             name="teamMembers"
@@ -133,5 +150,5 @@ export const ProjectFormDemo = () => {
         </form>
       </Form>
     </Card>
-  )
-}
+  );
+};

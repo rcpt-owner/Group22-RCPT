@@ -59,8 +59,8 @@ export function SwitchDemo () {
                   </div>
                   <FormControl>
                     <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
+                      checked={field.value || false} // Ensure the value is a boolean
+                      onCheckedChange={(checked) => field.onChange(checked)} // Pass the correct value to the form
                     />
                   </FormControl>
                 </FormItem>

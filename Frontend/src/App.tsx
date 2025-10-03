@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ResearchCostingTool } from "./features/ResearchCostingTool";
 import { NavigationMenuDemo } from "./components/demos/NavigationMenuDemo";
+import { ProjectProvider } from "./context/ProjectContext";
 
 // pages
 import Login from "./pages/Login";
@@ -27,7 +28,9 @@ function AppContent() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <ProjectProvider>
+        <AppContent />
+      </ProjectProvider>
     </BrowserRouter>
   );
 }
