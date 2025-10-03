@@ -12,6 +12,7 @@ import { SonnerDemo } from "@/components/demos/SonnerDemo";
 import { SwitchDemo } from "@/components/demos/SwitchDemo";
 import { TabsDemo } from "@/components/demos/TabsDemo";
 import { TextareaWithText } from "@/components/demos/TextAreaDemo";
+import { ProjectFormDemo } from "@/components/demos/ProjectFormDemo";
 
 
 /*  Placeholder component for the Research Costing Tool. Replace with actual implementation. 
@@ -67,6 +68,7 @@ export function ResearchCostingTool() {
 
       <TextareaWithText />
 
+      <ProjectFormDemo />
 
     </div>
   );

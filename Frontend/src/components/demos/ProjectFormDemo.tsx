@@ -1,0 +1,65 @@
+"use client"
+
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormItem,
+} from "@/components/ui/form"
+import { FormTextInput } from "@/components/forms/FormTextInput"
+import { Card } from "../ui/card"
+
+// 1. Define a Zod schema for validation
+const ProjectFormSchema = z.object({
+  title: z.string().min(2, { message: "Title must be at least 2 characters." }),
+  description: z.string().optional(),
+})
+
+// 2. Infer TypeScript types from Zod schema
+type ProjectFormValues = z.infer<typeof ProjectFormSchema>
+
+export const ProjectFormDemo = () => {
+  // 3. Initialize RHF with Zod resolver
+  const form = useForm<ProjectFormValues>({
+    resolver: zodResolver(ProjectFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+    },
+  })
+
+  // 4. Submit handler
+  const onSubmit = (values: ProjectFormValues) => {
+    // TODO: replace with context update or API call
+    console.log("Project form submitted:", values)
+  }
+
+  return (
+    <Card className="w-2/3 p-6">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
+          <FormTextInput
+            control={form.control}
+            name="title"
+            label="Project Title"
+            placeholder="My Research Tool"
+            message="A short, descriptive title"
+          />
+          <FormTextInput
+            control={form.control}
+            name="description"
+            label="Description"
+            placeholder="Brief project summary"
+            message="A short, descriptive summary of the project"
+          />
+          <FormItem>
+            <Button type="submit">Submit Project</Button>
+          </FormItem>
+        </form>
+      </Form>
+    </Card>
+  )
+}
