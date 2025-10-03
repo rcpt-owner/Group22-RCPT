@@ -13,6 +13,9 @@ import { Card } from "../ui/card"
 import { FormTextInput } from "@/components/forms/FormTextInput"
 import { FormTextArea } from "../forms/FormTextArea"
 import { FormSelect } from "../forms/FormSelect"
+import { FormCheckbox } from "../forms/FormCheckbox"
+
+// Project form demo using React Hook Form and Zod for validation
 
 // 1. Define a Zod schema for validation
 const ProjectFormSchema = z.object({
@@ -20,6 +23,7 @@ const ProjectFormSchema = z.object({
   "mini-description": z.string().optional(),
   description: z.string().optional(),
   category: z.string().nonempty({ message: "Category is required." }),
+  terms: z.boolean().refine((val) => val === true, { message: "You must accept the terms and conditions." }),
 })
 
 // 2. Infer TypeScript types from Zod schema
@@ -80,6 +84,13 @@ export const ProjectFormDemo = () => {
               { value: "design", label: "Design" },
             ]}
           />
+          <FormCheckbox
+            control={form.control}
+            name="terms"
+            label="I agree to the terms and conditions"
+            message="You must agree before submitting"
+          />
+
           <FormItem>
             <Button type="submit">Submit Project</Button>
           </FormItem>
