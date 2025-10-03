@@ -14,6 +14,7 @@ import { FormTextInput } from "@/components/forms/FormTextInput"
 import { FormTextArea } from "../forms/FormTextArea"
 import { FormSelect } from "../forms/FormSelect"
 import { FormCheckbox } from "../forms/FormCheckbox"
+import { FormNumberInput } from "../forms/FormNumberInput"
 
 // Project form demo using React Hook Form and Zod for validation
 
@@ -24,6 +25,13 @@ const ProjectFormSchema = z.object({
   description: z.string().optional(),
   category: z.string().nonempty({ message: "Category is required." }),
   terms: z.boolean().refine((val) => val === true, { message: "You must accept the terms and conditions." }),
+  budget: z
+  .number({ invalid_type_error: "Budget must be a number" })
+  .min(0, { message: "Budget must be a positive number." })
+  .optional()
+  .refine((val) => val === undefined || /^\d+(\.\d{1,2})?$/.test(val.toString()), {
+    message: "Budget can have at most 2 decimal places.",
+  }),
 })
 
 // 2. Infer TypeScript types from Zod schema
@@ -90,7 +98,14 @@ export const ProjectFormDemo = () => {
             label="I agree to the terms and conditions"
             message="You must agree before submitting"
           />
-
+          <FormNumberInput
+            control={form.control}
+            name="budget"
+            label="Project Budget"
+            placeholder="Enter budget"
+            message="Enter the budget for the project"
+            prefix="$"
+          />
           <FormItem>
             <Button type="submit">Submit Project</Button>
           </FormItem>
