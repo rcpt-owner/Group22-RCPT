@@ -16,6 +16,7 @@ import { FormSelect } from "../forms/FormSelect"
 import { FormCheckbox } from "../forms/FormCheckbox"
 import { FormNumberInput } from "../forms/FormNumberInput"
 import { FormDateInput } from "../forms/FormDateInput"
+import { FormRepeatableArray } from "../forms/FormRepeatableArray"
 
 // Project form demo using React Hook Form and Zod for validation
 
@@ -115,6 +116,17 @@ export const ProjectFormDemo = () => {
             placeholder="Select a deadline"
             message="Select the project deadline"
           /> 
+          <FormRepeatableArray
+            control={form.control}
+            name="teamMembers"
+            label="Team Members"
+            fields={[
+              { name: "name", label: "Name", placeholder: "Enter name" },
+              { name: "role", label: "Role", placeholder: "Enter role" },
+            ]}
+            defaultEntry={{ name: "", role: "" }}
+          />
+
           <FormItem>
             <Button type="submit">Submit Project</Button>
           </FormItem>
