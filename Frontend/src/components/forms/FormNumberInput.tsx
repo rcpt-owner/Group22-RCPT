@@ -30,6 +30,7 @@ export const FormNumberInput = ({ name, label, placeholder, message, prefix, con
               placeholder={placeholder}
               className={prefix ? "pl-7" : ""}
               step="0.01" // allow decimals
+              onChange={(e) => field.onChange(e.target.valueAsNumber)} // Convert to number
             />
           </FormControl>
         </div>
