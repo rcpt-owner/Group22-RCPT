@@ -15,6 +15,7 @@ import { FormTextArea } from "../forms/FormTextArea"
 import { FormSelect } from "../forms/FormSelect"
 import { FormCheckbox } from "../forms/FormCheckbox"
 import { FormNumberInput } from "../forms/FormNumberInput"
+import { FormDateInput } from "../forms/FormDateInput"
 
 // Project form demo using React Hook Form and Zod for validation
 
@@ -31,7 +32,8 @@ const ProjectFormSchema = z.object({
   .optional()
   .refine((val) => val === undefined || /^\d+(\.\d{1,2})?$/.test(val.toString()), {
     message: "Budget can have at most 2 decimal places.",
-  }),
+  }), 
+  deadline: z.string().optional(), // date as ISO string
 })
 
 // 2. Infer TypeScript types from Zod schema
@@ -106,6 +108,13 @@ export const ProjectFormDemo = () => {
             message="Enter the budget for the project"
             prefix="$"
           />
+          <FormDateInput
+            control={form.control} 
+            name="deadline"
+            label="Deadline"
+            placeholder="Select a deadline"
+            message="Select the project deadline"
+          /> 
           <FormItem>
             <Button type="submit">Submit Project</Button>
           </FormItem>
