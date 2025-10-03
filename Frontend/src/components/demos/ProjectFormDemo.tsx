@@ -1,84 +1,93 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { useEffect } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormItem,
-} from "@/components/ui/form"
-import { Card } from "../ui/card"
-import { FormTextInput } from "@/components/forms/FormTextInput"
-import { FormTextArea } from "../forms/FormTextArea"
-import { FormSelect } from "../forms/FormSelect"
-import { FormCheckbox } from "../forms/FormCheckbox"
-import { FormNumberInput } from "../forms/FormNumberInput"
-import { FormDateInput } from "../forms/FormDateInput"
-import { FormRepeatableArray } from "../forms/FormRepeatableArray"
-import { useProjectContext } from "@/context/ProjectContext"
+import { Button } from "@/components/ui/button";
+import { Form, FormItem } from "@/components/ui/form";
+import { Card } from "../ui/card";
+import { FormTextInput } from "@/components/forms/FormTextInput";
+import { FormTextArea } from "../forms/FormTextArea";
+import { FormSelect } from "../forms/FormSelect";
+import { FormCheckbox } from "../forms/FormCheckbox";
+import { FormNumberInput } from "../forms/FormNumberInput";
+import { FormDateInput } from "../forms/FormDateInput";
+import { FormRepeatableArray } from "../forms/FormRepeatableArray";
+import { ProjectService } from "@/services/ProjectServiceDemo";
+import type { ProjectData } from "@/services/ProjectServiceDemo";
 
 // Project form demo using React Hook Form and Zod for validation
 
 // 1. Define a Zod schema for validation
 const ProjectFormSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
-  miniDescription: z.string().optional(), // Changed from "mini-description" to "miniDescription"
+  miniDescription: z.string().optional(),
   description: z.string().optional(),
   category: z.string().nonempty({ message: "Category is required." }),
   terms: z.boolean().refine((val) => val === true, { message: "You must accept the terms and conditions." }),
   budget: z
-  .number({ invalid_type_error: "Budget must be a number" })
-  .min(0, { message: "Budget must be a positive number." })
-  .optional()
-  .refine((val) => val === undefined || /^\d+(\.\d{1,2})?$/.test(val.toString()), {
-    message: "Budget can have at most 2 decimal places.",
-  }), 
+    .number({ invalid_type_error: "Budget must be a number" })
+    .min(0, { message: "Budget must be a positive number." })
+    .optional()
+    .refine((val) => val === undefined || /^\d+(\.\d{1,2})?$/.test(val.toString()), {
+      message: "Budget can have at most 2 decimal places.",
+    }),
   deadline: z.string().optional(), // date as ISO string
-})
+});
 
 // 2. Infer TypeScript types from Zod schema
-type ProjectFormValues = z.infer<typeof ProjectFormSchema>
+type ProjectFormValues = z.infer<typeof ProjectFormSchema>;
 
 export const ProjectFormDemo = () => {
-  const { projectData, updateProjectData } = useProjectContext();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   // 1. Initialize RHF with Zod resolver
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(ProjectFormSchema),
-    defaultValues: projectData, // Initialize with projectData
+    defaultValues: {},
   });
 
-  // 2. Update form values when projectData changes
+  // 2. Fetch data from API on mount
   useEffect(() => {
-    if (projectData) {
-      form.reset(projectData); // Reset form when projectData changes
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const data = await ProjectService.getProjectData();
+        form.reset(data);
+      } catch (error) {
+        console.error("Failed to fetch project data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [form]);
+
+  // 3. Submit handler - save via API
+  const onSubmit = async (values: ProjectFormValues) => {
+    setSaving(true);
+    try {
+      await ProjectService.saveProjectData(values as ProjectData);
+      console.log("Project form submitted:", values);
+    } catch (error) {
+      console.error("Failed to save project:", error);
+    } finally {
+      setSaving(false);
     }
-  }, [projectData, form]);
-
-  // 3. Submit handler
-  const onSubmit = (values: ProjectFormValues) => {
-    console.log("Project form submitted:", values);
   };
 
-  const handleFormChange = (values: Partial<ProjectFormValues>) => {
-    updateProjectData(values); // Update context on form change
-  };
-
-  if (!projectData) {
+  if (loading) {
     return <p>Loading...</p>; // Show loading state while data is being fetched
   }
 
   return (
     <Card className="w-2/3 p-6">
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          onChange={() => handleFormChange(form.getValues())}
-          className="w-2/3 space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
           <FormTextInput
             control={form.control}
             name="title"
@@ -145,7 +154,9 @@ export const ProjectFormDemo = () => {
           />
 
           <FormItem>
-            <Button type="submit">Submit Project</Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? "Saving..." : "Submit Project"}
+            </Button>
           </FormItem>
         </form>
       </Form>
