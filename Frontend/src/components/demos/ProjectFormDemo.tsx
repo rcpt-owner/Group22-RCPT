@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/form"
 import { FormTextInput } from "@/components/forms/FormTextInput"
 import { Card } from "../ui/card"
+import { FormTextArea } from "../forms/FormTextArea"
 
 // 1. Define a Zod schema for validation
 const ProjectFormSchema = z.object({
@@ -50,10 +51,17 @@ export const ProjectFormDemo = () => {
           />
           <FormTextInput
             control={form.control}
-            name="description"
-            label="Description"
+            name="mini-description"
+            label="Mini Description"
             placeholder="Brief project summary"
             message="A short, descriptive summary of the project"
+          />
+          <FormTextArea
+            control={form.control}
+            name="description"
+            label="Description"
+            placeholder="Description of the project"
+            message="Descriptive summary of the project"
           />
           <FormItem>
             <Button type="submit">Submit Project</Button>
