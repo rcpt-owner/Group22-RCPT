@@ -14,6 +14,8 @@ const pages = [
   { name: "Login", to: "/login" },
   { name: "Dashboard", to: "/dashboard" },
   { name: "Project Workspace", to: "/project" },
+  { name: "Project Form", to: "/project-form" },
+  { name: "Staff Costs", to: "/staff-costs" },
 ];
 
 export function NavigationMenuDemo() {

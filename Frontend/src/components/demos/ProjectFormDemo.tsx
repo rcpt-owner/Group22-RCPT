@@ -147,8 +147,8 @@ export const ProjectFormDemo = () => {
             name="teamMembers"
             label="Team Members"
             fields={[
-              { name: "name", label: "Name", placeholder: "Enter name" },
-              { name: "role", label: "Role", placeholder: "Enter role" },
+              { name: "name", label: "Name", placeholder: "Enter name", type: "text" },
+              { name: "role", label: "Role", placeholder: "Enter role", type: "text" },
             ]}
             defaultEntry={{ name: "", role: "" }}
           />

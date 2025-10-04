@@ -6,6 +6,8 @@ import { NavigationMenuDemo } from "./components/demos/NavigationMenuDemo";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ProjectWorkspace from "./pages/ProjectWorkspace";
+import { ProjectFormPage } from "./pages/ProjectFormPage";
+import { StaffCostsPage } from "./pages/StaffCostsPage";
 
 function AppContent() {
   return (
@@ -19,6 +21,8 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/project" element={<ProjectWorkspace />} />
+        <Route path="/project-form" element={<ProjectFormPage />} />
+        <Route path="/staff-costs" element={<StaffCostsPage />} />
       </Routes>
     </div>
   );
