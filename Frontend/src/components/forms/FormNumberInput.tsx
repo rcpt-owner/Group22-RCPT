@@ -16,6 +16,11 @@ export const FormNumberInput = ({ name, label, placeholder, message, prefix, con
     control={control}
     render={({ field }) => (
       <FormItem>
+        {/* OPTIMISATION:
+            - For currency: integrate Intl.NumberFormat on blur (store raw number internally).
+            - Debounce onChange if downstream calculations (totals) cause expensive re-renders.
+            - For large numeric grids, convert to uncontrolled input with onBlur sync (reduces RHF traffic).
+        */}
         <FormLabel>{label}</FormLabel>
         <div className="relative">
           {prefix && (

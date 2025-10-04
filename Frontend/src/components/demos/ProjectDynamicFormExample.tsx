@@ -14,6 +14,9 @@ export function ProjectDynamicFormExample() {
   useEffect(() => {
     async function load() {
       try {
+        // OPTIMISATION:
+        // - If multiple pages reuse same schema, keep it in a global cache (e.g. Map).
+        // - Use streaming JSON (ReadableStream) if schema becomes very large (rare).
         const s: FormSchema = await fetch("/forms/projectForm.json").then(r => r.json())
         setSchema(s)
         const data = await ProjectService.getProjectData()
@@ -26,6 +29,8 @@ export function ProjectDynamicFormExample() {
   }, [])
 
   async function handleSubmit(values: any) {
+    // FUTURE:
+    // - Add optimistic UI + rollback on error (toast + local state snapshot).
     await ProjectService.saveProjectData(values as ProjectData)
     console.log("Dynamic project form submitted:", values)
   }

@@ -12,6 +12,10 @@ export function ProjectFormPage() {
   useEffect(() => {
     async function load() {
       try {
+        // OPTIMISATION:
+        // - Use Promise.all for schema + data if they are independent.
+        // - Cache schema by formId in a simple Map or React Query cache.
+        // - Add error boundary + retry UI.
         const s = await fetch("/forms/projectForm.json").then(r => r.json())
         setSchema(s)
         const data = await ProjectService.getProjectData()
@@ -24,6 +28,9 @@ export function ProjectFormPage() {
   }, [])
 
   async function handleSubmit(data: any) {
+    // FUTURE:
+    // - Diff detection: only send fields changed vs initialData.
+    // - Introduce optimistic update & local toast confirmation.
     await ProjectService.saveProjectData(data as ProjectData)
     console.log("Saved project form:", data)
   }
@@ -36,7 +43,7 @@ export function ProjectFormPage() {
         schema={schema}
         initialData={initialData || undefined}
         onSubmit={handleSubmit}
-        className="p-8 w-full max-w-3xl"   // widen card
+        className="p-8 w-full max-w-3xl" // widen card
       />
     </div>
   )

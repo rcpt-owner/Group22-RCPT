@@ -1,29 +1,44 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState } from "react";
+import { BrowserRouter } from "react-router-dom";
 import { ResearchCostingTool } from "./features/ResearchCostingTool";
-import { NavigationMenuDemo } from "./components/demos/NavigationMenuDemo";
+import { LoginPage } from "./pages/LoginPage";
+import { DashboardPage } from "./pages/DashboardPage";
 
-// pages
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import ProjectWorkspace from "./pages/ProjectWorkspace";
-import { ProjectFormPage } from "./pages/ProjectFormPage";
-import { StaffCostsPage } from "./pages/StaffCostsPage";
+type TopLevelView = "login" | "dashboard" | "workspace";
 
 function AppContent() {
+  const [view, setView] = useState<TopLevelView>("login");
+  const [authenticated, setAuthenticated] = useState(false);
+
+  function handleLogin() {
+    setAuthenticated(true);
+    setView("dashboard");
+  }
+
+  function handleLogout() {
+    setAuthenticated(false);
+    setView("login");
+  }
+
+  function openWorkspace() {
+    setView("workspace");
+  }
+
+  if (!authenticated && view !== "login") {
+    setView("login");
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation Menu */}
-      <NavigationMenuDemo />
 
-      {/* Routes */}
-      <Routes>
-        <Route path="/" element={<ResearchCostingTool />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/project" element={<ProjectWorkspace />} />
-        <Route path="/project-form" element={<ProjectFormPage />} />
-        <Route path="/staff-costs" element={<StaffCostsPage />} />
-      </Routes>
+      {/* Render pages based on authentication and view state */}
+      {view === "login" && <LoginPage onLogin={handleLogin} />}
+      {view === "dashboard" && authenticated && (
+        <DashboardPage onEnterWorkspace={openWorkspace} onLogout={handleLogout} />
+      )}
+      {view === "workspace" && authenticated && (
+        <ResearchCostingTool onExit={() => setView("dashboard")} />
+      )}
     </div>
   );
 }

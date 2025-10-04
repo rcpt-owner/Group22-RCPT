@@ -28,11 +28,15 @@ export const FormRepeatableArray = ({
   fields,
   defaultEntry,
 }: FormRepeatableArrayProps) => {
-  // Normalize to full FieldDefinition with default type "text"
+  // OPTIMISATION:
+  // - For large repeatable lists (50+), apply windowing (react-virtual / react-window) around arrayFields.map.
+  // - Provide "addMany" bulk action (append N items) to reduce render churn.
+  // - Offload heavy nested validation by isolating sub-schema & validating only dirty rows.
+  // - Consider storing a template hash for defaultEntry (if large) to avoid deep cloning overhead.
+
   const normalizedFields = useMemo(
     () =>
       fields.map(f => ({
-        // spread first so explicit type in legacy object not lost
         ...f,
         type: (f as any).type ?? "text",
       })) as FieldDefinition[],
@@ -43,6 +47,9 @@ export const FormRepeatableArray = ({
 
   return (
     <div data-repeatable={name}>
+      {/* Suggestion:
+          - Add collapsed summary mode when arrays become long (e.g. show first 3, expand on demand).
+       */}
       <h3 className="text-lg font-medium mb-2">{label}</h3>
       {arrayFields.map((row, index) => (
         <div

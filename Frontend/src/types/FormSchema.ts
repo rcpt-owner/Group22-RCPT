@@ -43,4 +43,10 @@ export type FormSchema = {
   formId: string
   submitLabel: string
   fields: FieldDefinition[]
+  // OPTIMISATION (future):
+  // - Add optional "version" to allow backend to send incremental diffs & clients to cache by (formId+version).
+  // - Add "groups" or "sections" to lazy-render large forms (improves first paint).
+  // - Add "dependsOn" for conditional visibility (avoid unnecessary re-renders & network requests).
+  // - Add "computed" flag for fields whose values come from server functions (not user input).
+  // - Add "readOnly"/"permissions" metadata to block edits earlier (prevents wasted validation cycles).
 }
