@@ -1,1 +1,0 @@
-// A generic pop-up window for adding a new cost item. This dialog could be made flexible to handle both staff

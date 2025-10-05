@@ -1,1 +1,0 @@
-//A component to display the financial summary (e.g., total cost, final price).

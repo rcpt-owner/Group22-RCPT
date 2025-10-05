@@ -1,1 +1,0 @@
-// A single file containing all the business logic for cost calculations. This would include separate functions for calculating total staff costs, total non-staff costs, and the overall final price. This keeps all the math in one place.

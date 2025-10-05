@@ -1,0 +1,6 @@
+{
+  "categories": ["research", "development", "design"],
+  "statuses": ["Draft", "In Review", "Approved", "Archived"],
+  "currencies": ["GBP", "USD", "EUR"],
+  "roles": ["PI", "Research Assistant", "Technician", "Data Manager"]
+}

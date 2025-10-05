@@ -1,1 +1,0 @@
-// A component for displaying and editing equipment costs.

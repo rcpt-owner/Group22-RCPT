@@ -1,1 +1,0 @@
-//  The main component that renders the cost calculation UI. It will contain tabs or sections for both staff and non-staff costs.

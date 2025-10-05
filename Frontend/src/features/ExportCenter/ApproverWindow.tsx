@@ -1,1 +1,0 @@
-//  This will be a new component for the "approver window." It would likely be a modal or a dialog. It will contain a form for an email address, an optional message, and a "Send" button.

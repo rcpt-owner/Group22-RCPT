@@ -1,12 +1,15 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { useNavigate } from "react-router-dom"
 
 interface DashboardPageProps {
-  onEnterWorkspace: () => void
+  onEnterWorkspace?: () => void
   onLogout: () => void
 }
 
 export function DashboardPage({ onEnterWorkspace, onLogout }: DashboardPageProps) {
+  const navigate = useNavigate()
+
   return (
     <div className="min-h-screen p-6 flex flex-col gap-6">
       <header className="flex items-center justify-between">
@@ -27,7 +30,14 @@ export function DashboardPage({ onEnterWorkspace, onLogout }: DashboardPageProps
               */}
             </CardContent>
             <CardFooter>
-              <Button onClick={onEnterWorkspace}>Open Workspace</Button>
+              <Button
+                onClick={() => {
+                  onEnterWorkspace?.()         // optional side-effect
+                  navigate("/projects/demo-project") // navigate to workspace route
+                }}
+              >
+                Open Workspace
+              </Button>
             </CardFooter>
         </Card>
 

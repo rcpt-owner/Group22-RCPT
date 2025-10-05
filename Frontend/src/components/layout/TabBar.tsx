@@ -33,7 +33,7 @@ export const TabBar: React.FC<TabBarProps> = ({
     >
       <TabsList
         className={cn(
-          "mx-auto flex w-max gap-2 rounded-full bg-muted/40 p-1",
+          "flex w-full gap-2 rounded-full bg-muted/40 p-1",
           "border border-border/50 backdrop-blur supports-[backdrop-filter]:bg-muted/30"
         )}
       >
@@ -42,6 +42,7 @@ export const TabBar: React.FC<TabBarProps> = ({
             key={t}
             value={t}
             className={cn(
+              "flex-1 basis-0 text-center",
               "rounded-full px-5 py-2 text-sm font-medium transition",
               "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
               "data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground",
