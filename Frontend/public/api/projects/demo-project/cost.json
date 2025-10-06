@@ -1,0 +1,12 @@
+{
+  "projectId": "demo-project",
+  "staff": [
+    { "role": "PI", "fte": 0.4, "cost": 60000 },
+    { "role": "Research Assistant", "fte": 1, "cost": 42000 },
+    { "role": "Technician", "fte": 0.2, "cost": 12000 }
+  ],
+  "overheadRate": 0.25,
+  "totalDirect": 114000,
+  "totalIndirect": 28500,
+  "total": 142500
+}
