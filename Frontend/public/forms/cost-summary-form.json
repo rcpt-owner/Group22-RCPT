@@ -1,0 +1,49 @@
+{
+  "formId": "cost-summary-form",
+  "submitLabel": "Save Costs",
+  "fields": [
+    {
+      "name": "staff",
+      "type": "repeatable",
+      "label": "Staff Cost Lines",
+      "message": "Add each staffed role with FTE and cost",
+      "fields": [
+        { "name": "role", "type": "text", "label": "Role", "validation": { "required": true }, "message": "E.g. PI, RA" },
+        { "name": "fte", "type": "number", "label": "FTE", "validation": { "required": true, "min": 0, "max": 1 }, "message": "0–1.0" },
+        { "name": "cost", "type": "number", "label": "Cost", "prefix": "£", "validation": { "required": true, "min": 0 }, "message": "Annual cost" }
+      ],
+      "defaultEntry": { "role": "", "fte": 0, "cost": 0 }
+    },
+    {
+      "name": "overheadRate",
+      "type": "number",
+      "label": "Overhead Rate",
+      "message": "Fraction (e.g. 0.25 = 25%)",
+      "validation": { "required": true, "min": 0, "max": 1 }
+    },
+    {
+      "name": "totalDirect",
+      "type": "number",
+      "label": "Total Direct Costs",
+      "prefix": "£",
+      "message": "Auto-calc from staff (can be overridden if needed)",
+      "validation": { "min": 0 }
+    },
+    {
+      "name": "totalIndirect",
+      "type": "number",
+      "label": "Total Indirect (Overheads)",
+      "prefix": "£",
+      "message": "Auto-calc = totalDirect * overheadRate",
+      "validation": { "min": 0 }
+    },
+    {
+      "name": "total",
+      "type": "number",
+      "label": "Grand Total",
+      "prefix": "£",
+      "message": "Auto-calc = direct + indirect",
+      "validation": { "min": 0 }
+    }
+  ]
+}

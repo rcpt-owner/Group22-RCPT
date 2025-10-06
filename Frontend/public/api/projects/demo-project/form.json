@@ -1,0 +1,12 @@
+{
+  "title": "Imported Project",
+  "miniDescription": "This project was loaded from JSON.",
+  "description": "Detailed description here.",
+  "category": "development",
+  "terms": true,
+  "budget": 33000,
+  "deadline": "2024-12-31",
+  "teamMembers": [
+    { "name": "Jane Doe", "role": "Designer" }
+  ]
+}

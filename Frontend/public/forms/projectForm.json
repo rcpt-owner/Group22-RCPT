@@ -1,0 +1,27 @@
+{
+  "formId": "project-form",
+  "submitLabel": "Submit Project",
+  "fields": [
+    { "name": "title", "type": "text", "label": "Project Title", "validation": { "required": true, "minLength": 2 }, "message": "Short descriptive title" },
+    { "name": "miniDescription", "type": "text", "label": "Mini Description", "message": "Brief summary" },
+    { "name": "description", "type": "textarea", "label": "Description" },
+    { "name": "category", "type": "select", "label": "Category", "validation": { "required": true }, "options": [
+      { "value": "research", "label": "Research" },
+      { "value": "development", "label": "Development" },
+      { "value": "design", "label": "Design" }
+    ] },
+    { "name": "terms", "type": "checkbox", "label": "I agree to the terms", "validation": { "required": true } },
+    { "name": "budget", "type": "number", "label": "Project Budget", "prefix": "$", "validation": { "min": 0 } },
+    { "name": "deadline", "type": "date", "label": "Deadline" },
+    {
+      "name": "teamMembers",
+      "type": "repeatable",
+      "label": "Team Members",
+      "fields": [
+        { "name": "name", "type": "text", "label": "Name", "validation": { "required": true } },
+        { "name": "role", "type": "text", "label": "Role" }
+      ],
+      "defaultEntry": { "name": "", "role": "" }
+    }
+  ]
+}
