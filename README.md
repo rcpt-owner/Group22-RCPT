@@ -104,7 +104,7 @@ Out-of-Scope (Current Phase):
 - Real-time multi-user collaborative editing
 - Post-award budget tracking / variance monitoring
 - Automated grant submission portals
-- Multi0currecny compatibility
+- Multi-currency compatibility
 - Advanced analytics dashboards
 - Multi-language/localisation
 - Audit logging & minimal reporting
