@@ -1,0 +1,117 @@
+############
+# Root / General
+############
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Ensure npm lockfile is tracked
+!package-lock.json
+
+############
+# Environment / Secrets
+############
+.env
+.env.*
+!.env.example
+*.local
+
+############
+# Logs & Runtime
+############
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+spring.log
+
+############
+# Node / Vite (Frontend)
+############
+/Frontend/rcpt/node_modules/
+/Frontend/rcpt/dist/
+/Frontend/rcpt/build/
+/Frontend/rcpt/.vite
+/Frontend/rcpt/coverage
+/Frontend/rcpt/.eslintcache
+/Frontend/*.tsbuildinfo
+
+
+# Ensure npm lockfile is tracked (in case it was previously ignored)
+!package-lock.json
+# (Deleted prior ignore lines for: package-lock.json, yarn.lock, pnpm-lock.yaml if they existed)
+# -----------------------------------------------------
+
+############
+# Java / Maven (Backend)
+############
+/Backend/target/
+/Backend/*.log
+/Backend/*.out
+/Backend/.classpath
+/Backend/.project
+/Backend/.settings/
+*.iml
+*.class
+hs_err_pid*
+replay_pid*
+
+############
+# Test Artifacts
+############
+coverage/
+.nyc_output/
+
+############
+# IDE / Editor
+############
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+############
+# OS / Tooling
+############
+*.orig
+*.rej
+
+############
+# Package Managers
+############
+package-lock.json
+
+############
+# Build / Distribution (generic)
+############
+dist/
+build/
+out/
+
+############
+# Docker / Compose overrides (keep canonical files)
+############
+docker-compose.override.yml
+
+############
+# Reports / Generated
+############
+reports/
+site/
+
+############
+# Archive / Temp
+############
+*.tar
+*.tgz
+*.gz
+*.zip
+*.tmp
+tmp/
+temp/
+
+# End of file
