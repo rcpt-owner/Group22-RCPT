@@ -1,8 +1,9 @@
-import { useState } from "react"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Card, CardContent } from "@/components/ui/card"
+import { useState } from "react"
+import { FcGoogle } from "react-icons/fc" // for Google icon
+import { signInWithPopup } from "firebase/auth";
+import { auth, provider } from "@/firebaseConfig";
 
 interface LoginPageProps {
   onLogin: () => void
@@ -11,40 +12,48 @@ interface LoginPageProps {
 export function LoginPage({ onLogin }: LoginPageProps) {
   const [loading, setLoading] = useState(false)
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    // OPTIMISATION:
-    // - Replace with real AuthService.login returning session token.
-    // - Add form-level error + loading skeleton + password manager hints.
-    await new Promise(r => setTimeout(r, 400))
-    onLogin()
+  async function handleGoogleLogin() {
+    try {
+      setLoading(true);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      console.log("Logged in user:", user);
+      onLogin(); // or navigate to dashboard, etc.
+    } catch (error) {
+      console.error("Google Sign-In failed:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-lg">Sign in</CardTitle>
-        </CardHeader>
-        {/* Simple form, no actual auth logic, and would use an FormInput from components/forms to make backenc easier */}
-        <form onSubmit={submit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" required placeholder="user@example.com" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="pw">Password</Label>
-              <Input id="pw" type="password" required />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Login"}
-            </Button>
-          </CardFooter>
-        </form>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#6fa4e6]">
+      {/* Top left logo and title */}
+      <div className="absolute top-6 left-6 flex items-center space-x-4">
+        <img
+          src="/resources/University-of-Melbourne-logo-1.png"
+          alt="University of Melbourne logo"
+          className="h-24"
+        />
+        <span className="text-white text-2xl font-semibold tracking-wide">
+          Research Costing and Pricing Tool
+        </span>
+      </div>
+
+      {/* Login box */}
+      <Card className="bg-gray-100 w-full max-w-md p-10 rounded-2xl shadow-lg">
+        <CardContent className="flex flex-col items-center space-y-8">
+          <h2 className="text-2xl font-semibold text-gray-700">Log in</h2>
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center gap-4 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm py-3 text-lg"
+            onClick={handleGoogleLogin}
+            disabled={loading}
+          >
+            <FcGoogle size={26} />
+            {loading ? "Signing in..." : "Sign in with Google"}
+          </Button>
+        </CardContent>
       </Card>
     </div>
   )
