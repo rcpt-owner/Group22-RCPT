@@ -3,7 +3,8 @@ import { CircleDollarSign, Users, Package } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { projectService } from "@/services/projectService"
+import { DynamicForm } from "@/components/forms/DynamicForm"
+import type { FormSchema } from "@/types/FormSchema"
 
 type CostTabProps = {
   projectId: string
@@ -12,6 +13,7 @@ type CostTabProps = {
 export default function CostTab({ projectId }: CostTabProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [formSchema, setFormSchema] = useState<FormSchema | null>(null)
 
   useEffect(() => {
     let active = true
@@ -32,11 +34,23 @@ export default function CostTab({ projectId }: CostTabProps) {
     }
   }, [projectId])
 
-  // Placeholder: State and logic for dynamic JSON forms will be added later.
-  // Placeholder: Use projectId when integrating persistence and form data.
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const schema: FormSchema = await fetch("/forms/addStaffCostForm.json").then(r => r.json())
+        if (!cancelled) setFormSchema(schema)
+      } catch (e) {
+        // no-op for demo
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-4 md:p-6 lg:p-8">
+    <div className="w-full space-y-6">
       {/* Top Section: Costs Planning */}
       <Card className="border rounded-lg">
         <CardHeader className="space-y-2">
@@ -108,7 +122,18 @@ export default function CostTab({ projectId }: CostTabProps) {
         </Button>
       </div>
 
-      {/* Placeholder: Replace above placeholders with DynamicForm-driven UI later. */}
+      {/* Dynamic form (demo) */}
+      {formSchema ? (
+        <DynamicForm
+          schema={formSchema}
+          onSubmit={async (values) => {
+            console.log("Staff cost form submitted:", values)
+          }}
+          card
+        />
+      ) : (
+        <p className="text-sm text-muted-foreground">Loading staff member form...</p>
+      )}
     </div>
   )
 }

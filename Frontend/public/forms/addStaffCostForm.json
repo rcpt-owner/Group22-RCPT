@@ -1,0 +1,64 @@
+{
+  "formId": "add-staff-member-form",
+  "submitLabel": "Save",
+  "layout": {
+    "rows": [
+      ["employmentType", "category"],
+      ["year1", "year2", "year3"]
+    ]
+  },
+  "fields": [
+    { "name": "role", "type": "text", "label": "Role *", "placeholder": "Name of the role", "validation": { "required": true }, "message": "E.g. PI, RA" },
+    {
+      "name": "employmentType",
+      "type": "select",
+      "label": "Employment Type",
+      "placeholder": "Select the correct employment type",
+      "options": [
+        { "value": "full-time", "label": "Full-Time" },
+        { "value": "part-time", "label": "Part-Time" },
+        { "value": "casual", "label": "Casual" },
+        { "value": "contract", "label": "Contract" }
+      ]
+    },
+    {
+      "name": "category",
+      "type": "select",
+      "label": "Category",
+      "placeholder": "Select the correct category of this role",
+      "options": [
+        { "value": "academic", "label": "Academic" },
+        { "value": "professional", "label": "Professional" },
+        { "value": "technical", "label": "Technical" },
+        { "value": "other", "label": "Other" }
+      ]
+    },
+    {
+      "name": "employmentClassification",
+      "type": "select",
+      "label": "Employment Classification",
+      "placeholder": "Select the correct employment classification",
+      "options": [
+        { "value": "level-a", "label": "Level A" },
+        { "value": "level-b", "label": "Level B" },
+        { "value": "level-c", "label": "Level C" },
+        { "value": "level-d", "label": "Level D" },
+        { "value": "level-e", "label": "Level E" }
+      ]
+    },
+    {
+      "name": "fteType",
+      "type": "select",
+      "label": "FTE / Daily / Hourly",
+      "placeholder": "Select the correct time of payment",
+      "options": [
+        { "value": "fte", "label": "FTE" },
+        { "value": "daily", "label": "Daily" },
+        { "value": "hourly", "label": "Hourly" }
+      ]
+    },
+    { "name": "year1", "type": "number", "label": "Year 1: 2026", "placeholder": "Enter total working time for 2026", "validation": { "min": 0 } },
+    { "name": "year2", "type": "number", "label": "Year 2: 2027", "placeholder": "Enter total working time for 2027", "validation": { "min": 0 } },
+    { "name": "year3", "type": "number", "label": "Year 3: 2028", "placeholder": "Enter total working time for 2028", "validation": { "min": 0 } }
+  ]
+}

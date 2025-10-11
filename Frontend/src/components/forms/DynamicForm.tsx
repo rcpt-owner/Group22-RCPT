@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -48,6 +48,13 @@ type DynamicFormProps = {
   card?: boolean                     // Toggle Card wrapper (embed vs standalone)
 }
 
+// Support optional layout metadata without changing FormSchema type.
+type LayoutAwareSchema = FormSchema & {
+  layout?: {
+    rows?: string[][] // array of rows, each a list of field names
+  }
+}
+
 export function DynamicForm({
   schema,
   onSubmit,
@@ -56,12 +63,6 @@ export function DynamicForm({
   className,
   card = true
 }: DynamicFormProps) {
-  // OPTIMISATION:
-  // - Consider caching zodSchema by (schema.formId + stable hash of fields) to skip rebuild across mounts.
-  // - For very large forms, break into sections and build partial Zod schemas to reduce validation cost.
-  // - (TODO) Add "validateOnBlur" / "mode" customisation to reduce synchronous validation pressure.
-  // - Introduce debounced autosave (onChange) with dirty field diffing to reduce payload sizes.
-
   const [saving, setSaving] = useState(false)
 
   // Build + memoize Zod schema from field array.
@@ -76,6 +77,40 @@ export function DynamicForm({
     // OPTIMISATION:
     // - Provide "values" prop when streaming partial data (React 19 feature) to progressively hydrate.
   })
+
+  // Resolve dynamic options from optionsUrl, keeping original order.
+  const [resolvedFields, setResolvedFields] = useState(schema.fields)
+  useEffect(() => {
+    let cancelled = false
+    async function hydrateOptions() {
+      const updated = await Promise.all(
+        schema.fields.map(async (f: any) => {
+          if (f?.optionsUrl && typeof f.optionsUrl === "string") {
+            try {
+              const res = await fetch(f.optionsUrl)
+              const data = await res.json()
+              const options = Array.isArray(data) ? data : data?.options ?? []
+              return { ...f, options }
+            } catch (e) {
+              console.error("Failed to fetch options for", f.name, e)
+              return f
+            }
+          }
+          return f
+        })
+      )
+      if (!cancelled) setResolvedFields(updated)
+    }
+    hydrateOptions()
+    return () => {
+      cancelled = true
+    }
+  }, [schema.fields])
+
+  // Fast lookup by name for layout handling.
+  const fieldByName = useMemo(() => {
+    return new Map(resolvedFields.map((f: any) => [f.name, f]))
+  }, [resolvedFields])
 
   // Wrap parent submit handler to manage local "saving" UI state.
   async function handleSubmit(values: any) {
@@ -93,28 +128,49 @@ export function DynamicForm({
   // Upstream gate for async schema/data fetch.
   if (isLoading) return <p>Loading form...</p>
 
-  // OPTIMISATION:
-  // - Virtualise massively long field lists (rare, but possible with repeatable expansions).
-  // - Add Suspense boundaries around heavy components (date pickers, selects with large datasets).
+  const layout = (schema as LayoutAwareSchema).layout
+  const rows = layout?.rows ?? []
+
   const content = (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-6"
-        // Future: add role="form" / aria-describedby for form-level summaries
       >
-        {schema.fields.map(f => (
-          <FieldForm
-            key={f.name}
-            field={f}
-            control={form.control}
-          />
-        ))}
+        {rows.length > 0 ? (
+          <>
+            {/* Render specified rows as responsive grid with inline columns */}
+            {rows.map((row, idx) => {
+              const rowFields = row
+                .map((name) => fieldByName.get(name))
+                .filter(Boolean) as any[]
+              const cols = Math.min(Math.max(rowFields.length, 1), 3)
+              return (
+                <div
+                  key={`row-${idx}`}
+                  className="grid gap-6"
+                  style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+                >
+                  {rowFields.map((f) => (
+                    <FieldForm key={f.name} field={f} control={form.control} />
+                  ))}
+                </div>
+              )
+            })}
+            {/* Render remaining fields not included in rows */}
+            {resolvedFields
+              .filter((f: any) => !rows.flat().includes(f.name))
+              .map((f: any) => (
+                <FieldForm key={f.name} field={f} control={form.control} />
+              ))}
+          </>
+        ) : (
+          // Legacy default: simple vertical list
+          resolvedFields.map((f: any) => (
+            <FieldForm key={f.name} field={f} control={form.control} />
+          ))
+        )}
 
-        {/* OPTIMISATION:
-           - Add secondary actions: "Save Draft", "Reset", "Validate Only".
-           - Show last autosave timestamp (useRef + state).
-        */}
         <FormItem>
           <Button type="submit" disabled={saving}>
             {saving ? "Saving..." : schema.submitLabel}
