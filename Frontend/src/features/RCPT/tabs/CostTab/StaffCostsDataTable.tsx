@@ -7,7 +7,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import type { ColumnDef, ColumnFiltersState, VisibilityState, SortingState } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+import { ArrowUpDown, MoreHorizontal } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -28,214 +28,174 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-// Replace Payment with StaffCost to align with the Add Staff Member form fields
+// StaffCostsDataTable: presentational table for staff cost rows.
+// - Exports StaffCost as the source-of-truth type.
+// - Accepts data via props; no internal seed data.
+// - Currency uses AUD/en-AU. Year headers driven by yearLabels prop.
+
 export type StaffCost = {
   role: string
   employmentType: "Full-Time" | "Part-Time" | "Casual"
   category: "Academic" | "Professional" | "Research"
-  employmentClassification: string // e.g. "Level A"–"Level E", "HEW 6", etc.
+  employmentClassification: string
   fteType: "FTE" | "Daily" | "Hourly"
   year1: number
   year2: number
   year3: number
 }
 
-// Seed example rows mirroring realistic form options and Year 1–3 amounts
-const demoData: StaffCost[] = [
-  {
-    role: "Lecturer",
-    employmentType: "Full-Time",
-    category: "Academic",
-    employmentClassification: "Level B",
-    fteType: "FTE",
-    year1: 95000,
-    year2: 98000,
-    year3: 101000,
-  },
-  {
-    role: "Senior Lecturer",
-    employmentType: "Full-Time",
-    category: "Academic",
-    employmentClassification: "Level C",
-    fteType: "FTE",
-    year1: 118000,
-    year2: 121500,
-    year3: 125000,
-  },
-  {
-    role: "Research Assistant",
-    employmentType: "Part-Time",
-    category: "Research",
-    employmentClassification: "Level A",
-    fteType: "Hourly",
-    year1: 30000,
-    year2: 32000,
-    year3: 34000,
-  },
-  {
-    role: "Professional Officer",
-    employmentType: "Full-Time",
-    category: "Professional",
-    employmentClassification: "HEW 7",
-    fteType: "FTE",
-    year1: 88000,
-    year2: 90500,
-    year3: 93000,
-  },
-  {
-    role: "Casual Tutor",
-    employmentType: "Casual",
-    category: "Academic",
-    employmentClassification: "Level A",
-    fteType: "Hourly",
-    year1: 18000,
-    year2: 18500,
-    year3: 19000,
-  },
-]
-
-// Helper to format year amounts as currency (adjust locale/currency if needed)
+// AUD formatter (fix invalid locale and align with the rest of the app)
 const fmtCurrency = (n: number) =>
   new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", maximumFractionDigits: 0 }).format(n)
 
-// Define staff cost columns; keep actions fixed (non-hideable)
-export const columns: ColumnDef<StaffCost>[] = [
-  {
-    accessorKey: "role",
-    header: "Role",
-    enableSorting: false,
-    enableHiding: false, // keep Role always visible
-    cell: ({ row }) => <div className="capitalize">{row.getValue("role")}</div>,
-  },
-  {
-    accessorKey: "employmentType",
-    header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        Employment Type
-        <ArrowUpDown />
-      </Button>
-    ),
-    cell: ({ row }) => <div className="capitalize">{row.getValue("employmentType")}</div>,
-  },
-  {
-    accessorKey: "category",
-    header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        Category
-        <ArrowUpDown />
-      </Button>
-    ),
-    cell: ({ row }) => <div className="capitalize">{row.getValue("category")}</div>,
-  },
-  {
-    accessorKey: "employmentClassification",
-    header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        Classification
-        <ArrowUpDown />
-      </Button>
-    ),
-    cell: ({ row }) => <div>{row.getValue("employmentClassification")}</div>,
-  },
-  {
-    accessorKey: "fteType",
-    header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        FTE Type
-        <ArrowUpDown />
-      </Button>
-    ),
-    cell: ({ row }) => <div>{row.getValue("fteType")}</div>,
-  },
-  {
-    accessorKey: "year1",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        className="ml-auto flex w-full justify-end"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Year 1
-        <ArrowUpDown />
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const v = Number(row.getValue("year1"))
-      return <div className="text-right font-medium">{fmtCurrency(v)}</div>
-    },
-  },
-  {
-    accessorKey: "year2",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        className="ml-auto flex w-full justify-end"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Year 2
-        <ArrowUpDown />
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const v = Number(row.getValue("year2"))
-      return <div className="text-right font-medium">{fmtCurrency(v)}</div>
-    },
-  },
-  {
-    accessorKey: "year3",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        className="ml-auto flex w-full justify-end"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Year 3
-        <ArrowUpDown />
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const v = Number(row.getValue("year3"))
-      return <div className="text-right font-medium">{fmtCurrency(v)}</div>
-    },
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    enableSorting: false,
-    cell: ({ row }) => {
-      const staff = row.original
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => console.log("Edit", staff)}>
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={() => console.log("Delete", staff)}
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
-  },
-]
+interface StaffCostsDataTableProps {
+  data: StaffCost[]
+  onEdit?: (row: StaffCost) => void
+  onDelete?: (row: StaffCost) => void
+  yearLabels?: [string, string, string]
+}
 
-export function StaffCostsTable(props: { data?: StaffCost[] } = {}) {
-  const data = React.useMemo(() => props.data ?? demoData, [props.data])
-
+export function StaffCostsDataTable({
+  data,
+  onEdit,
+  onDelete,
+  yearLabels = ["Year 1", "Year 2", "Year 3"],
+}: StaffCostsDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({ role: true })
+
+  // Define columns here so we can use props (yearLabels, onEdit/onDelete)
+  const columns: ColumnDef<StaffCost>[] = [
+    {
+      accessorKey: "role",
+      header: "Role",
+      enableSorting: false,
+      enableHiding: false,
+      cell: ({ row }) => <div className="capitalize">{row.getValue("role")}</div>,
+    },
+    {
+      accessorKey: "employmentType",
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Employment Type
+          <ArrowUpDown />
+        </Button>
+      ),
+      cell: ({ row }) => <div className="capitalize">{row.getValue("employmentType")}</div>,
+    },
+    {
+      accessorKey: "category",
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Category
+          <ArrowUpDown />
+        </Button>
+      ),
+      cell: ({ row }) => <div className="capitalize">{row.getValue("category")}</div>,
+    },
+    {
+      accessorKey: "employmentClassification",
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Classification
+          <ArrowUpDown />
+        </Button>
+      ),
+      cell: ({ row }) => <div>{row.getValue("employmentClassification")}</div>,
+    },
+    {
+      accessorKey: "fteType",
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          FTE Type
+          <ArrowUpDown />
+        </Button>
+      ),
+      cell: ({ row }) => <div>{row.getValue("fteType")}</div>,
+    },
+    {
+      accessorKey: "year1",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="ml-auto flex w-full justify-end"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {yearLabels[0]}
+          <ArrowUpDown />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const v = Number(row.getValue("year1"))
+        return <div className="text-right font-medium">{fmtCurrency(v)}</div>
+      },
+    },
+    {
+      accessorKey: "year2",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="ml-auto flex w-full justify-end"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {yearLabels[1]}
+          <ArrowUpDown />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const v = Number(row.getValue("year2"))
+        return <div className="text-right font-medium">{fmtCurrency(v)}</div>
+      },
+    },
+    {
+      accessorKey: "year3",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="ml-auto flex w-full justify-end"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {yearLabels[2]}
+          <ArrowUpDown />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const v = Number(row.getValue("year3"))
+        return <div className="text-right font-medium">{fmtCurrency(v)}</div>
+      },
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      enableSorting: false,
+      cell: ({ row }) => {
+        const staff = row.original
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => onEdit?.(staff)}>
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => onDelete?.(staff)}
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
+    },
+  ]
 
   const table = useReactTable({
     data,
@@ -261,7 +221,7 @@ export function StaffCostsTable(props: { data?: StaffCost[] } = {}) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown />
+              Columns <ArrowUpDown />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -283,13 +243,14 @@ export function StaffCostsTable(props: { data?: StaffCost[] } = {}) {
         </DropdownMenu>
       </div>
 
-      <div className="overflow-hidden rounded-md border">
-        <Table>
+      {/* Horizontal-only scroll for many columns */}
+      <div className="rounded-md border">
+        <Table containerClassName="w-full overflow-x-auto overflow-y-visible" className="w-full min-w-max">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="whitespace-nowrap">
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
@@ -301,7 +262,9 @@ export function StaffCostsTable(props: { data?: StaffCost[] } = {}) {
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id} className="whitespace-nowrap">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
