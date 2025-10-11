@@ -46,6 +46,8 @@ type DynamicFormProps = {
   isLoading?: boolean                // Optional upstream loading gate
   className?: string                 // Optional wrapper class for Card body
   card?: boolean                     // Toggle Card wrapper (embed vs standalone)
+  formId?: string                    // Optional external id to submit from outside
+  hideSubmit?: boolean               // Hide internal submit button (use external actions)
 }
 
 // Support optional layout metadata without changing FormSchema type.
@@ -61,7 +63,9 @@ export function DynamicForm({
   initialData,
   isLoading,
   className,
-  card = true
+  card = true,
+  formId,
+  hideSubmit = false,
 }: DynamicFormProps) {
   const [saving, setSaving] = useState(false)
 
@@ -134,6 +138,7 @@ export function DynamicForm({
   const content = (
     <Form {...form}>
       <form
+        id={formId}
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-6"
       >
@@ -170,12 +175,14 @@ export function DynamicForm({
             <FieldForm key={f.name} field={f} control={form.control} />
           ))
         )}
-
-        <FormItem>
-          <Button type="submit" disabled={saving}>
-            {saving ? "Saving..." : schema.submitLabel}
-          </Button>
-        </FormItem>
+        {/* internal submit button can be hidden (e.g., when used inside a dialog with external actions) */}
+        {!hideSubmit && (
+          <FormItem>
+            <Button type="submit" disabled={saving}>
+              {saving ? "Saving..." : schema.submitLabel}
+            </Button>
+          </FormItem>
+        )}
       </form>
     </Form>
   )

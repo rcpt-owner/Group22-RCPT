@@ -3,12 +3,14 @@
   "submitLabel": "Save",
   "layout": {
     "rows": [
+      ["role"], 
+      ["employmentClassification", "fteType"],
       ["employmentType", "category"],
       ["year1", "year2", "year3"]
     ]
   },
   "fields": [
-    { "name": "role", "type": "text", "label": "Role *", "placeholder": "Name of the role", "validation": { "required": true }, "message": "E.g. PI, RA" },
+    { "name": "role", "type": "text", "label": "Role *", "placeholder": "Name of the role", "validation": { "required": true }, "message": "E.g. Senior Tutor, Lecturer" },
     {
       "name": "employmentType",
       "type": "select",

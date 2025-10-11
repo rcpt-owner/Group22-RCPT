@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { DynamicForm } from "@/components/forms/DynamicForm"
 import type { FormSchema } from "@/types/FormSchema"
 import { StaffCostsTable } from "./StaffCostsDataTable"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog"
 
 type CostTabProps = {
   projectId: string
@@ -84,12 +85,52 @@ export default function CostTab({ projectId }: CostTabProps) {
           <Card className="border rounded-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <h3 className="text-lg font-medium">Staff Costs:</h3>
-              <Button
-                type="button"
-                className="bg-[#3B2B26] hover:bg-[#2f231f] text-white"
-              >
-                + Add Staff Member
-              </Button>
+
+              {/* Add Staff Member dialog trigger */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    type="button"
+                    className="bg-[#3B2B26] hover:bg-[#2f231f] text-white"
+                  >
+                    + Add Staff Member
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[720px]">
+                  <DialogHeader>
+                    <DialogTitle>Add Staff Member</DialogTitle>
+                    <DialogDescription>
+                      Fill in the staff details and click Save. This is static for now.
+                    </DialogDescription>
+                  </DialogHeader>
+                  {formSchema ? (
+                    <DynamicForm
+                      schema={formSchema}
+                      onSubmit={async (values) => {
+                        console.log("Staff cost form submitted:", values)
+                      }}
+                      card={false}
+                      formId={formSchema?.formId || "add-staff-member-form"}
+                      hideSubmit
+                    />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Loading staff member form...
+                    </p>
+                  )}
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button
+                      type="submit"
+                      form={formSchema?.formId || "add-staff-member-form"}
+                    >
+                      Save
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
 
             <CardContent className="min-h-[220px] flex items-center justify-center text-center">
@@ -123,21 +164,21 @@ export default function CostTab({ projectId }: CostTabProps) {
         </Button>
       </div>
 
-      {/* Dynamic form (demo) */}
       {formSchema ? (
-        <DynamicForm
-          schema={formSchema}
-          onSubmit={async (values) => {
-            console.log("Staff cost form submitted:", values)
-          }}
-          card
-        />
-      ) : (
-        <p className="text-sm text-muted-foreground">Loading staff member form...</p>
-      )}
+                    <DynamicForm
+                      schema={formSchema}
+                      onSubmit={async (values) => {
+                        console.log("Staff cost form submitted:", values)
+                      }}
+                      card
+                    />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Loading staff member form...
+                    </p>
+                  )}
 
-      < StaffCostsTable />
-
+      <StaffCostsTable />
     </div>
   )
 }
