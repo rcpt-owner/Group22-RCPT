@@ -1,5 +1,3 @@
-"use client"
-
 import React, { useEffect, useState } from "react"
 import { CircleDollarSign, Users, Package } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
