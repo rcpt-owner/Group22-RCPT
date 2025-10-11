@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { DynamicForm } from "@/components/forms/DynamicForm"
 import type { FormSchema } from "@/types/FormSchema"
+import { StaffCostsTable } from "./StaffCostsDataTable"
 
 type CostTabProps = {
   projectId: string
@@ -134,6 +135,9 @@ export default function CostTab({ projectId }: CostTabProps) {
       ) : (
         <p className="text-sm text-muted-foreground">Loading staff member form...</p>
       )}
+
+      < StaffCostsTable />
+
     </div>
   )
 }

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { DemoShowcasePage } from "../DemoSections/DemoShowcasePage"
 import { ProjectOverviewTab } from "./tabs/ProjectOverviewTab"
-import CostTab from "./tabs/CostTab"
+import CostTab from "./tabs/CostTab/CostTab"
 
 
 export function ResearchCostingTool({
