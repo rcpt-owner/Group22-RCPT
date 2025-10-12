@@ -6,6 +6,9 @@ import type { FormSchema } from "@/types/FormSchema"
 import { StaffCostsDataTable } from "./StaffCostsDataTable"
 import type { StaffCost } from "./StaffCostsDataTable"
 import { AddStaffDialog } from "./AddStaffDialog"
+import { AddNonStaffDialog } from "./AddNonStaffDialog"
+import { NonStaffCostsDataTable } from "./NonStaffCostsDataTable"
+import type { NonStaffCost } from "./NonStaffCostsDataTable"
 
 // CostTab: hosts cost subcomponents and orchestrates data/state for this tab.
 // Tables are presentational; CostTab owns state and passes data + callbacks.
@@ -22,10 +25,18 @@ export default function CostTab({ projectId }: CostTabProps) {
   const [editOpen, setEditOpen] = useState(false)
   const [editIndex, setEditIndex] = useState<number | null>(null)
 
+  // Non-staff state
+  const [nonStaffRows, setNonStaffRows] = useState<NonStaffCost[]>([])
+  const [nsEditOpen, setNsEditOpen] = useState(false)
+  const [nsEditIndex, setNsEditIndex] = useState<number | null>(null)
+
   // --- TMP: session storage for staff rows ---
   // --- Will integrate with backend later ---
   // Temporary per-workspace session storage for staff rows (local to this tab).
   const storageKey = React.useMemo(() => `rcpt:costtab:staff:${projectId}`, [projectId])
+
+  // Non-staff session storage key
+  const nsStorageKey = React.useMemo(() => `rcpt:costtab:nonstaff:${projectId}`, [projectId])
 
   // Load any previously entered rows for this workspace session.
   useEffect(() => {
@@ -36,6 +47,16 @@ export default function CostTab({ projectId }: CostTabProps) {
       // ignore
     }
   }, [storageKey])
+
+  // Load non-staff rows
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(nsStorageKey)
+      if (raw) setNonStaffRows(JSON.parse(raw) as NonStaffCost[])
+    } catch {
+      // ignore
+    }
+  }, [nsStorageKey])
 
   // Persist rows whenever they change (remove key when empty).
   useEffect(() => {
@@ -49,6 +70,19 @@ export default function CostTab({ projectId }: CostTabProps) {
       // ignore
     }
   }, [staffRows, storageKey])
+
+  // Persist non-staff rows
+  useEffect(() => {
+    try {
+      if (nonStaffRows.length > 0) {
+        sessionStorage.setItem(nsStorageKey, JSON.stringify(nonStaffRows))
+      } else {
+        sessionStorage.removeItem(nsStorageKey)
+      }
+    } catch {
+      // ignore
+    }
+  }, [nonStaffRows, nsStorageKey])
 
   // --- END TMP ---
 
@@ -86,6 +120,8 @@ export default function CostTab({ projectId }: CostTabProps) {
       default: return toTitle(v)
     }
   }
+
+  // FUTURE: integrate with backend data model for a projects length so these years will have to be dynamic
   const mapFormToStaffRow = (values: Record<string, any>): StaffCost => ({
     role: String(values.role ?? ""),
     employmentType: mapEmploymentType(values.employmentType),
@@ -116,6 +152,26 @@ export default function CostTab({ projectId }: CostTabProps) {
     }
   }
 
+  // Non-staff helpers
+  const mapFormToNonStaffRow = (values: Record<string, any>): NonStaffCost => ({
+    category: String(values.category ?? ""),
+    subcategory: String(values.subcategory ?? ""),
+    description: String(values.description ?? ""),
+    inKind: Boolean(values.inKind),
+    year1: Number(values.year1 ?? 0) || 0,
+    year2: Number(values.year2 ?? 0) || 0,
+    year3: Number(values.year3 ?? 0) || 0,
+  })
+  const nonStaffRowToFormValues = (row: NonStaffCost) => ({
+    category: row.category,
+    subcategory: row.subcategory,
+    description: row.description ?? "",
+    inKind: Boolean(row.inKind),
+    year1: row.year1,
+    year2: row.year2,
+    year3: row.year3,
+  })
+
   const handleAddStaff = async (values: Record<string, any>) => {
     const row = mapFormToStaffRow(values)
     setStaffRows(prev => [row, ...prev])
@@ -135,6 +191,25 @@ export default function CostTab({ projectId }: CostTabProps) {
     setStaffRows(prev => prev.map((r, i) => (i === editIndex ? updated : r)))
     setEditOpen(false)
     setEditIndex(null)
+  }
+
+  const handleAddNonStaff = (values: Record<string, any>) => {
+    const row = mapFormToNonStaffRow(values)
+    setNonStaffRows(prev => [row, ...prev])
+  }
+  const handleNonStaffEditStart = (row: NonStaffCost) => {
+    const idx = nonStaffRows.findIndex(r => r === row)
+    if (idx !== -1) {
+      setNsEditIndex(idx)
+      setNsEditOpen(true)
+    }
+  }
+  const handleNonStaffEditSave = (values: Record<string, any>) => {
+    if (nsEditIndex == null) return
+    const updated = mapFormToNonStaffRow(values)
+    setNonStaffRows(prev => prev.map((r, i) => (i === nsEditIndex ? updated : r)))
+    setNsEditOpen(false)
+    setNsEditIndex(null)
   }
 
   return (
@@ -211,12 +286,44 @@ export default function CostTab({ projectId }: CostTabProps) {
           </Card>
         </TabsContent>
 
-        {/* Non-Staff placeholder (no functionality yet) */}
+        {/* Non-Staff */}
         <TabsContent value="nonstaff" className="space-y-4 pt-4">
           <Card className="border rounded-lg">
-            <CardContent className="py-10 text-center text-muted-foreground">
-              <Package className="mx-auto mb-3 h-8 w-8" />
-              Non-Staff costs UI coming soon.
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <h3 className="text-lg font-medium">Non-Staff Costs:</h3>
+              <AddNonStaffDialog onSubmit={handleAddNonStaff} />
+            </CardHeader>
+
+            <CardContent className={nonStaffRows.length === 0 ? "min-h-[220px] flex items-center justify-center text-center" : "p-2 sm:p-4"}>
+              {nonStaffRows.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-3">
+                  <Package className="h-10 w-10 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">No Non-Staff Costs Added Yet.</p>
+                </div>
+              ) : (
+                <>
+                  <NonStaffCostsDataTable
+                    data={nonStaffRows}
+                    yearLabels={yearLabels}
+                    onEdit={handleNonStaffEditStart}
+                    onDelete={(row) => setNonStaffRows(prev => prev.filter(r => r !== row))}
+                  />
+                  {nsEditIndex != null && (
+                    <AddNonStaffDialog
+                      onSubmit={handleNonStaffEditSave}
+                      title="Edit Non-staff Cost"
+                      submitLabel="Save changes"
+                      initialData={nonStaffRowToFormValues(nonStaffRows[nsEditIndex])}
+                      open={nsEditOpen}
+                      onOpenChange={(o) => {
+                        setNsEditOpen(o)
+                        if (!o) setNsEditIndex(null)
+                      }}
+                      hideTrigger
+                    />
+                  )}
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
