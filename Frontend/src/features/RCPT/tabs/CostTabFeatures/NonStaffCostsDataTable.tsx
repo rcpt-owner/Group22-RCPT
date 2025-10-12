@@ -2,12 +2,12 @@ import * as React from "react"
 import {
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
+  // getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import type { ColumnDef, ColumnFiltersState, VisibilityState, SortingState } from "@tanstack/react-table"
-import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+import type { ColumnDef, /* ColumnFiltersState, */ VisibilityState, SortingState } from "@tanstack/react-table"
+import { ArrowUpDown, MoreHorizontal, Check, Minus, ChevronDown, ChevronUp } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -18,7 +18,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+// import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -28,62 +28,38 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-// StaffCostsDataTable: presentational table for staff cost rows.
-// - Exports StaffCost as the source-of-truth type.
-// - Accepts data via props; no internal seed data.
-// - Currency uses AUD/en-AU. Year headers driven by yearLabels prop.
-
-export type StaffCost = {
-  role: string
-  employmentType: "Full-Time" | "Part-Time" | "Casual"
-  category: "Academic" | "Professional" | "Research"
-  employmentClassification: string
-  fteType: "FTE" | "Daily" | "Hourly"
+export type NonStaffCost = {
+  category: string
+  subcategory: string
+  description?: string
+  inKind: boolean
   year1: number
   year2: number
   year3: number
 }
 
-// AUD formatter (fix invalid locale and align with the rest of the app)
 const fmtCurrency = (n: number) =>
   new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", maximumFractionDigits: 0 }).format(n)
 
-interface StaffCostsDataTableProps {
-  data: StaffCost[]
-  onEdit?: (row: StaffCost) => void
-  onDelete?: (row: StaffCost) => void
+interface NonStaffCostsDataTableProps {
+  data: NonStaffCost[]
+  onEdit?: (row: NonStaffCost) => void
+  onDelete?: (row: NonStaffCost) => void
   yearLabels?: [string, string, string]
 }
 
-export function StaffCostsDataTable({
+export function NonStaffCostsDataTable({
   data,
   onEdit,
   onDelete,
   yearLabels = ["Year 1", "Year 2", "Year 3"],
-}: StaffCostsDataTableProps) {
+}: NonStaffCostsDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({ role: true })
+  // const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const [columnsMenuOpen, setColumnsMenuOpen] = React.useState(false)
 
-  // Define columns here so we can use props (yearLabels, onEdit/onDelete)
-  const columns: ColumnDef<StaffCost>[] = [
-    {
-      accessorKey: "role",
-      header: "Role",
-      enableSorting: false,
-      enableHiding: false,
-      cell: ({ row }) => <div className="capitalize">{row.getValue("role")}</div>,
-    },
-    {
-      accessorKey: "employmentType",
-      header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Employment Type
-          <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => <div className="capitalize">{row.getValue("employmentType")}</div>,
-    },
+  const columns: ColumnDef<NonStaffCost>[] = [
     {
       accessorKey: "category",
       header: ({ column }) => (
@@ -95,24 +71,38 @@ export function StaffCostsDataTable({
       cell: ({ row }) => <div className="capitalize">{row.getValue("category")}</div>,
     },
     {
-      accessorKey: "employmentClassification",
+      accessorKey: "subcategory",
       header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Classification
+          Subcategory
           <ArrowUpDown />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue("employmentClassification")}</div>,
+      cell: ({ row }) => <div className="capitalize">{row.getValue("subcategory")}</div>,
     },
     {
-      accessorKey: "fteType",
+      accessorKey: "description",
+      header: "Description",
+      enableSorting: false,
+      cell: ({ row }) => <div>{row.getValue("description") || "-"}</div>,
+    },
+    {
+      accessorKey: "inKind",
       header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          FTE Type
+          In Kind
           <ArrowUpDown />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue("fteType")}</div>,
+      cell: ({ row }) => {
+        const v = Boolean(row.getValue("inKind"))
+        return (
+          <div className="flex justify-center">
+            {v ? <Check className="text-green-600 h-4 w-4" /> : <Minus className="text-muted-foreground h-4 w-4" />}
+          </div>
+        )
+      },
+      sortingFn: (a, b, id) => Number(a.getValue(id)) - Number(b.getValue(id)),
     },
     {
       accessorKey: "year1",
@@ -170,7 +160,7 @@ export function StaffCostsDataTable({
       enableHiding: false,
       enableSorting: false,
       cell: ({ row }) => {
-        const staff = row.original
+        const item = row.original
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -181,12 +171,12 @@ export function StaffCostsDataTable({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => onEdit?.(staff)}>
+              <DropdownMenuItem onClick={() => onEdit?.(item)}>
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
-                onClick={() => onDelete?.(staff)}
+                onClick={() => onDelete?.(item)}
               >
                 Delete
               </DropdownMenuItem>
@@ -201,27 +191,22 @@ export function StaffCostsDataTable({
     data,
     columns,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
+    // onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    // getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    state: { sorting, columnFilters, columnVisibility },
+    state: { sorting, /* columnFilters, */ columnVisibility },
   })
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter by role..."
-          value={(table.getColumn("role")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("role")?.setFilterValue(event.target.value)}
-          className="max-w-sm"
-        />
-        <DropdownMenu>
+      <div className="flex items-center gap-2 py-4">
+        {/* Removed search filters */}
+        <DropdownMenu open={columnsMenuOpen} onOpenChange={setColumnsMenuOpen}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ArrowUpDown />
+              Columns {columnsMenuOpen ? <ChevronUp /> : <ChevronDown />}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -243,7 +228,6 @@ export function StaffCostsDataTable({
         </DropdownMenu>
       </div>
 
-      {/* Horizontal-only scroll for many columns */}
       <div className="rounded-md border">
         <Table containerClassName="w-full overflow-x-auto overflow-y-visible" className="w-full min-w-max">
           <TableHeader>
@@ -281,4 +265,3 @@ export function StaffCostsDataTable({
     </div>
   )
 }
-

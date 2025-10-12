@@ -3,12 +3,12 @@ import { CircleDollarSign, Users, Package } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import type { FormSchema } from "@/types/FormSchema"
-import { StaffCostsDataTable } from "./StaffCostsDataTable"
-import type { StaffCost } from "./StaffCostsDataTable"
-import { AddStaffDialog } from "./AddStaffDialog"
-import { AddNonStaffDialog } from "./AddNonStaffDialog"
-import { NonStaffCostsDataTable } from "./NonStaffCostsDataTable"
-import type { NonStaffCost } from "./NonStaffCostsDataTable"
+import { StaffCostsDataTable } from "./CostTabFeatures/StaffCostsDataTable"
+import type { StaffCost } from "./CostTabFeatures/StaffCostsDataTable"
+import { AddStaffDialog } from "./CostTabFeatures/AddStaffDialog"
+import { AddNonStaffDialog } from "./CostTabFeatures/AddNonStaffDialog"
+import { NonStaffCostsDataTable } from "./CostTabFeatures/NonStaffCostsDataTable"
+import type { NonStaffCost } from "./CostTabFeatures/NonStaffCostsDataTable"
 
 // CostTab: hosts cost subcomponents and orchestrates data/state for this tab.
 // Tables are presentational; CostTab owns state and passes data + callbacks.
@@ -29,6 +29,9 @@ export default function CostTab({ projectId }: CostTabProps) {
   const [nonStaffRows, setNonStaffRows] = useState<NonStaffCost[]>([])
   const [nsEditOpen, setNsEditOpen] = useState(false)
   const [nsEditIndex, setNsEditIndex] = useState<number | null>(null)
+
+  // New: non-staff schema
+  const [nonStaffFormSchema, setNonStaffFormSchema] = useState<FormSchema | null>(null)
 
   // --- TMP: session storage for staff rows ---
   // --- Will integrate with backend later ---
@@ -92,6 +95,22 @@ export default function CostTab({ projectId }: CostTabProps) {
       try {
         const schema: FormSchema = await fetch("/forms/addStaffCostForm.json").then(r => r.json())
         if (!cancelled) setFormSchema(schema)
+      } catch (e) {
+        // no-op for demo
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Load non-staff form schema
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const schema: FormSchema = await fetch("/forms/addNonStaffCostForm.json").then(r => r.json())
+        if (!cancelled) setNonStaffFormSchema(schema)
       } catch (e) {
         // no-op for demo
       }
@@ -291,7 +310,7 @@ export default function CostTab({ projectId }: CostTabProps) {
           <Card className="border rounded-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <h3 className="text-lg font-medium">Non-Staff Costs:</h3>
-              <AddNonStaffDialog onSubmit={handleAddNonStaff} />
+              <AddNonStaffDialog formSchema={nonStaffFormSchema} onSubmit={handleAddNonStaff} />
             </CardHeader>
 
             <CardContent className={nonStaffRows.length === 0 ? "min-h-[220px] flex items-center justify-center text-center" : "p-2 sm:p-4"}>
@@ -310,6 +329,7 @@ export default function CostTab({ projectId }: CostTabProps) {
                   />
                   {nsEditIndex != null && (
                     <AddNonStaffDialog
+                      formSchema={nonStaffFormSchema}
                       onSubmit={handleNonStaffEditSave}
                       title="Edit Non-staff Cost"
                       submitLabel="Save changes"
