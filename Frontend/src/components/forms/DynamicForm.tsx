@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { useForm } from "react-hook-form"
+import { useState, useMemo, useEffect } from "react"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 
@@ -46,6 +46,15 @@ type DynamicFormProps = {
   isLoading?: boolean                // Optional upstream loading gate
   className?: string                 // Optional wrapper class for Card body
   card?: boolean                     // Toggle Card wrapper (embed vs standalone)
+  formId?: string                    // Optional external id to submit from outside
+  hideSubmit?: boolean               // Hide internal submit button (use external actions)
+}
+
+// Support optional layout metadata without changing FormSchema type.
+type LayoutAwareSchema = FormSchema & {
+  layout?: {
+    rows?: string[][] // array of rows, each a list of field names
+  }
 }
 
 export function DynamicForm({
@@ -54,14 +63,10 @@ export function DynamicForm({
   initialData,
   isLoading,
   className,
-  card = true
+  card = true,
+  formId,
+  hideSubmit = false,
 }: DynamicFormProps) {
-  // OPTIMISATION:
-  // - Consider caching zodSchema by (schema.formId + stable hash of fields) to skip rebuild across mounts.
-  // - For very large forms, break into sections and build partial Zod schemas to reduce validation cost.
-  // - (TODO) Add "validateOnBlur" / "mode" customisation to reduce synchronous validation pressure.
-  // - Introduce debounced autosave (onChange) with dirty field diffing to reduce payload sizes.
-
   const [saving, setSaving] = useState(false)
 
   // Build + memoize Zod schema from field array.
@@ -73,18 +78,129 @@ export function DynamicForm({
   const form = useForm({
     resolver: zodResolver(zodSchema as z.ZodTypeAny),
     defaultValues: initialData || {}
-    // OPTIMISATION:
-    // - Provide "values" prop when streaming partial data (React 19 feature) to progressively hydrate.
   })
 
-  // Wrap parent submit handler to manage local "saving" UI state.
+  // Resolve dynamic options from optionsUrl, keeping original order.
+  const [resolvedFields, setResolvedFields] = useState(schema.fields)
+  useEffect(() => {
+    let cancelled = false
+    async function hydrateOptions() {
+      const updated = await Promise.all(
+        schema.fields.map(async (f: any) => {
+          if (f?.optionsUrl && typeof f.optionsUrl === "string") {
+            try {
+              const res = await fetch(f.optionsUrl)
+              const data = await res.json()
+              const options = Array.isArray(data) ? data : data?.options ?? []
+              return { ...f, options }
+            } catch (e) {
+              console.error("Failed to fetch options for", f.name, e)
+              return f
+            }
+          }
+          return f
+        })
+      )
+      if (!cancelled) setResolvedFields(updated)
+    }
+    hydrateOptions()
+    return () => {
+      cancelled = true
+    }
+  }, [schema.fields])
+
+  // Dependent select: gather all child fields that depend on a parent field
+  const dependentSelects = useMemo(() => {
+    return (resolvedFields as any[]).filter(
+      (f) => f?.type === "select" && typeof f?.dependsOn === "string"
+    )
+  }, [resolvedFields])
+
+  // Watch all parent names so UI updates when parents change
+  const parentNames = useMemo(
+    () => Array.from(new Set(dependentSelects.map((f: any) => f.dependsOn))),
+    [dependentSelects]
+  )
+  const watchedParents = useWatch({
+    control: form.control as any,
+    name: (parentNames.length ? parentNames : undefined) as any,
+  })
+  const parentMap = useMemo(() => {
+    const map: Record<string, any> = {}
+    if (!parentNames.length) return map
+    const values = Array.isArray(watchedParents) ? watchedParents : [watchedParents]
+    parentNames.forEach((n, i) => {
+      map[n] = values[i]
+    })
+    return map
+  }, [parentNames, watchedParents])
+
+  // Clear child value if it is no longer valid for the parent
+  useEffect(() => {
+    dependentSelects.forEach((child: any) => {
+      const parentVal = parentMap[child.dependsOn]
+      const map = child.optionsMap || {}
+      const allowed = Array.isArray(map[parentVal]) ? map[parentVal].map((o: any) => o.value) : []
+      const current = (form.getValues() as any)[child.name]
+      const clearOnChange = child.clearOnParentChange !== false
+      const disableUntilParent = child.disableUntilParent !== false
+
+      if (clearOnChange) {
+        if (!parentVal && disableUntilParent) {
+          if (current) form.setValue(child.name, "")
+        } else if (current && allowed.length && !allowed.includes(current)) {
+          form.setValue(child.name, "")
+        }
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(parentMap)])
+
+  // Build final fields for render: compute options/placeholder/disabled for dependent selects
+  const renderFields = useMemo(() => {
+    return (resolvedFields as any[]).map((f) => {
+      if (f?.type === "select" && f?.dependsOn) {
+        const parentVal = parentMap[f.dependsOn]
+        const disabled = f.disableUntilParent !== false && !parentVal
+        const options = disabled ? [] : (f.optionsMap?.[parentVal] ?? f.options ?? [])
+        const placeholder = disabled
+          ? (f.placeholderWhenDisabled || f.placeholder || "Select parent first")
+          : (f.placeholder ?? "Select")
+
+        return { ...f, options, placeholder, disabled }
+      }
+      return f
+    })
+  }, [resolvedFields, parentMap])
+
+  // Fast lookup by name for layout handling (use renderFields, not base fields)
+  const fieldByName = useMemo(() => {
+    return new Map(renderFields.map((f: any) => [f.name, f]))
+  }, [renderFields])
+
+  // Wrap parent submit handler to manage local "saving" UI state + dependent validation
   async function handleSubmit(values: any) {
-    // OPTIMISATION:
-    // - Compare "values" vs form.getValues() snapshot before sending to avoid redundant API call.
-    // - Send PATCH / diff instead of full object (backend can merge).
+    // Validate dependent selects without changing global zod builder
+    for (const f of dependentSelects as any[]) {
+      const parentVal = values?.[f.dependsOn]
+      const childVal = values?.[f.name]
+      const map = f.optionsMap || {}
+      const allowed = Array.isArray(map[parentVal]) ? map[parentVal].map((o: any) => o.value) : []
+      const disableUntilParent = f.disableUntilParent !== false
+
+      if (!parentVal && disableUntilParent && childVal) {
+        form.setError(f.name, { type: "validate", message: f.placeholderWhenDisabled || "Select the parent first" } as any)
+        return
+      }
+      if (childVal && allowed.length && !allowed.includes(childVal)) {
+        form.setError(f.name, { type: "validate", message: "Invalid selection for the chosen parent" } as any)
+        return
+      }
+    }
+
     setSaving(true)
     try {
-      await onSubmit(values) // Delegate persistence upward
+      await onSubmit(values)
     } finally {
       setSaving(false)
     }
@@ -93,33 +209,49 @@ export function DynamicForm({
   // Upstream gate for async schema/data fetch.
   if (isLoading) return <p>Loading form...</p>
 
-  // OPTIMISATION:
-  // - Virtualise massively long field lists (rare, but possible with repeatable expansions).
-  // - Add Suspense boundaries around heavy components (date pickers, selects with large datasets).
+  const layout = (schema as LayoutAwareSchema).layout
+  const rows = layout?.rows ?? []
+
   const content = (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="space-y-6"
-        // Future: add role="form" / aria-describedby for form-level summaries
-      >
-        {schema.fields.map(f => (
-          <FieldForm
-            key={f.name}
-            field={f}
-            control={form.control}
-          />
-        ))}
-
-        {/* OPTIMISATION:
-           - Add secondary actions: "Save Draft", "Reset", "Validate Only".
-           - Show last autosave timestamp (useRef + state).
-        */}
-        <FormItem>
-          <Button type="submit" disabled={saving}>
-            {saving ? "Saving..." : schema.submitLabel}
-          </Button>
-        </FormItem>
+      <form id={formId} onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        {rows.length > 0 ? (
+          <>
+            {/* Render specified rows as responsive grid with inline columns */}
+            {rows.map((row, idx) => {
+              const rowFields = row
+                .map((name) => fieldByName.get(name))
+                .filter(Boolean) as any[]
+              const cols = Math.min(Math.max(rowFields.length, 1), 3)
+              return (
+                <div key={`row-${idx}`} className="grid gap-6" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+                  {rowFields.map((f) => (
+                    <FieldForm key={f.name} field={f} control={form.control} />
+                  ))}
+                </div>
+              )
+            })}
+            {/* Render remaining fields not included in rows */}
+            {renderFields
+              .filter((f: any) => !rows.flat().includes(f.name))
+              .map((f: any) => (
+                <FieldForm key={f.name} field={f} control={form.control} />
+              ))}
+          </>
+        ) : (
+          // Legacy default: simple vertical list
+          renderFields.map((f: any) => (
+            <FieldForm key={f.name} field={f} control={form.control} />
+          ))
+        )}
+        {/* internal submit button can be hidden (e.g., when used inside a dialog with external actions) */}
+        {!hideSubmit && (
+          <FormItem>
+            <Button type="submit" disabled={saving}>
+              {saving ? "Saving..." : schema.submitLabel}
+            </Button>
+          </FormItem>
+        )}
       </form>
     </Form>
   )
