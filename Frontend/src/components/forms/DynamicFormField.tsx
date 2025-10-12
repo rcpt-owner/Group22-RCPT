@@ -1,0 +1,81 @@
+import type { FieldDefinition } from "@/types/FormSchema"
+import { FormTextInput } from "./FormTextInput"
+import { FormTextArea } from "./FormTextArea"
+import { FormNumberInput } from "./FormNumberInput"
+import { FormDateInput } from "./FormDateInput"
+import { FormSelect } from "./FormSelect"
+import { FormCheckbox } from "./FormCheckbox"
+import { FormRepeatableArray } from "./FormRepeatableArray"
+
+/*
+  DynamicFormField: single authoritative renderer for a JSON field definition.
+  Provides:
+  - Uniform wrapper for styling & layout hooks
+  - data attributes for theming / analytics / testing
+  - Central place to extend (conditional visibility, permissions, tooltips, etc.)
+*/
+
+type DynamicFormFieldProps = {
+  field: FieldDefinition
+  control: any
+  nameOverride?: string 
+}
+
+export const FieldForm = ({ field, control, nameOverride }: DynamicFormFieldProps) => {
+  const resolvedName = nameOverride || field.name
+  const commonProps = {
+    control,
+    name: resolvedName,
+    label: field.label,
+    placeholder: field.placeholder,
+    message: field.message,
+  }
+
+  let rendered: React.ReactNode = null
+  switch (field.type) {
+    case "text":
+      rendered = <FormTextInput {...commonProps} />
+      break
+    case "textarea":
+      rendered = <FormTextArea {...commonProps} />
+      break
+    case "number":
+      rendered = <FormNumberInput {...commonProps} prefix={field.prefix} />
+      break
+    case "date":
+      rendered = <FormDateInput {...commonProps} />
+      break
+    case "select":
+      rendered = <FormSelect {...commonProps} options={field.options || []} />
+      break
+    case "checkbox":
+      rendered = <FormCheckbox {...commonProps} />
+      break
+    case "repeatable":
+      rendered = (
+        <FormRepeatableArray
+          control={control}
+          name={resolvedName}
+          label={field.label}
+          fields={(field.fields || []) as any}
+          defaultEntry={field.defaultEntry || {}}
+        />
+      )
+      break
+    default:
+      rendered = null
+  }
+
+  return (
+    <div
+      className="field-form-wrapper"
+      data-field={field.name}
+      data-path={resolvedName}
+      data-type={field.type}
+      role="group"
+      aria-labelledby={`field-${resolvedName}`}
+    >
+      {rendered}
+    </div>
+  )
+}
