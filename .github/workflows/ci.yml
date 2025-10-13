@@ -2,16 +2,18 @@ name: CI
 
 on:
   push:
-    branches: ["dev"]
+    branches: ["main", "dev", "26-backend-testing-with-ci"]
   pull_request:
-    branches: ["dev"]
+    branches: ["main", "dev"]
 
 permissions:
   contents: read
 
 jobs:
+
+  # FRONTEND BUILD & CHECKS
   frontend:
-    name: Build / Type Check / Lint
+    name: Frontend – Build / Type Check / Lint
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -39,7 +41,26 @@ jobs:
       - name: Build
         run: npm run build
 
-# NOTE:
-# Removed previous docker-build job because it referenced a non-existent Dockerfile ("Dockerfile")
-# and current frontend Dockerfile expects a 'rcpt/' subfolder which is not present in repository layout.
-# Reintroduce a Docker build job after aligning Dockerfile COPY paths with actual structure.
+  # BACKEND TESTING
+  backend:
+    name: Backend – Unit & Integration Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: maven
+
+      - name: Run tests
+        run: ./mvnw test
+
+      - name: Package (optional)
+        run: ./mvnw package -DskipTests
