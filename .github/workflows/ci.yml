@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ["main", "dev", "26-backend-testing-with-ci"]
+    branches: ["main", "dev", "feature/26-backend-testing-with-ci"]
   pull_request:
     branches: ["main", "dev"]
 
