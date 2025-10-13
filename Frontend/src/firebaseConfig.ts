@@ -4,12 +4,12 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // All values pulled from environment variables
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: FIREBASE_API_KEY,
+  authDomain: "rcpt-unimelb.firebaseapp.com",
+  projectId: "rcpt-unimelb",
+  storageBucket: "rcpt-unimelb.firebasestorage.app",
+  messagingSenderId: "1015852433847",
+  appId: "1:1015852433847:web:6f6a0f4736e089d927e832",
 };
 
 // Initialize Firebase
