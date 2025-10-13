@@ -1,9 +1,0 @@
-{
-  "projectId": "demo-project",
-  "generatedAt": "2025-10-05T09:00:00Z",
-  "sections": [
-    { "id": "overview", "title": "Overview", "bytes": 2048 },
-    { "id": "cost", "title": "Cost Breakdown", "bytes": 8192 },
-    { "id": "pricing", "title": "Pricing", "bytes": 4096 }
-  ]
-}

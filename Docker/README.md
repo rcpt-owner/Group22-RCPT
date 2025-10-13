@@ -12,17 +12,6 @@ This repository uses **Docker** to containerise the frontend (React) and backend
 - Be in the /Docker directory 
 
 ## Quick start (from repository root)
-0. **Make sure Docker is running**  
-   Before doing anything, verify that Docker Desktop (or the Docker daemon) is running:
-
-   ```bash
-   docker info
-   ```
-    - If it prints system info, Docker is running.
-
-    - If it shows a connection error, start Docker Desktop.
-      > To install Docker Desktop visit [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop) and follow the installation instructions for your operating system.
-
 1. Build and start both services:
 
    ```bash
