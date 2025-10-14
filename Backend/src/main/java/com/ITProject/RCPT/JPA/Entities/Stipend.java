@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 public class Stipend {
 
     @Id
-    @Column(nullable = false)
+    @Column(name = "\"year\"", nullable = false)
     private Integer year;
 
     @Column(nullable = false)

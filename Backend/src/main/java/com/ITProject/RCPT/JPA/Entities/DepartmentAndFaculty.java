@@ -25,7 +25,7 @@ public class DepartmentAndFaculty {
     @Column(name = "faculty")
     private String faculty;
 
-    // --- Getters and Setters ---
+    // Getters and Setters
     public String getDepartment() {
         return department;
     }
