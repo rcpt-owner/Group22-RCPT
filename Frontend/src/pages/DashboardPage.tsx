@@ -43,13 +43,18 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Top Navigation Bar */}
-      <header className="w-full flex items-center justify-between px-6 py-4 border-b">
-        <div className="flex items-center gap-3">
-          <img src="/resources/University-of-Melbourne-logo-1.png" alt="Unimelb Logo" className="h-10 w-auto" />
+      {/* 🔹 Top Navigation Bar */}
+      <header className="w-full flex items-center justify-between px-10 py-5 border-b shadow-sm">
+        <div className="flex items-center gap-4">
+          {/* 🔸 Logo made larger */}
+          <img
+            src="/resources/University-of-Melbourne-logo-1.png"
+            alt="Unimelb Logo"
+            className="h-16 w-auto" // was h-10
+          />
         </div>
 
-        <h1 className="text-lg md:text-xl font-semibold text-center tracking-wide uppercase">
+        <h1 className="text-xl md:text-2xl font-semibold text-center tracking-wide uppercase">
           Research Costing and Pricing Tool
         </h1>
 
@@ -61,11 +66,11 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="flex-1 px-8 py-6">
-        <div className="flex justify-between items-center mb-4">
+      {/* 🔹 Main content area with side padding */}
+      <main className="flex-1 px-30 lg:px-30 py-10"> {/* increased padding */}
+        <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-lg font-medium">Project Dashboard</h2>
+            <h2 className="text-xl font-semibold">Project Dashboard</h2>
             <p className="text-sm text-muted-foreground">
               View and edit your projects.
             </p>
@@ -83,7 +88,7 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
         ) : projects.length === 0 ? (
           <p>No projects yet — create a new one to get started.</p>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4"> {/* more spacing */}
             {projects.map((project) => (
               <Card
                 key={project.id}
