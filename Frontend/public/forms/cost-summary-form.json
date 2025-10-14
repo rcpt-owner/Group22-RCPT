@@ -10,7 +10,7 @@
       "fields": [
         { "name": "role", "type": "text", "label": "Role", "validation": { "required": true }, "message": "E.g. PI, RA" },
         { "name": "fte", "type": "number", "label": "FTE", "validation": { "required": true, "min": 0, "max": 1 }, "message": "0–1.0" },
-        { "name": "cost", "type": "number", "label": "Cost", "prefix": "£", "validation": { "required": true, "min": 0 }, "message": "Annual cost" }
+        { "name": "cost", "type": "number", "label": "Cost", "prefix": "$", "validation": { "required": true, "min": 0 }, "message": "Annual cost" }
       ],
       "defaultEntry": { "role": "", "fte": 0, "cost": 0 }
     },
@@ -25,7 +25,7 @@
       "name": "totalDirect",
       "type": "number",
       "label": "Total Direct Costs",
-      "prefix": "£",
+      "prefix": "$",
       "message": "Auto-calc from staff (can be overridden if needed)",
       "validation": { "min": 0 }
     },
@@ -33,7 +33,7 @@
       "name": "totalIndirect",
       "type": "number",
       "label": "Total Indirect (Overheads)",
-      "prefix": "£",
+      "prefix": "$",
       "message": "Auto-calc = totalDirect * overheadRate",
       "validation": { "min": 0 }
     },
@@ -41,7 +41,7 @@
       "name": "total",
       "type": "number",
       "label": "Grand Total",
-      "prefix": "£",
+      "prefix": "$",
       "message": "Auto-calc = direct + indirect",
       "validation": { "min": 0 }
     }

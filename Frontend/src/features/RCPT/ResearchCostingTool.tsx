@@ -1,25 +1,12 @@
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { TabBar } from "@/components/layout/TabBar"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { DemoShowcasePage } from "../DemoSections/DemoShowcasePage"
 import { ProjectOverviewTab } from "./tabs/ProjectOverviewTab"
 import CostTab from "./tabs/CostTab"
 
 
-type WorkspaceTab = "Demo Showcase" | "Project Overview" | "Cost" | "Pricing" | "Export"
-// type WorkspaceTab = "Demo Showcase" | "Project Setup" | "Costing" | "Review"
-
-const tabs: { value: WorkspaceTab; label: string; component: React.ComponentType<any> }[] = [
-  { value: "Demo Showcase", label: "Demo Showcase", component: DemoShowcasePage },
-  { value: "Project Overview", label: "Project Overview", component: ProjectOverviewTab },
-  { value: "Cost", label: "Cost", component: CostTab },
-  { value: "Pricing", label: "Pricing", component: () => <div>Pricing Tab Content (placeholder)</div> },
-  { value: "Export", label: "Export", component: () => <div>Export Tab Content (placeholder)</div> },
-]
-
 export function ResearchCostingTool({
   onExit,
-  // May be used in future tabs when we have real data
   projectId,
   userId,
   initialTab = "Demo Showcase",
@@ -27,48 +14,46 @@ export function ResearchCostingTool({
   onExit?: () => void
   projectId?: string
   userId?: string
-  initialTab?: WorkspaceTab
+  initialTab?: string
 }) {
-  const [active, setActive] = useState<WorkspaceTab>(initialTab)
-
   return (
     <div className="space-y-4">
-      {/* Top bar with tabs + optional Exit */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <TabBar
-            tabs={tabs.map(t => t.value)}
-            selected={active}
-            onChange={t => setActive(t as WorkspaceTab)}
-          />
+      <Tabs defaultValue={initialTab} className="w-full">
+        {/* Header with tabs + Exit button */}
+        <div className="flex items-center justify-between gap-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="Demo Showcase" className="text-sm">Demo Showcase</TabsTrigger>
+            <TabsTrigger value="Project Overview" className="text-sm">Project Overview</TabsTrigger>
+            <TabsTrigger value="Cost" className="text-sm">Cost</TabsTrigger>
+            <TabsTrigger value="Pricing" className="text-sm">Pricing</TabsTrigger>
+            <TabsTrigger value="Export" className="text-sm">Export</TabsTrigger>
+          </TabsList>
+          {onExit && (
+            <Button variant="outline" size="sm" onClick={onExit}>
+              Exit
+            </Button>
+          )}
         </div>
-        {onExit && (
-          <Button variant="outline" size="sm" onClick={onExit}>
-            Exit
-          </Button>
-        )}
-      </div>
 
-      {/* Panels (all mounted, no nested scroll) */}
-      <div className="space-y-0">
-        {tabs.map(t => {
-          const C = t.component
-          return (
-            <div
-              key={t.value}
-              hidden={active !== t.value}
-              data-tab-panel={t.value}
-              className="animate-in fade-in-0"
-            >
-              {t.value === "Cost" ? (
-                <C projectId={projectId ?? ""} />
-              ) : (
-                <C />
-              )}
-            </div>
-          )
-        })}
-      </div>
+        {/* Panels */}
+        <div className="space-y-0 mt-4">
+          <TabsContent value="Demo Showcase" className="animate-in fade-in-0">
+            <DemoShowcasePage />
+          </TabsContent>
+          <TabsContent value="Project Overview" className="animate-in fade-in-0">
+            <ProjectOverviewTab />
+          </TabsContent>
+          <TabsContent value="Cost" className="animate-in fade-in-0">
+            <CostTab projectId={projectId ?? ""} />
+          </TabsContent>
+          <TabsContent value="Pricing" className="animate-in fade-in-0">
+            <div>Pricing Tab Content (placeholder)</div>
+          </TabsContent>
+          <TabsContent value="Export" className="animate-in fade-in-0">
+            <div>Export Tab Content (placeholder)</div>
+          </TabsContent>
+        </div>
+      </Tabs>
     </div>
   )
 }
