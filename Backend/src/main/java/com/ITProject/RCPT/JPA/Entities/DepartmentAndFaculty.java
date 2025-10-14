@@ -19,11 +19,11 @@ public class DepartmentAndFaculty {
     @Column(name = "school_code")
     private String schoolCode;
 
-    @Column(name = "faculty_code")
-    private String facultyCode;
-
     @Column(name = "faculty")
     private String faculty;
+
+    @Column(name = "faculty_code")
+    private String facultyCode;
 
     // --- Getters and Setters ---
     public String getDepartment() {
