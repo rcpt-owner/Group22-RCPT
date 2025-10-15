@@ -6,11 +6,42 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+spring.log
+
+############
+# Node / Vite (Frontend)
+############
+/Frontend/rcpt/node_modules/
+/Frontend/rcpt/dist/
+/Frontend/rcpt/build/
+/Frontend/rcpt/.vite
+/Frontend/rcpt/coverage
+/Frontend/rcpt/.eslintcache
+/Frontend/*.tsbuildinfo
+
+############
+# Java / Maven (Backend)
+############
+/Backend/target/
+/Backend/*.log
+/Backend/*.out
+/Backend/.classpath
+/Backend/.project
+/Backend/.settings/
+*.iml
+*.class
+hs_err_pid*
+replay_pid*
 
 node_modules
 dist
 dist-ssr
 *.local
+############
+# Test Artifacts
+############
+coverage/
+.nyc_output/
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +53,51 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+############
+# IDE / Editor
+############
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+############
+# OS / Tooling
+############
+*.orig
+*.rej
+
+############
+# Build / Distribution (generic)
+############
+dist/
+build/
+out/
+
+############
+# Docker / Compose overrides (keep canonical files)
+############
+docker-compose.override.yml
+
+############
+# Reports / Generated
+############
+reports/
+site/
+
+############
+# Archive / Temp
+############
+*.tar
+*.tgz
+*.gz
+*.zip
+*.tmp
+tmp/
+temp/
+
+# End of file
+
+.env
+.env.local

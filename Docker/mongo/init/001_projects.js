@@ -6,7 +6,7 @@
   const coll = 'projects';
   const rcpt = db.getSiblingDB(dbName);
 
-  // Create collection if missing 
+  // Create collection if missing
   const exists = rcpt.getCollectionInfos({ name: coll }).length > 0;
   if (!exists) {
     print(`[001] Creating collection ${dbName}.${coll}`);
@@ -36,9 +36,9 @@
   // Base indexes for UI queries
   print('[001] Ensuring base indexes');
   rcpt.projects.createIndex({ ownerUserId: 1, status: 1, createdAt: -1 }, { name: 'owner_status_created_idx' });
-  // Project List with recency sort 
+  // Project List with recency sort
   rcpt.projects.createIndex({ 'approvals.email': 1, status: 1, updatedAt: -1 }, { name: 'approver_status_updated_idx' });
-  // Approver inbox with recency sort 
+  // Approver inbox with recency sort
   rcpt.projects.createIndex(
     { code: 1 },
     { name: 'project_code_uq', unique: true, partialFilterExpression: { code: { $type: 'string' } } }

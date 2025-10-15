@@ -4,12 +4,12 @@ CREATE TABLE IF NOT EXISTS department_and_faculty (
     dept_code TEXT,
     school TEXT,
     school_code TEXT,
-    faculty TEXT,
-    faculty_code TEXT
+    faculty_code TEXT,
+    faculty TEXT
 );
 
 --------- Insert Values ---------
-INSERT INTO department_and_faculty (department, dept_code, school, school_code, faculty, faculty_code) VALUES
+INSERT INTO department_and_faculty (department, dept_code, school, school_code, faculty_code, faculty) VALUES
 ('Faculty of Arts - Admin', 'CCH_H1_5_01', 'Faculty of Arts, Admin, Centres and Institute', 'CCH_H1_4_01', 'Faculty of Arts', 'CCH_H1_3_01'),
 ('Faculty of Arts - Centres and Institutes', 'CCH_H1_5_02', 'Faculty of Arts, Admin, Centres and Institute', 'CCH_H1_4_01', 'Faculty of Arts', 'CCH_H1_3_01'),
 ('Asia Institute (D)', 'CCH_H1_5_03', 'Asia Institute', 'CCH_H1_4_02', 'Faculty of Arts', 'CCH_H1_3_01'),
