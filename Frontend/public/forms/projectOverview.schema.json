@@ -1,0 +1,32 @@
+{
+  "formId": "project-overview-form",
+  "submitLabel": "Save Overview",
+  "fields": [
+    { "name": "title", "type": "text", "label": "Title", "validation": { "required": true } },
+    { "name": "description", "type": "textarea", "label": "Description" },
+    {
+      "name": "funder",
+      "type": "select",
+      "label": "Funder",
+      "optionsUrl": "/api/lookups/funders.json",
+      "placeholder": "Select a funder"
+    },
+    {
+      "name": "department",
+      "type": "select",
+      "label": "Department",
+      "optionsUrl": "/api/lookups/departments.json",
+      "placeholder": "Select a department"
+    },
+    { "name": "startDate", "type": "date", "label": "Start Date", "validation": { "required": true } },
+    { "name": "endDate", "type": "date", "label": "End Date", "validation": { "required": true } }
+  ],
+  "layout": {
+    "rows": [
+      ["title"],
+      ["description"],
+      ["funder", "department"],
+      ["startDate", "endDate"]
+    ]
+  }
+}

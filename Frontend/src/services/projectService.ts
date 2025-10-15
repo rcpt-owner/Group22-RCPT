@@ -40,6 +40,16 @@ export interface ProjectExportSummary {
   sections: Array<{ id: string; title: string; bytes: number }>
 }
 
+// Form payload for the Project Overview DynamicForm
+export interface ProjectOverviewFormData {
+  title: string
+  description?: string
+  funder?: string
+  department?: string
+  startDate: string
+  endDate: string
+}
+
 export const projectService = {
   getProjectOverview(projectId: string) {
     return getJson<ProjectOverview>(`${base(projectId)}/overview.json`)
@@ -56,5 +66,15 @@ export const projectService = {
   async submitReview(projectId: string) {
     // Mock (TODO: replace with POST)
     return { projectId, submittedAt: new Date().toISOString(), status: "Queued" }
+  },
+  async updateProjectOverview(projectId: string, payload: ProjectOverviewFormData) {
+    // Mock update (TODO: replace with real POST/PUT)
+    await new Promise((r) => setTimeout(r, 400))
+    return {
+      projectId,
+      savedAt: new Date().toISOString(),
+      status: "OK",
+      payload
+    }
   }
 }
