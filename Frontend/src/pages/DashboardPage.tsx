@@ -54,8 +54,14 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
           { /* Other buttons are ghost style and also functionality will come later. */}
           <Button variant="ghost" size="icon"><Bell className="h-5 w-5" /></Button>
 
-          { /* FUTURE: will the settings be just for project-level configurations and lookup table for admin, or will there be some user data too to change? */ }
-          <Button variant="ghost" size="icon"><Settings className="h-5 w-5" /></Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/adminSettings")}
+            title="Admin Settings"
+          >
+            <Settings className="h-5 w-5" />
+          </Button>
           
           <Button variant="outline" onClick={onLogout}>Logout</Button>
         </div>
