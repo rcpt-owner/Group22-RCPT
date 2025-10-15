@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
-import com.uom.rcpt.enums.CostCategory;
-import com.uom.rcpt.enums.ExpenseType;
+import com.itproject.rcpt.enums.CostCategory;
+import com.itproject.rcpt.enums.ExpenseType;
 
 @RestController
 @RequestMapping("/api/v1/meta")

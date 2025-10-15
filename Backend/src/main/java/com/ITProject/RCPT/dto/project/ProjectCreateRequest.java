@@ -1,8 +1,8 @@
 package com.itproject.rcpt.dto.project;
 
 import java.util.List;
-import com.uom.rcpt.dto.nonstaffcost.NonStaffCostRequest;
-import com.uom.rcpt.dto.staff.StaffCostRequest;
+import com.itproject.rcpt.dto.nonstaffcost.NonStaffCostRequest;
+import com.itproject.rcpt.dto.staff.StaffCostRequest;
 
 public class ProjectCreateRequest {
   private ProjectDetailsDto details;

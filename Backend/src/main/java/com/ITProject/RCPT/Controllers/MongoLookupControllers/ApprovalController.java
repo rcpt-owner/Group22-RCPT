@@ -2,8 +2,8 @@ package com.itproject.rcpt;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.uom.rcpt.dto.project.ProjectResponse;
-import com.uom.rcpt.service.ApprovalService;
+import com.itproject.rcpt.dto.project.ProjectResponse;
+import com.itproject.rcpt.service.ApprovalService;
 
 @RestController
 @RequestMapping("/api/v1/projects/{projectId}/approvals")

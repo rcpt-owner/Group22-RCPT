@@ -1,7 +1,7 @@
-package com.uom.rcpt.repository;
+package com.itproject.rcpt.repository;
 
-import com.uom.rcpt.domain.Project;
-import com.uom.rcpt.enums.ProjectStatus;
+import com.itproject.rcpt.domain.Project;
+import com.itproject.rcpt.enums.ProjectStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;

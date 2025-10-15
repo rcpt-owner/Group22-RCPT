@@ -1,4 +1,4 @@
-package com.uom.rcpt.enums;
+package com.itproject.rcpt.enums;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

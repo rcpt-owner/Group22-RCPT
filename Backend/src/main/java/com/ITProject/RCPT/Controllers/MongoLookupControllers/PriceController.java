@@ -2,8 +2,8 @@ package com.itproject.rcpt;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.uom.rcpt.dto.price.PriceSummaryResponse;
-import com.uom.rcpt.service.PriceService;
+import com.itproject.rcpt.dto.price.PriceSummaryResponse;
+import com.itproject.rcpt.service.PriceService;
 
 @RestController
 @RequestMapping("/api/v1/projects/{projectId}/price")

@@ -4,9 +4,9 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.uom.rcpt.dto.nonstaffcost.NonStaffCostRequest;
-import com.uom.rcpt.dto.nonstaffcost.NonStaffCostResponse;
-import com.uom.rcpt.service.NonStaffCostService;
+import com.itproject.rcpt.dto.nonstaffcost.NonStaffCostRequest;
+import com.itproject.rcpt.dto.nonstaffcost.NonStaffCostResponse;
+import com.itproject.rcpt.service.NonStaffCostService;
 
 @RestController
 @RequestMapping("/api/v1/projects/{projectId}/nonstaff")

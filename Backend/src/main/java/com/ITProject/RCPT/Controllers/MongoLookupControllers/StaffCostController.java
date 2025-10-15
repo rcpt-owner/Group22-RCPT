@@ -4,9 +4,9 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.uom.rcpt.dto.staff.StaffCostRequest;
-import com.uom.rcpt.dto.staff.StaffCostResponse;
-import com.uom.rcpt.service.StaffCostService;
+import com.itproject.rcpt.dto.staff.StaffCostRequest;
+import com.itproject.rcpt.dto.staff.StaffCostResponse;
+import com.itproject.rcpt.service.StaffCostService;
 
 @RestController
 @RequestMapping("/api/v1/projects/{projectId}/staff")

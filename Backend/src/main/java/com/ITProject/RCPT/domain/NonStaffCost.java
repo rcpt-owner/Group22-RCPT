@@ -2,9 +2,9 @@ package com.itproject.rcpt.domain;
 
 import java.util.List;
 
-import com.uom.rcpt.domain.value.Money;
-import com.uom.rcpt.domain.value.YearAllocation;
-import com.uom.rcpt.enums.CostCategory;
+import com.itproject.rcpt.domain.value.Money;
+import com.itproject.rcpt.domain.value.YearAllocation;
+import com.itproject.rcpt.enums.CostCategory;
 
 import jakarta.validation.constraints.NotNull;
 

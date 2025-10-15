@@ -1,2 +1,2 @@
-package com.uom.rcpt.enums;
+package com.itproject.rcpt.enums;
 public enum EmploymentType { CONTINUING, FIXED_TERM, CASUAL }

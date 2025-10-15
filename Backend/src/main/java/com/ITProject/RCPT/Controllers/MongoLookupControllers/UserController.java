@@ -13,8 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import com.uom.rcpt.domain.User;
-import com.uom.rcpt.repository.UserRepository;
+import com.itproject.rcpt.domain.User;
+import com.itproject.rcpt.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api/v1/users")

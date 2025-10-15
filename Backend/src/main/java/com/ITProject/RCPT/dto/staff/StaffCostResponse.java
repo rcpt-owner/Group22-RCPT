@@ -1,9 +1,9 @@
 package com.itproject.rcpt.dto.staff;
 
 import java.util.List;
-import com.uom.rcpt.dto.common.YearAllocationDto;
-import com.uom.rcpt.enums.EmploymentType;
-import com.uom.rcpt.enums.StaffCategory;
+import com.itproject.rcpt.dto.common.YearAllocationDto;
+import com.itproject.rcpt.enums.EmploymentType;
+import com.itproject.rcpt.enums.StaffCategory;
 
 public class StaffCostResponse {
   private String roleName;

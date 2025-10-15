@@ -5,11 +5,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.uom.rcpt.dto.project.ProjectCreateRequest;
-import com.uom.rcpt.dto.project.ProjectResponse;
-import com.uom.rcpt.dto.project.ProjectUpdateRequest;
-import com.uom.rcpt.enums.ProjectStatus;
-import com.uom.rcpt.service.ProjectService;
+import com.itproject.rcpt.dto.project.ProjectCreateRequest;
+import com.itproject.rcpt.dto.project.ProjectResponse;
+import com.itproject.rcpt.dto.project.ProjectUpdateRequest;
+import com.itproject.rcpt.enums.ProjectStatus;
+import com.itproject.rcpt.service.ProjectService;
 
 @RestController
 @RequestMapping("/api/v1/projects")

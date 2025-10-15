@@ -1,4 +1,4 @@
-package com.uom.rcpt.service;
+package com.itproject.rcpt.service;
 
 import java.time.Instant;
 
@@ -6,14 +6,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import com.uom.rcpt.domain.ApprovalEntry;
-import com.uom.rcpt.domain.Project;
-import com.uom.rcpt.dto.project.ProjectCreateRequest;
-import com.uom.rcpt.dto.project.ProjectResponse;
-import com.uom.rcpt.dto.project.ProjectUpdateRequest;
-import com.uom.rcpt.enums.ProjectStatus;
-import com.uom.rcpt.mapper.ProjectMapper;
-import com.uom.rcpt.repository.ProjectRepository;
+import com.itproject.rcpt.domain.ApprovalEntry;
+import com.itproject.rcpt.domain.Project;
+import com.itproject.rcpt.dto.project.ProjectCreateRequest;
+import com.itproject.rcpt.dto.project.ProjectResponse;
+import com.itproject.rcpt.dto.project.ProjectUpdateRequest;
+import com.itproject.rcpt.enums.ProjectStatus;
+import com.itproject.rcpt.mapper.ProjectMapper;
+import com.itproject.rcpt.repository.ProjectRepository;
 
 @Service
 public class ProjectService {

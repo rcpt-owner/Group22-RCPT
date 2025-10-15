@@ -1,6 +1,6 @@
-package com.uom.rcpt.repository;
+package com.itproject.rcpt.repository;
 
-import com.uom.rcpt.domain.User;
+import com.itproject.rcpt.domain.User;
 import java.util.Optional;
 import org.springframework.data.mongodb.repository.MongoRepository;
 

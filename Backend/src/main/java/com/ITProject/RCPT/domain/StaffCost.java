@@ -2,9 +2,9 @@ package com.itproject.rcpt.domain;
 
 import java.util.List;
 
-import com.uom.rcpt.domain.value.YearAllocation;
-import com.uom.rcpt.enums.EmploymentType;
-import com.uom.rcpt.enums.StaffCategory;
+import com.itproject.rcpt.domain.value.YearAllocation;
+import com.itproject.rcpt.enums.EmploymentType;
+import com.itproject.rcpt.enums.StaffCategory;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

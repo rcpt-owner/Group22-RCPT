@@ -1,4 +1,4 @@
-package com.uom.rcpt.mapper;
+package com.itproject.rcpt.mapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,19 +11,19 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import com.uom.rcpt.domain.*;
-import com.uom.rcpt.domain.value.Money;
-import com.uom.rcpt.domain.value.YearAllocation;
-import com.uom.rcpt.dto.common.MoneyDto;
-import com.uom.rcpt.dto.common.YearAllocationDto;
-import com.uom.rcpt.dto.nonstaff.NonStaffCostRequest;
-import com.uom.rcpt.dto.nonstaff.NonStaffCostResponse;
-import com.uom.rcpt.dto.price.PriceSummaryResponse;
-import com.uom.rcpt.dto.project.*;
-import com.uom.rcpt.dto.staff.StaffCostRequest;
-import com.uom.rcpt.dto.staff.StaffCostResponse;
-import com.uom.rcpt.enums.CostCategory;
-import com.uom.rcpt.enums.ExpenseType;
+import com.itproject.rcpt.domain.*;
+import com.itproject.rcpt.domain.value.Money;
+import com.itproject.rcpt.domain.value.YearAllocation;
+import com.itproject.rcpt.dto.common.MoneyDto;
+import com.itproject.rcpt.dto.common.YearAllocationDto;
+import com.itproject.rcpt.dto.nonstaff.NonStaffCostRequest;
+import com.itproject.rcpt.dto.nonstaff.NonStaffCostResponse;
+import com.itproject.rcpt.dto.price.PriceSummaryResponse;
+import com.itproject.rcpt.dto.project.*;
+import com.itproject.rcpt.dto.staff.StaffCostRequest;
+import com.itproject.rcpt.dto.staff.StaffCostResponse;
+import com.itproject.rcpt.enums.CostCategory;
+import com.itproject.rcpt.enums.ExpenseType;
 
 @Mapper(componentModel = "spring",
         injectionStrategy = InjectionStrategy.CONSTRUCTOR,
@@ -159,7 +159,7 @@ public interface ProjectMapper {
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "priceSummary", ignore = true)
   @Mapping(target = "approvals", expression = "java(new ApprovalTracker())")
-  @Mapping(target = "status", expression = "java(com.uom.rcpt.enums.ProjectStatus.DRAFT)")
+  @Mapping(target = "status", expression = "java(com.itproject.rcpt.enums.ProjectStatus.DRAFT)")
   @Mapping(target = "ownerUserId", ignore = true) // set in service
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)

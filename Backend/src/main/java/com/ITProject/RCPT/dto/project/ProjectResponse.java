@@ -2,10 +2,10 @@ package com.itproject.rcpt.dto.project;
 
 import java.time.Instant;
 import java.util.List;
-import com.uom.rcpt.dto.nonstaffcost.NonStaffCostResponse;
-import com.uom.rcpt.dto.price.PriceSummaryResponse;
-import com.uom.rcpt.dto.staff.StaffCostResponse;
-import com.uom.rcpt.enums.ProjectStatus;
+import com.itproject.rcpt.dto.nonstaffcost.NonStaffCostResponse;
+import com.itproject.rcpt.dto.price.PriceSummaryResponse;
+import com.itproject.rcpt.dto.staff.StaffCostResponse;
+import com.itproject.rcpt.enums.ProjectStatus;
 
 public class ProjectResponse {
   private String id;
