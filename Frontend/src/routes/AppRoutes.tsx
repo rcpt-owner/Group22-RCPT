@@ -30,7 +30,8 @@ export function AppRoutes(props: {
         element={
           <Protected authed={authenticated}>
             <DashboardPage
-              onLogout={onLogout} 
+              onLogout={onLogout}
+              userId="1"
             />
           </Protected>
         }

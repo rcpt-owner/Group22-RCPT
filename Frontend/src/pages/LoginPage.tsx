@@ -5,7 +5,7 @@ import { useState } from "react"
 import { FcGoogle } from "react-icons/fc"
 import { Loader2 } from "lucide-react"
 import { signInWithPopup } from "firebase/auth"
-import { auth, provider } from "../firebaseConfig";
+import { auth, provider } from "../services/firebaseConfig";
 
 interface LoginPageProps {
   onLogin: () => void

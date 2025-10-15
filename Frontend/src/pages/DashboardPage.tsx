@@ -1,15 +1,9 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Home, Bell, Settings, Plus } from "lucide-react";
-
-interface Project {
-  id: string;
-  name: string;
-  status: string;
-  date: string;
-}
+import { ProjectCard } from "@/components/projects/ProjectCard";
+import { getUserProjects, type Project } from "@/services/userService";
 
 interface DashboardPageProps {
   onLogout: () => void;
@@ -25,12 +19,7 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch("/api/getUserProjects", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ uid: userId }),
-        });
-        const data: Project[] = await res.json();
+        const data = await getUserProjects(userId);
         setProjects(data);
       } catch (err) {
         console.error(err);
@@ -59,9 +48,15 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
         </h1>
 
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon"><Home className="h-5 w-5" /></Button>
+          {/* On home page (dashboard) the home button is primary */}
+          <Button variant="default" size="icon"><Home className="h-5 w-5" /></Button>
+
+          { /* Other buttons are ghost style and also functionality will come later. */}
           <Button variant="ghost" size="icon"><Bell className="h-5 w-5" /></Button>
+
+          { /* FUTURE: will the settings be just for project-level configurations and lookup table for admin, or will there be some user data too to change? */ }
           <Button variant="ghost" size="icon"><Settings className="h-5 w-5" /></Button>
+          
           <Button variant="outline" onClick={onLogout}>Logout</Button>
         </div>
       </header>
@@ -90,25 +85,19 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
         ) : (
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4"> {/* more spacing */}
             {projects.map((project) => (
-              <Card
+              <ProjectCard
                 key={project.id}
-                className="transition hover:shadow-lg cursor-pointer"
+                id={project.id}
+                title={project.title}
+                ownerUserId={project.ownerUserId}
+                status={project.status}
+                createdAt={project.createdAt}
+                updatedAt={project.updatedAt}
                 onClick={() => {
                   onEnterWorkspace?.(project.id);
                   navigate(`/projects/${project.id}`);
                 }}
-              >
-                <CardHeader>
-                  <div className="bg-gray-200 h-24 w-full rounded-md mb-3" />
-                  <CardTitle className="text-base font-semibold">
-                    {project.name}
-                  </CardTitle>
-                  <CardContent className="p-0 mt-2 text-sm text-muted-foreground space-y-1">
-                    <p>Status: {project.status}</p>
-                    <p>Date: {project.date}</p>
-                  </CardContent>
-                </CardHeader>
-              </Card>
+              />
             ))}
           </div>
         )}
