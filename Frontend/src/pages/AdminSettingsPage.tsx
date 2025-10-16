@@ -75,11 +75,8 @@ export function AdminSettingsPage() {
             title="Salary Rates"
             description="Update the salary rates by going off the ID, Payroll Type, etc."
             fields={[
-              { label: "Vlookup ID", type: "select", placeholder: "Description of input" },
-              { label: "Payroll Type", type: "select", placeholder: "Description of input" },
-              { label: "Category", type: "select", placeholder: "Description of input" },
-              { label: "Classification", type: "select", placeholder: "Description of input" },
-              { label: "Rate (est)", type: "input", placeholder: "Description of input" },
+              { label: "Vlookup ID", type: "input", placeholder: "Enter Vlookup ID" },
+              { label: "Rate", type: "input", placeholder: "Enter new salary rate" },
             ]}
           />
 
@@ -114,12 +111,12 @@ export function AdminSettingsPage() {
             title="Lookup Lists"
             description="Add a new option to a drop down menu."
             fields={[
-              { label: "Research Type", type: "input", placeholder: "Add new list option." },
-              { label: "Regions", type: "input", placeholder: "Add new list option." },
-              { label: "Deliverable Types", type: "input", placeholder: "Add new list option." },
-              { label: "Departments", type: "input", placeholder: "Add new list option." },
-              { label: "Revenue Categories", type: "input", placeholder: "Add new list option." },
-              { label: "Non-Staff Cost Types", type: "input", placeholder: "Add new list option." },
+              { label: "Research Type", type: "input", placeholder: "Add new list option" },
+              { label: "Regions", type: "input", placeholder: "Add new list option" },
+              { label: "Deliverable Types", type: "input", placeholder: "Add new list option" },
+              { label: "Departments", type: "input", placeholder: "Add new list option" },
+              { label: "Revenue Categories", type: "input", placeholder: "Add new list option" },
+              { label: "Non-Staff Cost Types", type: "input", placeholder: "Add new list option" },
             ]}
           />
 
