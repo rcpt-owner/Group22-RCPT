@@ -3,6 +3,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { DemoShowcasePage } from "../DemoSections/DemoShowcasePage"
 import { ProjectOverviewTab } from "./tabs/ProjectOverviewTab"
 import CostTab from "./tabs/CostTab"
+import ExportTab from "./tabs/ExportTab"
 
 
 export function ResearchCostingTool({
@@ -50,7 +51,11 @@ export function ResearchCostingTool({
             <div>Pricing Tab Content (placeholder)</div>
           </TabsContent>
           <TabsContent value="Export" className="animate-in fade-in-0">
-            <div>Export Tab Content (placeholder)</div>
+            <ExportTab
+              totalCost={0}      // replace with actual total cost
+              staffCount={0}     // replace with actual staff count
+              nonStaffCount={0}  // replace with actual non-staff items count
+            />
           </TabsContent>
         </div>
       </Tabs>
