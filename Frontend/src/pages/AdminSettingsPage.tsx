@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Settings, Home, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 
 export function AdminSettingsPage() {
   const navigate = useNavigate();
@@ -130,6 +131,16 @@ export function AdminSettingsPage() {
 
 function SectionCard({ title, description, fields }: { title: string; description?: string; fields: { label: string; type: "input" | "select"; placeholder?: string }[] }) {
   const colsClass = fields.length >= 8 ? "grid-cols-4" : fields.length >= 4 ? "grid-cols-4" : "grid-cols-3";
+  const { toast } = useToast();
+
+  const handleSave = () => {
+      // add your save logic here
+      toast({
+        title: "Saved successfully!",
+        description: `${title} settings have been updated.`,
+        duration: 2500, // disappears after 2.5s
+      });
+    };
 
   return (
     <Card className="border border-gray-200 shadow-sm rounded-2xl">
@@ -150,9 +161,10 @@ function SectionCard({ title, description, fields }: { title: string; descriptio
         </div>
 
         <div className="flex items-center justify-end gap-4 pt-1">
-          <Button className="bg-black text-white px-6">Save</Button>
+          <Button onClick={handleSave} className="bg-black text-white px-6">Save</Button>
           <p className="text-sm text-gray-500">Last Update was from 1-May-25</p>
         </div>
+
       </CardContent>
     </Card>
   );
