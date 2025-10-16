@@ -64,6 +64,25 @@ export function buildFieldSchema(field: FieldDefinition): z.ZodTypeAny {
         .array(z.object(childShape))
         .default([])
       break
+    case "monthYearDate": {
+      const base = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Invalid month (YYYY-MM)")
+      const normalize = (v: unknown, required: boolean) => {
+        if (v === "" || v == null) return required ? "" : undefined
+        if (typeof v === "string") {
+          const s = v.trim()
+          // Accept MM-YYYY and normalize to YYYY-MM
+          const mFirst = s.match(/^(0[1-9]|1[0-2])-(\d{4})$/)
+          if (mFirst) return `${mFirst[2]}-${mFirst[1]}`
+          return s
+        }
+        return v
+      }
+      if (field?.validation?.required) {
+        return z.preprocess((v) => normalize(v, true), base)
+      } else {
+        return z.preprocess((v) => normalize(v, false), base.optional())
+      }
+    }
     default:
       schema = z.any()
   }
@@ -82,5 +101,27 @@ export function buildFormSchema(fields: FieldDefinition[]) {
   fields.forEach((f) => {
     shape[f.name] = buildFieldSchema(f)
   })
-  return z.object(shape)
+  const obj = z.object(shape)
+
+  // Cross-field rule: if both startDate and endDate exist, enforce max 10-year span (year-only).
+  if ("startDate" in shape && "endDate" in shape) {
+    return obj.superRefine((data, ctx) => {
+      const s = data?.startDate as string | undefined
+      const e = data?.endDate as string | undefined
+      if (!s || !e) return
+      const ys = parseInt(String(s).slice(0, 4), 10)
+      const ye = parseInt(String(e).slice(0, 4), 10)
+      if (Number.isFinite(ys) && Number.isFinite(ye)) {
+        if (Math.abs(ye - ys) > 10) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["endDate"],
+            message: "Maximum range is 10 years",
+          })
+        }
+      }
+    })
+  }
+
+  return obj
 }
