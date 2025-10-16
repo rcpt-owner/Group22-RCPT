@@ -34,3 +34,26 @@ export const UserService = {
     return getJson<UserNotification>(`${BASE}/${userId}/notifications/${notificationId}.json`)
   },
 }
+
+export type ProjectStatus = "Draft" | "Submitted" | "Approved" | "Archived"
+
+export type Project = {
+  id: string
+  title: string
+  ownerUserId: string
+  currency: string // not displayed; assume AUD
+  status: ProjectStatus
+  staffCosts: number // not displayed
+  nonStaffCosts: number // not displayed
+  createdAt: string | Date
+  updatedAt: string | Date
+}
+
+/**
+ * Fetch projects for a user.
+ * TODO: Integrate real API/auth logic and error handling as backend evolves.
+ */
+export async function getUserProjects(userId: string): Promise<Project[]> {
+  // Load from static mock for now
+  return getJson<Project[]>(`${BASE}/${userId}/projects.json`)
+}

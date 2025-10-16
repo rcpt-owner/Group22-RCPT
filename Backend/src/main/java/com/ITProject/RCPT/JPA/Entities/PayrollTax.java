@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 public class PayrollTax {
 
     @Id
-    @Column(nullable = false)
+    @Column(name = "\"year\"", nullable = false)
     private Integer year;
 
     @Column(precision = 5, scale = 4)
