@@ -48,6 +48,7 @@ type DynamicFormProps = {
   card?: boolean                     // Toggle Card wrapper (embed vs standalone)
   formId?: string                    // Optional external id to submit from outside
   hideSubmit?: boolean               // Hide internal submit button (use external actions)
+  onChange?: (data: any) => void     // emit values on any change
 }
 
 // Support optional layout metadata without changing FormSchema type.
@@ -66,6 +67,7 @@ export function DynamicForm({
   card = true,
   formId,
   hideSubmit = false,
+  onChange, 
 }: DynamicFormProps) {
   const [saving, setSaving] = useState(false)
 
@@ -79,6 +81,13 @@ export function DynamicForm({
     resolver: zodResolver(zodSchema as z.ZodTypeAny),
     defaultValues: initialData || {}
   })
+
+  // Emit values to parent on any change (autosave / live updates)
+  const watchedValues = useWatch({ control: form.control as any })
+  useEffect(() => {
+    if (onChange) onChange(watchedValues)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedValues])
 
   // Resolve dynamic options from optionsUrl, keeping original order.
   const [resolvedFields, setResolvedFields] = useState(schema.fields)

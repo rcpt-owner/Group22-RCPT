@@ -1,0 +1,7 @@
+{
+  "options": [
+    { "label": "uni", "value": "uni" },
+    { "label": "NIH", "value": "NIH" },
+    { "label": "Wellcome Trust", "value": "WELL" }
+  ]
+}

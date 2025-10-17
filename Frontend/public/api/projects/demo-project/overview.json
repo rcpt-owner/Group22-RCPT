@@ -1,8 +1,8 @@
 {
   "projectId": "demo-project",
   "title": "Demo Research Project",
-  "summary": "A sample research project for development.",
-  "budget": 250000,
+  "summary": "Short summary of the project objectives and scope.",
+  "budget": 150000,
   "status": "Draft",
-  "lastUpdated": "2025-10-04"
+  "lastUpdated": "2025-10-05T10:00:00Z"
 }
