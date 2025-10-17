@@ -134,7 +134,7 @@ function SectionCard({ title, description, fields }: { title: string; descriptio
       // add your save logic here
       toast({
         title: "Saved successfully!",
-        description: `${title} settings have been updated.`,
+        description: `${title} have been updated.`,
         duration: 2500, // disappears after 2.5s
       });
     };
@@ -159,7 +159,6 @@ function SectionCard({ title, description, fields }: { title: string; descriptio
 
         <div className="flex items-center justify-end gap-4 pt-1">
           <Button onClick={handleSave} className="bg-black text-white px-6">Save</Button>
-          <p className="text-sm text-gray-500">Last Update was from 1-May-25</p>
         </div>
 
       </CardContent>
