@@ -4,14 +4,15 @@ import java.util.List;
 
 import com.itproject.rcpt.domain.value.Money;
 import com.itproject.rcpt.domain.value.YearAllocation;
-import com.itproject.rcpt.enums.CostCategory;
 
 import jakarta.validation.constraints.NotNull;
 
 public class NonStaffCost {
 
   @NotNull
-  private CostCategory category;
+  private String category;
+
+  private String expenseTypeC;
 
   private String description;
 
@@ -30,8 +31,8 @@ public class NonStaffCost {
 
   public NonStaffCost() { }
 
-  public CostCategory getCategory() { return category; }
-  public void setCategory(CostCategory category) { this.category = category; }
+  public String getCategory() { return category; }
+  public void setCategory(String category) { this.category = category; }
 
   public String getDescription() { return description; }
   public void setDescription(String description) { this.description = description; }

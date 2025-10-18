@@ -16,18 +16,18 @@ import com.itproject.rcpt.domain.value.Money;
 import com.itproject.rcpt.domain.value.YearAllocation;
 import com.itproject.rcpt.dto.common.MoneyDto;
 import com.itproject.rcpt.dto.common.YearAllocationDto;
-import com.itproject.rcpt.dto.nonstaff.NonStaffCostRequest;
-import com.itproject.rcpt.dto.nonstaff.NonStaffCostResponse;
+import com.itproject.rcpt.dto.nonstaffcost.NonStaffCostRequest;
+import com.itproject.rcpt.dto.nonstaffcost.NonStaffCostResponse;
 import com.itproject.rcpt.dto.price.PriceSummaryResponse;
 import com.itproject.rcpt.dto.project.*;
 import com.itproject.rcpt.dto.staff.StaffCostRequest;
 import com.itproject.rcpt.dto.staff.StaffCostResponse;
-import com.itproject.rcpt.enums.CostCategory;
-import com.itproject.rcpt.enums.ExpenseType;
 
-@Mapper(componentModel = "spring",
-        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(
+    componentModel = "spring",
+    injectionStrategy = InjectionStrategy.CONSTRUCTOR,
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
+)
 public interface ProjectMapper {
 
   // --------- Money / YearAllocation ----------
@@ -38,6 +38,7 @@ public interface ProjectMapper {
     m.setCurrency(dto.getCurrency());
     return m;
   }
+
   default MoneyDto toMoneyDto(Money m) {
     if (m == null) return null;
     var dto = new MoneyDto();
@@ -45,6 +46,7 @@ public interface ProjectMapper {
     dto.setCurrency(m.getCurrency());
     return dto;
   }
+
   default YearAllocation toYearAllocation(YearAllocationDto dto) {
     if (dto == null) return null;
     var ya = new YearAllocation();
@@ -52,6 +54,7 @@ public interface ProjectMapper {
     ya.setValue(dto.getValue());
     return ya;
   }
+
   default YearAllocationDto toYearAllocationDto(YearAllocation ya) {
     if (ya == null) return null;
     var dto = new YearAllocationDto();
@@ -67,12 +70,14 @@ public interface ProjectMapper {
   // --------- Staff ----------
   StaffCost toStaffCost(StaffCostRequest req);
   StaffCostResponse toStaffCostResponse(StaffCost s);
+
   default List<StaffCost> toStaffCostList(List<StaffCostRequest> src) {
     if (src == null) return new ArrayList<>();
     List<StaffCost> out = new ArrayList<>();
     for (var r : src) out.add(toStaffCost(r));
     return out;
   }
+
   default List<StaffCostResponse> toStaffCostResponseList(List<StaffCost> src) {
     if (src == null) return new ArrayList<>();
     List<StaffCostResponse> out = new ArrayList<>();
@@ -80,22 +85,22 @@ public interface ProjectMapper {
     return out;
   }
 
-  // --------- Non-staff (codes <-> enums) ----------
+  // --------- Non-staff (String codes) ----------
   default NonStaffCost toNonStaff(NonStaffCostRequest req) {
     if (req == null) return null;
     var n = new NonStaffCost();
-    if (req.getCategoryCode() != null)
-      n.setCategory(CostCategory.fromCode(req.getCategoryCode()));
-    if (req.getExpenseTypeCode() != null)
-      n.setExpenseType(ExpenseType.fromCode(req.getExpenseTypeCode()));
+    n.setCategoryCode(req.getCategoryCode());
+    n.setExpenseTypeCode(req.getExpenseTypeCode());
     n.setDescription(req.getDescription());
     n.setUnitCost(toMoney(req.getUnitCost()));
     n.setUnits(req.getUnits());
+
     if (req.getPerYearUnits() != null) {
       List<YearAllocation> per = new ArrayList<>();
       for (var y : req.getPerYearUnits()) per.add(toYearAllocation(y));
       n.setPerYearUnits(per);
     }
+
     n.setInKind(Boolean.TRUE.equals(req.getInKind()));
     n.setNotes(req.getNotes());
     return n;
@@ -104,22 +109,19 @@ public interface ProjectMapper {
   default NonStaffCostResponse toNonStaffResponse(NonStaffCost n) {
     if (n == null) return null;
     var dto = new NonStaffCostResponse();
-    if (n.getCategory() != null) {
-      dto.setCategoryCode(n.getCategory().getCode());
-      dto.setCategoryLabel(n.getCategory().getLabel());
-    }
-    if (n.getExpenseType() != null) {
-      dto.setExpenseTypeCode(n.getExpenseType().getCode());
-      dto.setExpenseTypeLabel(n.getExpenseType().getLabel());
-    }
+
+    dto.setCategoryCode(n.getCategoryCode());
+    dto.setExpenseTypeCode(n.getExpenseTypeCode());
     dto.setDescription(n.getDescription());
     dto.setUnitCost(toMoneyDto(n.getUnitCost()));
     dto.setUnits(n.getUnits());
+
     if (n.getPerYearUnits() != null) {
       List<YearAllocationDto> per = new ArrayList<>();
       for (var y : n.getPerYearUnits()) per.add(toYearAllocationDto(y));
       dto.setPerYearUnits(per);
     }
+
     dto.setInKind(n.isInKind());
     dto.setNotes(n.getNotes());
     return dto;
@@ -131,6 +133,7 @@ public interface ProjectMapper {
     for (var r : src) out.add(toNonStaff(r));
     return out;
   }
+
   default List<NonStaffCostResponse> toNonStaffResponseList(List<NonStaffCost> src) {
     if (src == null) return new ArrayList<>();
     List<NonStaffCostResponse> out = new ArrayList<>();
@@ -148,6 +151,7 @@ public interface ProjectMapper {
     dto.setAt(e.getAt());
     return dto;
   }
+
   default List<ApprovalEntryResponse> toApprovalHistoryResponse(ApprovalTracker tracker) {
     if (tracker == null || tracker.getHistory() == null) return new ArrayList<>();
     List<ApprovalEntryResponse> out = new ArrayList<>();
@@ -207,5 +211,7 @@ public interface ProjectMapper {
   }
 
   // Details mapping
-  default ProjectDetailsDto toDetailsDtoSafe(ProjectDetails d) { return toDetailsDto(d); }
+  default ProjectDetailsDto toDetailsDtoSafe(ProjectDetails d) {
+    return toDetailsDto(d);
+  }
 }

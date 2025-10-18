@@ -28,7 +28,7 @@
   
             currency: { bsonType: 'string', minLength: 3, maxLength: 3 },
   
-            // 5-state status
+            // 4-state status
             status: { enum: ['draft','submitted','approved','archived'] },
   
             // Staff Costs
