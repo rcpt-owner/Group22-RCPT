@@ -3,10 +3,10 @@ package com.itproject.rcpt;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.jpa.repository.config.EnableJparepository;
 
 @SpringBootApplication
-@EnableJpaRepositories("com.itproject.rcpt.jpa.repositories")
+@EnableJparepository("com.itproject.rcpt.jpa.repository")
 @EntityScan("com.itproject.rcpt.jpa.entities")
 public class RcptApplication {
 

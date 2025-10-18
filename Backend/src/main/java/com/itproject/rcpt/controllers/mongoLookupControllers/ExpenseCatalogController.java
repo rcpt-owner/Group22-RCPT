@@ -1,35 +1,21 @@
 package com.itproject.rcpt.controllers.mongoLookupControllers;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.itproject.rcpt.jpa.entities.NonStaffCosts;
+import com.itproject.rcpt.jpa.repositories.NonStaffCostsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.itproject.rcpt.repository.CostCategoryRepository;
-import com.itproject.rcpt.repository.ExpenseTypeRepository;
-import com.itproject.rcpt.domain.CostCategoryEntity;
-import com.itproject.rcpt.domain.ExpenseTypeEntity;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/meta")
 public class ExpenseCatalogController {
 
-  public static class CategoryItem {
-    public String code;
-    public String label;
-
-    public CategoryItem(String code, String label) {
-      this.code = code;
-      this.label = label;
-    }
-  }
-
   public static class ExpenseTypeItem {
     public String code;
     public String label;
     public String categoryCode;
-
     public ExpenseTypeItem(String code, String label, String categoryCode) {
       this.code = code;
       this.label = label;
@@ -37,33 +23,18 @@ public class ExpenseCatalogController {
     }
   }
 
-  public static class ExpenseCatalogResponse {
-    public List<CategoryItem> categories;
-    public List<ExpenseTypeItem> expenseTypes;
-  }
-
   @Autowired
-  private CostCategoryRepository costCategoryRepository;
-
-  @Autowired
-  private ExpenseTypeRepository expenseTypeRepository;
+  private NonStaffCostsRepository nonStaffCostsRepository;
 
   @GetMapping("/expense-catalog")
-  public ExpenseCatalogResponse expenseCatalog() {
-    var res = new ExpenseCatalogResponse();
-
-    // Fetch categories from Postgres
-    List<CostCategoryEntity> categories = costCategoryRepository.findAll();
-    res.categories = categories.stream()
-        .map(c -> new CategoryItem(c.getCode(), c.getLabel()))
+  public List<ExpenseTypeItem> expenseCatalog() {
+    List<NonStaffCosts> all = nonStaffCostsRepository.findAll();
+    return all.stream()
+        .map(n -> new ExpenseTypeItem(
+            n.getCostSubcategory(),
+            n.getCostSubcategory(),   
+            n.getCostCategory()
+        ))
         .collect(Collectors.toList());
-
-    // Fetch expense types from Postgres
-    List<ExpenseTypeEntity> types = expenseTypeRepository.findAll();
-    res.expenseTypes = types.stream()
-        .map(e -> new ExpenseTypeItem(e.getCode(), e.getLabel(), e.getCategory().getCode()))
-        .collect(Collectors.toList());
-
-    return res;
   }
 }

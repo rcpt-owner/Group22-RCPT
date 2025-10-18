@@ -23,6 +23,11 @@ import com.itproject.rcpt.dto.project.*;
 import com.itproject.rcpt.dto.staff.StaffCostRequest;
 import com.itproject.rcpt.dto.staff.StaffCostResponse;
 
+/**
+ * ProjectMapper handles all DTO and domain conversions.
+ * It ensures data from API requests is mapped into domain models and vice versa.
+ * This keeps controllers lightweight and isolates conversion logic.
+ */
 @Mapper(
     componentModel = "spring",
     injectionStrategy = InjectionStrategy.CONSTRUCTOR,
@@ -30,7 +35,9 @@ import com.itproject.rcpt.dto.staff.StaffCostResponse;
 )
 public interface ProjectMapper {
 
-  // --------- Money / YearAllocation ----------
+  // ---------- Money & YearAllocation Mappers ----------
+
+  /** Convert DTO to Money domain object */
   default Money toMoney(MoneyDto dto) {
     if (dto == null) return null;
     var m = new Money();
@@ -39,6 +46,7 @@ public interface ProjectMapper {
     return m;
   }
 
+  /** Convert domain to DTO */
   default MoneyDto toMoneyDto(Money m) {
     if (m == null) return null;
     var dto = new MoneyDto();
@@ -47,6 +55,7 @@ public interface ProjectMapper {
     return dto;
   }
 
+  /** Convert DTO to YearAllocation */
   default YearAllocation toYearAllocation(YearAllocationDto dto) {
     if (dto == null) return null;
     var ya = new YearAllocation();
@@ -55,6 +64,7 @@ public interface ProjectMapper {
     return ya;
   }
 
+  /** Convert domain to YearAllocation DTO */
   default YearAllocationDto toYearAllocationDto(YearAllocation ya) {
     if (ya == null) return null;
     var dto = new YearAllocationDto();
@@ -63,11 +73,13 @@ public interface ProjectMapper {
     return dto;
   }
 
-  // --------- Details ----------
+  // ---------- Project Details Mapping ----------
+
   ProjectDetails toDetails(ProjectDetailsDto dto);
   ProjectDetailsDto toDetailsDto(ProjectDetails d);
 
-  // --------- Staff ----------
+  // ---------- Staff Cost Mappers ----------
+
   StaffCost toStaffCost(StaffCostRequest req);
   StaffCostResponse toStaffCostResponse(StaffCost s);
 
@@ -85,12 +97,14 @@ public interface ProjectMapper {
     return out;
   }
 
-  // --------- Non-staff (String codes) ----------
+  // ---------- Non-Staff Cost Mappers ----------
+
+  /** Convert request DTO to NonStaffCost domain object */
   default NonStaffCost toNonStaff(NonStaffCostRequest req) {
     if (req == null) return null;
     var n = new NonStaffCost();
-    n.setCategoryCode(req.getCategoryCode());
-    n.setExpenseTypeCode(req.getExpenseTypeCode());
+    n.setCategoryCode(req.getCategoryCode());         
+    n.setExpenseTypeCode(req.getExpenseTypeCode());     
     n.setDescription(req.getDescription());
     n.setUnitCost(toMoney(req.getUnitCost()));
     n.setUnits(req.getUnits());
@@ -106,11 +120,11 @@ public interface ProjectMapper {
     return n;
   }
 
+  /** Convert domain object to response DTO */
   default NonStaffCostResponse toNonStaffResponse(NonStaffCost n) {
     if (n == null) return null;
     var dto = new NonStaffCostResponse();
-
-    dto.setCategoryCode(n.getCategoryCode());
+    dto.setCategoryCode(n.getCategoryCode());           
     dto.setExpenseTypeCode(n.getExpenseTypeCode());
     dto.setDescription(n.getDescription());
     dto.setUnitCost(toMoneyDto(n.getUnitCost()));
@@ -141,7 +155,8 @@ public interface ProjectMapper {
     return out;
   }
 
-  // --------- Approval history ----------
+  // ---------- Approval History Mapping ----------
+
   default ApprovalEntryResponse toApprovalEntryResponse(ApprovalEntry e) {
     if (e == null) return null;
     var dto = new ApprovalEntryResponse();
@@ -159,18 +174,22 @@ public interface ProjectMapper {
     return out;
   }
 
-  // --------- Project (create) ----------
+  // ---------- Project (Create) ----------
+
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "priceSummary", ignore = true)
   @Mapping(target = "approvals", expression = "java(new ApprovalTracker())")
   @Mapping(target = "status", expression = "java(com.itproject.rcpt.enums.ProjectStatus.DRAFT)")
-  @Mapping(target = "ownerUserId", ignore = true) // set in service
+  @Mapping(target = "ownerUserId", ignore = true)  
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
   @Mapping(target = "version", ignore = true)
   Project toEntity(ProjectCreateRequest req);
 
-  // Manual bridge to lists inside Project
+  /**
+   * After initial mapping, manually fill the collections for staff/non-staff lists.
+   * This ensures they are properly transformed before saving to MongoDB.
+   */
   @AfterMapping
   default void fillCollections(ProjectCreateRequest req, @MappingTarget Project p) {
     p.setDetails(toDetails(req.getDetails()));
@@ -178,7 +197,8 @@ public interface ProjectMapper {
     p.setNonStaffCosts(toNonStaffList(req.getNonStaff()));
   }
 
-  // --------- Project (update merge) ----------
+  // ---------- Project (Update - Partial Merge) ----------
+
   @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
   default void updateEntity(ProjectUpdateRequest req, @MappingTarget Project p) {
     if (req == null) return;
@@ -187,7 +207,8 @@ public interface ProjectMapper {
     if (req.getNonStaff() != null) p.setNonStaffCosts(toNonStaffList(req.getNonStaff()));
   }
 
-  // --------- Project -> Response ----------
+  // ---------- Project → Response DTO ----------
+
   @Mapping(target = "id", source = "id")
   @Mapping(target = "details", source = "details")
   @Mapping(target = "staff", expression = "java(toStaffCostResponseList(p.getStaffCosts()))")
@@ -196,7 +217,8 @@ public interface ProjectMapper {
   @Mapping(target = "approvalsHistory", expression = "java(toApprovalHistoryResponse(p.getApprovals()))")
   ProjectResponse toResponse(Project p);
 
-  // PriceSummary -> DTO
+  // ---------- Price Summary ----------
+
   default PriceSummaryResponse toPriceSummaryResponse(PriceSummary s) {
     if (s == null) return null;
     var dto = new PriceSummaryResponse();
@@ -210,7 +232,7 @@ public interface ProjectMapper {
     return dto;
   }
 
-  // Details mapping
+  // ---------- Utility: Safe Project Details ----------
   default ProjectDetailsDto toDetailsDtoSafe(ProjectDetails d) {
     return toDetailsDto(d);
   }
