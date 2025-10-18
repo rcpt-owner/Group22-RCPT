@@ -1,63 +1,68 @@
 package com.itproject.rcpt.service;
 
-import com.itproject.rcpt.domain.NonStaffCost;
-import com.itproject.rcpt.domain.Project;
-import com.itproject.rcpt.dto.nonstaffcost.NonStaffCostRequest;
-import com.itproject.rcpt.mapper.ProjectMapper;
-import com.itproject.rcpt.repository.ProjectRepository;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.itproject.rcpt.domain.NonStaffCost;
+import com.itproject.rcpt.domain.Project;
+import com.itproject.rcpt.repository.ProjectRepository;
 
 /**
- * NonStaffCostService manages the "nonStaffCosts" embedded list inside a Project document.
- * It converts DTOs into domain objects and updates the Project in MongoDB.
- * No standalone Mongo collection is used for costs — they are nested inside each project.
+ * Service for managing Non-Staff costs inside a Project document.
  */
 @Service
 public class NonStaffCostService {
 
-    private final ProjectRepository projectRepository;
-    private final ProjectMapper mapper;
-
     @Autowired
-    public NonStaffCostService(ProjectRepository projectRepository, ProjectMapper mapper) {
-        this.projectRepository = projectRepository;
-        this.mapper = mapper;
-    }
+    private ProjectRepository projectRepository;
 
     /**
-     * Add or replace the full list of non-staff costs for a project.
+     * Get all non-staff cost items for a given project.
      */
-    public Project addNonStaffCosts(String projectId, List<NonStaffCostRequest> costs) {
-        Project project = findProject(projectId);
-        List<NonStaffCost> domainCosts = mapper.toNonStaffList(costs);
-        project.setNonStaffCosts(domainCosts);
-        return projectRepository.save(project);
-    }
-
-    /**
-     * Alias for add — both create and update are handled by replacing the full list.
-     */
-    public Project updateNonStaffCosts(String projectId, List<NonStaffCostRequest> costs) {
-        return addNonStaffCosts(projectId, costs);
-    }
-
-    /**
-     * Remove all non-staff costs from a project.
-     */
-    public Project deleteAllNonStaffCosts(String projectId) {
-        Project project = findProject(projectId);
-        project.getNonStaffCosts().clear();
-        return projectRepository.save(project);
-    }
-
-    /**
-     * Helper method to fetch a project or throw an exception.
-     */
-    private Project findProject(String projectId) {
-        return projectRepository.findById(projectId)
+    public List<NonStaffCost> list(String projectId) {
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found: " + projectId));
+        return project.getNonStaffCosts();
+    }
+
+    /**
+     * Replace all non-staff costs with a new list.
+     */
+    public List<NonStaffCost> replaceAll(String projectId, List<NonStaffCost> newCosts) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found: " + projectId));
+
+        project.setNonStaffCosts(newCosts);
+        projectRepository.save(project);
+        return project.getNonStaffCosts();
+    }
+
+    /**
+     * Append a new non-staff cost to the list.
+     */
+    public List<NonStaffCost> append(String projectId, NonStaffCost cost) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found: " + projectId));
+
+        project.getNonStaffCosts().add(cost);
+        projectRepository.save(project);
+        return project.getNonStaffCosts();
+    }
+
+    /**
+     * Delete a non-staff cost by index.
+     */
+    public List<NonStaffCost> deleteAt(String projectId, int index) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found: " + projectId));
+
+        if (index < 0 || index >= project.getNonStaffCosts().size()) {
+            throw new IllegalArgumentException("Invalid index: " + index);
+        }
+        project.getNonStaffCosts().remove(index);
+        projectRepository.save(project);
+        return project.getNonStaffCosts();
     }
 }

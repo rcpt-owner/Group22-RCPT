@@ -2,54 +2,50 @@ package com.itproject.rcpt.domain;
 
 import java.util.List;
 
+import com.itproject.rcpt.domain.value.Money;
 import com.itproject.rcpt.domain.value.YearAllocation;
-import com.itproject.rcpt.enums.EmploymentType;
-import com.itproject.rcpt.enums.StaffCategory;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
+/**
+ * Domain model for a staff cost line item.
+ * Embedded directly inside a Project document in MongoDB.
+ */
 public class StaffCost {
 
-  @NotBlank
-  private String roleName;             // e.g., "RA Level A.6"
+    /** Staff role  */
+    private String role;
 
-  @NotNull
-  private EmploymentType employmentType;
+    /** Cost per unit (e.g., per FTE or per hour) */
+    private Money unitCost;
 
-  @NotNull
-  private StaffCategory category;
+    /** Total units */
+    private Double units;
 
-  /** e.g., "FTE", "Hourly" */
-  private String timeBasis;
+    /** Optional per-year breakdown */
+    private List<YearAllocation> perYearUnits;
 
-  /** per-year FTE (or hours if using hourly) */
-  private List<YearAllocation> time;
+    /** Indicates if cost is in-kind */
+    private boolean inKind;
 
-  private boolean inKind;
+    /** Additional notes */
+    private String notes;
 
-  private String notes;
+    public StaffCost() {}
 
-  public StaffCost() { }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
-  public String getRoleName() { return roleName; }
-  public void setRoleName(String roleName) { this.roleName = roleName; }
+    public Money getUnitCost() { return unitCost; }
+    public void setUnitCost(Money unitCost) { this.unitCost = unitCost; }
 
-  public EmploymentType getEmploymentType() { return employmentType; }
-  public void setEmploymentType(EmploymentType employmentType) { this.employmentType = employmentType; }
+    public Double getUnits() { return units; }
+    public void setUnits(Double units) { this.units = units; }
 
-  public StaffCategory getCategory() { return category; }
-  public void setCategory(StaffCategory category) { this.category = category; }
+    public List<YearAllocation> getPerYearUnits() { return perYearUnits; }
+    public void setPerYearUnits(List<YearAllocation> perYearUnits) { this.perYearUnits = perYearUnits; }
 
-  public String getTimeBasis() { return timeBasis; }
-  public void setTimeBasis(String timeBasis) { this.timeBasis = timeBasis; }
+    public boolean isInKind() { return inKind; }
+    public void setInKind(boolean inKind) { this.inKind = inKind; }
 
-  public List<YearAllocation> getTime() { return time; }
-  public void setTime(List<YearAllocation> time) { this.time = time; }
-
-  public boolean isInKind() { return inKind; }
-  public void setInKind(boolean inKind) { this.inKind = inKind; }
-
-  public String getNotes() { return notes; }
-  public void setNotes(String notes) { this.notes = notes; }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 }

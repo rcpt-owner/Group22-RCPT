@@ -1,63 +1,57 @@
 package com.itproject.rcpt.service;
 
-import com.itproject.rcpt.domain.Project;
-import com.itproject.rcpt.domain.StaffCost;
-import com.itproject.rcpt.dto.staff.StaffCostRequest;
-import com.itproject.rcpt.mapper.ProjectMapper;
-import com.itproject.rcpt.repository.ProjectRepository;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.itproject.rcpt.domain.Project;
+import com.itproject.rcpt.domain.StaffCost;
+import com.itproject.rcpt.repository.ProjectRepository;
 
 /**
- * StaffCostService manages the "staffCosts" list embedded inside a Project document.
- * Similar to NonStaffCostService, it does not interact with a separate collection —
- * instead, it modifies the costs array directly inside the project document.
+ * Service for managing Staff costs within a project.
  */
 @Service
 public class StaffCostService {
 
-    private final ProjectRepository projectRepository;
-    private final ProjectMapper mapper;
-
     @Autowired
-    public StaffCostService(ProjectRepository projectRepository, ProjectMapper mapper) {
-        this.projectRepository = projectRepository;
-        this.mapper = mapper;
-    }
+    private ProjectRepository projectRepository;
 
-    /**
-     * Add or replace the staff costs associated with a project.
-     */
-    public Project addStaffCosts(String projectId, List<StaffCostRequest> costs) {
-        Project project = findProject(projectId);
-        List<StaffCost> domainCosts = mapper.toStaffCostList(costs);
-        project.setStaffCosts(domainCosts);
-        return projectRepository.save(project);
-    }
-
-    /**
-     * Update behaves identically to add (replace all costs with new list).
-     */
-    public Project updateStaffCosts(String projectId, List<StaffCostRequest> costs) {
-        return addStaffCosts(projectId, costs);
-    }
-
-    /**
-     * Remove all staff costs from the project.
-     */
-    public Project deleteAllStaffCosts(String projectId) {
-        Project project = findProject(projectId);
-        project.getStaffCosts().clear();
-        return projectRepository.save(project);
-    }
-
-    /**
-     * Utility to fetch project or throw an error if not found.
-     */
-    private Project findProject(String projectId) {
-        return projectRepository.findById(projectId)
+    // Get all staff costs for a specific project
+    public List<StaffCost> list(String projectId) {
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found: " + projectId));
+        return project.getStaffCosts();
+    }
+
+    // Replace the entire staff cost list with a new one
+    public List<StaffCost> replaceAll(String projectId, List<StaffCost> newCosts) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found: " + projectId));
+        project.setStaffCosts(newCosts);
+        projectRepository.save(project);
+        return project.getStaffCosts();
+    }
+
+    // Append a new staff cost entry
+    public List<StaffCost> append(String projectId, StaffCost cost) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found: " + projectId));
+        project.getStaffCosts().add(cost);
+        projectRepository.save(project);
+        return project.getStaffCosts();
+    }
+
+    // Delete a staff cost entry by index
+    public List<StaffCost> deleteAt(String projectId, int index) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found: " + projectId));
+        if (index < 0 || index >= project.getStaffCosts().size()) {
+            throw new IllegalArgumentException("Invalid index: " + index);
+        }
+        project.getStaffCosts().remove(index);
+        projectRepository.save(project);
+        return project.getStaffCosts();
     }
 }

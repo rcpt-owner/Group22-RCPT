@@ -7,48 +7,59 @@ import com.itproject.rcpt.domain.value.YearAllocation;
 
 import jakarta.validation.constraints.NotNull;
 
+/**
+ * Domain model representing a single non-staff cost item in a project.
+ */
 public class NonStaffCost {
 
-  @NotNull
-  private String category;
+    /** Lookup code for the cost category */
+    @NotNull
+    private String categoryCode;
 
-  private String expenseTypeC;
+    /** Lookup code for the expense type */
+    private String expenseTypeCode;
 
-  private String description;
+    /** Free-text description of the cost */
+    private String description;
 
-  /** Cost per item/unit in the line’s native currency */
-  private Money unitCost;
+    /** Cost per unit (in native currency) */
+    private Money unitCost;
 
-  /** Total units across the project (if not using per-year breakdown) */
-  private Double units;
+    /** Total number of units (if not using per-year breakdown) */
+    private Double units;
 
-  /** Per-year units, e.g., [{year:1, value:10}, {year:2, value:5}] */
-  private List<YearAllocation> perYearUnits;
+    /** Per-year unit breakdown (optional) */
+    private List<YearAllocation> perYearUnits;
 
-  private boolean inKind;
+    /** Whether the cost is provided in-kind (true) or paid (false) */
+    private boolean inKind;
 
-  private String notes;
+    /** Additional notes */
+    private String notes;
 
-  public NonStaffCost() { }
+    public NonStaffCost() {}
 
-  public String getCategory() { return category; }
-  public void setCategory(String category) { this.category = category; }
+    public String getCategoryCode() { return categoryCode; }
+    public void setCategoryCode(String categoryCode) { this.categoryCode = categoryCode; }
 
-  public String getDescription() { return description; }
-  public void setDescription(String description) { this.description = description; }
+    public String getExpenseTypeCode() { return expenseTypeCode; }
+    public void setExpenseTypeCode(String expenseTypeCode) { this.expenseTypeCode = expenseTypeCode; }
 
-  public Money getUnitCost() { return unitCost; }
-  public void setUnitCost(Money unitCost) { this.unitCost = unitCost; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-  public Double getUnits() { return units; }
-  public void setUnits(Double units) { this.units = units; }
+    public Money getUnitCost() { return unitCost; }
+    public void setUnitCost(Money unitCost) { this.unitCost = unitCost; }
 
-  public List<YearAllocation> getPerYearUnits() { return perYearUnits; }
-  public void setPerYearUnits(List<YearAllocation> perYearUnits) { this.perYearUnits = perYearUnits; }
+    public Double getUnits() { return units; }
+    public void setUnits(Double units) { this.units = units; }
 
-  public boolean isInKind() { return inKind; }
-  public void setInKind(boolean inKind) { this.inKind = inKind; }
+    public List<YearAllocation> getPerYearUnits() { return perYearUnits; }
+    public void setPerYearUnits(List<YearAllocation> perYearUnits) { this.perYearUnits = perYearUnits; }
 
-  public String getNotes() { return notes; }
-  public void setNotes(String notes) { this.notes = notes; }
+    public boolean isInKind() { return inKind; }
+    public void setInKind(boolean inKind) { this.inKind = inKind; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 }
