@@ -71,4 +71,14 @@ public class ProjectService {
         mapper.updateEntity(request, existing);
         return projectRepository.save(existing);
     }
+
+    /**
+     * Delete a project by ID.
+     */
+    public void delete(String id) {
+        if (!projectRepository.existsById(id)) {
+            throw new RuntimeException("Project not found: " + id);
+        }
+        projectRepository.deleteById(id);
+    }
 }

@@ -6,10 +6,10 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.5.5</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>  
     </parent>
-    <groupId>com.ITProject</groupId>
-    <artifactId>RCPT</artifactId>
+    <groupId>com.itproject</groupId>
+    <artifactId>rcpt</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>RCPT</name>
     <description>A web-based application by Group 22 of COMP30022 for the University of Melbourne's RIC Office.</description>

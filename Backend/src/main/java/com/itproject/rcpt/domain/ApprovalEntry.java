@@ -19,6 +19,13 @@ public class ApprovalEntry {
 
   public ApprovalEntry() { }
 
+  public ApprovalEntry(String action, String actorUserId, String comment, Instant at) {
+      this.action = action;
+      this.actorUserId = actorUserId;
+      this.comment = comment;
+      this.at = at;
+  }
+
   public String getAction() { return action; }
   public void setAction(String action) { this.action = action; }
 

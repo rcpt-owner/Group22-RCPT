@@ -231,5 +231,5 @@ public interface ProjectMapper {
     dto.setTotalPriceInclGst(toMoneyDto(s.getTotalPriceInclGst()));
     return dto;
   }
-  
+
 }
