@@ -2,16 +2,17 @@ package com.itproject.rcpt;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.data.jpa.repository.config.EnableJparepository;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @SpringBootApplication
-@EnableJparepository("com.itproject.rcpt.jpa.repository")
-@EntityScan("com.itproject.rcpt.jpa.entities")
+@EnableJpaRepositories(basePackages = "com.itproject.rcpt.jpa.repositories")
+@EnableMongoRepositories(basePackages = "com.itproject.rcpt.repository")
+
 public class RcptApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(RcptApplication.class, args);
-	}
+        SpringApplication.run(RcptApplication.class, args);
+    }
 
 }

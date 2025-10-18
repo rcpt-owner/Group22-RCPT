@@ -231,9 +231,5 @@ public interface ProjectMapper {
     dto.setTotalPriceInclGst(toMoneyDto(s.getTotalPriceInclGst()));
     return dto;
   }
-
-  // ---------- Utility: Safe Project Details ----------
-  default ProjectDetailsDto toDetailsDtoSafe(ProjectDetails d) {
-    return toDetailsDto(d);
-  }
+  
 }
