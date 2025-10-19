@@ -178,7 +178,7 @@ public interface ProjectMapper {
 
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "priceSummary", ignore = true)
-  @Mapping(target = "approvals", expression = "java(new ApprovalTracker())")
+  @Mapping(target = "approvals", expression = "java(new com.itproject.rcpt.domain.ApprovalTracker())")
   @Mapping(target = "status", expression = "java(com.itproject.rcpt.enums.ProjectStatus.DRAFT)")
   @Mapping(target = "ownerUserId", ignore = true)  
   @Mapping(target = "createdAt", ignore = true)
