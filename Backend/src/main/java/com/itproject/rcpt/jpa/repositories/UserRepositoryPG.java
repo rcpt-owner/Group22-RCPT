@@ -1,10 +1,10 @@
 package com.itproject.rcpt.jpa.repositories;
 
-import com.itproject.rcpt.jpa.entities.User;
+import com.itproject.rcpt.jpa.entities.UserPG;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, String> {
-    User findByEmail(String email);
+public interface UserRepositoryPG extends JpaRepository<UserPG, String> {
+    UserPG findByEmail(String email);
 }

@@ -2,16 +2,13 @@ spring:
   profiles:
     active: dev
 
-spring:
   config:
-    activate.on-profile: dev
-  data.mongodb.uri: ${MONGODB_URI:mongodb://localhost:27017}
-  data.mongodb.database: rcpt_dev
-server.port: 8080
+    activate:
+      on-profile: dev
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017}
+      database: rcpt_dev
 
-spring:
-  config:
-    activate.on-profile: prod
-  data.mongodb.uri: ${MONGODB_URI}
-  data.mongodb.database: rcpt
-server.port: ${PORT:8080}
+server:
+  port: 8080

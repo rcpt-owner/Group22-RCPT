@@ -63,12 +63,17 @@ public class GlobalExceptionHandler {
       IllegalArgumentException.class
   })
   public ResponseEntity<ApiError> handleBadRequest(Exception ex, ServletWebRequest req) {
-    String msg = switch (ex) {
-      case HttpMessageNotReadableException e -> "Malformed request body";
-      case MethodArgumentTypeMismatchException e -> "Parameter type mismatch";
-      case MissingServletRequestParameterException e -> "Missing required parameter";
-      default -> ex.getMessage();
-    };
+    String msg;
+
+    if (ex instanceof HttpMessageNotReadableException) {
+      msg = "Malformed request body";
+    } else if (ex instanceof MethodArgumentTypeMismatchException) {
+      msg = "Parameter type mismatch";
+    } else if (ex instanceof MissingServletRequestParameterException) {
+      msg = "Missing required parameter";
+    } else {
+      msg = ex.getMessage();
+    }
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(base(HttpStatus.BAD_REQUEST, "BAD_REQUEST", msg, req));
   }

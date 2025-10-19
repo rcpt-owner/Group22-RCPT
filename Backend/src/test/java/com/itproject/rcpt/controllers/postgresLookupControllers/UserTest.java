@@ -1,7 +1,7 @@
 package com.itproject.rcpt.controllers.postgresLookupControllers;
 
-import com.itproject.rcpt.jpa.entities.User;
-import com.itproject.rcpt.jpa.services.UserService;
+import com.itproject.rcpt.jpa.entities.UserPG;
+import com.itproject.rcpt.jpa.services.UserServicePG;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ class UserTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private UserService service;
+    private UserServicePG service;
 
     @AfterEach
     void cleanup() {
@@ -36,7 +36,7 @@ class UserTest {
 
     @Test
     void testGetAll() throws Exception {
-        User u1 = new User();
+        UserPG u1 = new UserPG();
         u1.setUserId("u001");
         u1.setName("Alice Smith");
         u1.setEmail("alice@example.com");
@@ -44,7 +44,7 @@ class UserTest {
         u1.setIsApprover(false);
         service.save(u1);
 
-        User u2 = new User();
+        UserPG u2 = new UserPG();
         u2.setUserId("u002");
         u2.setName("Bob Johnson");
         u2.setEmail("bob@example.com");
@@ -61,7 +61,7 @@ class UserTest {
 
     @Test
     void testGetById() throws Exception {
-        User user = new User();
+        UserPG user = new UserPG();
         user.setUserId("u002");
         user.setName("Bob Johnson");
         user.setEmail("bob@example.com");
@@ -80,7 +80,7 @@ class UserTest {
 
     @Test
     void testGetByEmail() throws Exception {
-        User user = new User();
+        UserPG user = new UserPG();
         user.setUserId("u002");
         user.setName("Bob Johnson");
         user.setEmail("bob@example.com");
@@ -120,7 +120,7 @@ class UserTest {
                 .andExpect(jsonPath("$.isApprover", is(false)));
 
         // Verify persistence
-        User saved = service.getById("u001");
+        UserPG saved = service.getById("u001");
         assertNotNull(saved);
         assertEquals("u001", saved.getUserId());
         assertEquals("Alice Smith", saved.getName());
@@ -131,7 +131,7 @@ class UserTest {
 
     @Test
     void testDelete() throws Exception {
-        User u1 = new User();
+        UserPG u1 = new UserPG();
         u1.setUserId("u001");
         u1.setName("Alice Smith");
         u1.setEmail("alice@example.com");
@@ -142,7 +142,7 @@ class UserTest {
         mockMvc.perform(delete("/api/users/u001"))
                 .andExpect(status().isOk());
 
-        User deleted = service.getById("u001");
+        UserPG deleted = service.getById("u001");
         assertNull(deleted);
     }
 }

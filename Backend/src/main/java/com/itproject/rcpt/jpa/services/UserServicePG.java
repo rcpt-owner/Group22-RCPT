@@ -1,33 +1,33 @@
 package com.itproject.rcpt.jpa.services;
 
-import com.itproject.rcpt.jpa.entities.User;
-import com.itproject.rcpt.jpa.repositories.UserRepository;
+import com.itproject.rcpt.jpa.entities.UserPG;
+import com.itproject.rcpt.jpa.repositories.UserRepositoryPG;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class UserService {
+public class UserServicePG {
 
-    private final UserRepository repository;
+    private final UserRepositoryPG repository;
 
-    public UserService(UserRepository repository) {
+    public UserServicePG(UserRepositoryPG repository) {
         this.repository = repository;
     }
 
-    public List<User> getAll() {
+    public List<UserPG> getAll() {
         return repository.findAll();
     }
 
-    public User getById(String userId) {
+    public UserPG getById(String userId) {
         return repository.findById(userId).orElse(null);
     }
 
-    public User getByEmail(String email) {
+    public UserPG getByEmail(String email) {
         return repository.findByEmail(email);
     }
 
-    public User save(User user) {
+    public UserPG save(UserPG user) {
         return repository.save(user);
     }
 
