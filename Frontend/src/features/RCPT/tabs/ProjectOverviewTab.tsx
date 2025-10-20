@@ -5,7 +5,7 @@ import { useEffect, useState, useMemo } from "react"
 import { useParams } from "react-router-dom"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 // import { projectService, type ProjectOverview, type ProjectOverviewFormData } from "@/services/projectService"
-import { rcptEngine } from "./rcptEngine"
+import { rcptEngine } from "../rcptEngine"
 import type { ProjectOverview, ProjectOverviewFormData } from "@/services/projectService"
 import { DynamicForm } from "@/components/forms/DynamicForm"
 import type { FormSchema } from "@/types/FormSchema"
@@ -162,7 +162,6 @@ export function ProjectOverviewTab() {
             initialData={initialData}
             onSubmit={handleSubmit}
             onChange={handleChange}
-            submitLabel="Save Overview" 
             card={false}
             formId="project-overview-form"
           />

@@ -1,4 +1,4 @@
-// Mock project service loading JSON from /public/api/projects/*
+// Legacy project service - to be replaced by backend API calls, then used in rcptEngine
 
 async function getJson<T>(path: string): Promise<T> {
   const res = await fetch(path)

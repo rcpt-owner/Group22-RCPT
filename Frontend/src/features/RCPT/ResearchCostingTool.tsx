@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { ProjectOverviewTab } from "./tabs/ProjectOverviewTab"
 import CostTab from "./tabs/CostTab"
 import ExportTab from "./tabs/ExportTab"
 import PricingTab from "./tabs/PricingTab"
+import { rcptEngine } from "./rcptEngine"
 
 
 export function ResearchCostingTool({
@@ -17,6 +19,22 @@ export function ResearchCostingTool({
   userId?: string
   initialTab?: string
 }) {
+  const [overviewComplete, setOverviewComplete] = useState(false)
+
+  useEffect(() => {
+    if (!projectId) return
+    const checkOverview = () => {
+      setOverviewComplete(rcptEngine.isOverviewComplete(projectId))
+    }
+    checkOverview()
+    const unsubscribe = rcptEngine.subscribe(projectId, checkOverview)
+    return unsubscribe
+  }, [projectId])
+
+  const totalCost = rcptEngine.getTotalCosts(projectId ?? "")
+  const staffCount = rcptEngine.getStaffCosts(projectId ?? "").length
+  const nonStaffCount = rcptEngine.getNonStaffCosts(projectId ?? "").length
+
   return (  
     <div className="space-y-4">
       <Tabs defaultValue={initialTab} className="w-full">
@@ -25,9 +43,9 @@ export function ResearchCostingTool({
           {/* Use auto-fit so tabs auto-adjust when one is removed; wraps on small screens */}
           <TabsList className="grid w-full grid-cols-[repeat(auto-fit,minmax(8rem,1fr))] gap-2">
             <TabsTrigger value="Project Overview" className="text-sm">Project Overview</TabsTrigger>
-            <TabsTrigger value="Costs" className="text-sm">Costs</TabsTrigger>
-            <TabsTrigger value="Pricing" className="text-sm">Pricing</TabsTrigger>
-            <TabsTrigger value="Export" className="text-sm">Export</TabsTrigger>
+            <TabsTrigger value="Costs" className="text-sm" disabled={!overviewComplete}>Costs</TabsTrigger>
+            <TabsTrigger value="Pricing" className="text-sm" disabled={!overviewComplete}>Pricing</TabsTrigger>
+            <TabsTrigger value="Export" className="text-sm" disabled={!overviewComplete}>Export</TabsTrigger>
           </TabsList>
           {onExit && (
             <Button variant="outline" size="sm" onClick={onExit}>
@@ -49,9 +67,9 @@ export function ResearchCostingTool({
           </TabsContent>
           <TabsContent value="Export" className="animate-in fade-in-0">
             <ExportTab
-              totalCost={0}      // replace with actual total cost
-              staffCount={0}     // replace with actual staff count
-              nonStaffCount={0}  // replace with actual non-staff items count
+              totalCost={totalCost}
+              staffCount={staffCount}
+              nonStaffCount={nonStaffCount}
             />
           </TabsContent>
         </div>

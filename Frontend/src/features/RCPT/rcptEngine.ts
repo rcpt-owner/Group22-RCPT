@@ -87,9 +87,8 @@ class RcptEngine {
     this.options = { ...this.options, ...options }
   }
 
-  async loadData(projectId: string, userId: string): Promise<void> {
+  async loadData(projectId: string): Promise<void> {
     if (!projectId) throw new Error("Missing projectId")
-    if (!userId) throw new Error("Missing userId")
 
     // Serve from cache if not expired
     const existing = this.cache.get(projectId)
@@ -121,17 +120,8 @@ class RcptEngine {
       const serverOv = ovRes.value
       if (!data.overview) {
         data.overview = serverOv
-      } else {
-        // Prefer the newer one by lastUpdated
-        const localTs = Date.parse(data.overview.lastUpdated ?? "")
-        const serverTs = Date.parse(serverOv.lastUpdated ?? "")
-        if (isFinite(localTs) && isFinite(serverTs)) {
-          data.overview = localTs >= serverTs ? data.overview : serverOv
-        } else {
-          // If timestamps are missing, keep local to avoid clobbering user edits
-          data.overview = data.overview
-        }
       }
+      // Always prefer local overview to preserve user edits
     }
     if (costRes.status === "fulfilled") data.costData = costRes.value
     if (priceRes.status === "fulfilled") data.pricingData = priceRes.value
@@ -248,9 +238,12 @@ class RcptEngine {
     if (CANONICAL_FORM_IDS.has(formId)) {
       const entry = this.cache.get(projectId)
       if (entry) {
-        if (formId === "overview") {
-          entry.data.overview = undefined
+        if (formId === "staffCosts") {
+          entry.data.staffCosts = []
+        } else if (formId === "nonStaffCosts") {
+          entry.data.nonStaffCosts = []
         }
+        // Note: Do not clear overview here to preserve saved data
         entry.totals = this.computeTotals(entry.data)
         this.cache.set(projectId, entry)
         this.writeSession(entry)
@@ -273,7 +266,7 @@ class RcptEngine {
     // Merge fields (form uses "description" which maps to "summary")
     const merged: ProjectOverview = {
       ...existing,
-      title: payload.title && payload.title.trim() ? payload.title : "Untitled",
+      title: payload.title && payload.title.trim() ? payload.title : "Unnamed Project",
       summary: payload.description ?? existing.summary,
       lastUpdated: new Date().toISOString(),
     }
@@ -281,7 +274,7 @@ class RcptEngine {
 
     // Sync title to project metadata
     const { updateProjectTitle } = await import("@/services/userService")
-    updateProjectTitle(userId, projectId, merged.title)
+    updateProjectTitle("1", projectId, merged.title) // Assuming userId is "1"
 
     // Cache any selection options as a string to ensure reliable session serialization
     const maybeOptions =
@@ -390,6 +383,11 @@ class RcptEngine {
   getMultiplierCost(projectId: string, multiplier: number): number {
     const totalCosts = this.getTotalCosts(projectId)
     return totalCosts * (multiplier - 1)
+  }
+
+  isOverviewComplete(projectId: string): boolean {
+    const data = this.getProjectData(projectId)
+    return !!(data?.overview?.title && data.overview.title.trim())
   }
 
   subscribe(projectId: string, listener: () => void): () => void {
@@ -539,7 +537,7 @@ class RcptEngine {
     return {
       ...existing,
       projectId: existing?.projectId ?? "",
-      title: formValues.title ?? existing?.title ?? "",
+      title: formValues.title ?? existing?.title ?? "Unnamed Project",
       summary: formValues.description ?? existing?.summary ?? "",
       budget: existing?.budget ?? 0,
       status: existing?.status ?? "Draft",
