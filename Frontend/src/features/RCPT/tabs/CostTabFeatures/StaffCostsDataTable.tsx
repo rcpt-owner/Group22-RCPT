@@ -27,22 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-// StaffCostsDataTable: presentational table for staff cost rows.
-// - Exports StaffCost as the source-of-truth type.
-// - Accepts data via props; no internal seed data.
-// - Currency uses AUD/en-AU. Year headers driven by yearLabels prop.
-
-export type StaffCost = {
-  role: string
-  employmentType: "Full-Time" | "Part-Time" | "Casual"
-  category: "Academic" | "Professional" | "Research"
-  employmentClassification: string
-  fteType: "FTE" | "Daily" | "Hourly"
-  year1: number
-  year2: number
-  year3: number
-}
+import type { StaffCost } from "../rcptEngine" // use engine type
 
 // AUD formatter (fix invalid locale and align with the rest of the app)
 const fmtCurrency = (n: number) =>

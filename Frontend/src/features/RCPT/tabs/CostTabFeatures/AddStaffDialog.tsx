@@ -25,6 +25,7 @@ type AddStaffDialogProps = {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   hideTrigger?: boolean
+  onChange?: (values: Record<string, any>) => void
 }
 
 export function AddStaffDialog({
@@ -38,6 +39,7 @@ export function AddStaffDialog({
   open,
   onOpenChange,
   hideTrigger = false,
+  onChange,
 }: AddStaffDialogProps) {
   // Support controlled or uncontrolled open state
   const isControlled = typeof open === "boolean"
@@ -74,6 +76,7 @@ export function AddStaffDialog({
               onSubmit(vals)
               setOpen(false)
             }}
+            onChange={onChange}
             card={false}
             initialData={initialData}
             formId={formSchema?.formId || "add-staff-member-form"}

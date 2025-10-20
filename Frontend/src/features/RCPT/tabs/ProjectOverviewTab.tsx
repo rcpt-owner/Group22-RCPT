@@ -4,7 +4,9 @@
 import { useEffect, useState, useMemo } from "react"
 import { useParams } from "react-router-dom"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
-import { projectService, type ProjectOverview, type ProjectOverviewFormData } from "@/services/projectService"
+// import { projectService, type ProjectOverview, type ProjectOverviewFormData } from "@/services/projectService"
+import { rcptEngine } from "./rcptEngine"
+import type { ProjectOverview, ProjectOverviewFormData } from "@/services/projectService"
 import { DynamicForm } from "@/components/forms/DynamicForm"
 import type { FormSchema } from "@/types/FormSchema"
 import { FileText } from "lucide-react"
@@ -21,22 +23,33 @@ export function ProjectOverviewTab() {
 
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
-  // Session key per project (mirror costs tab approach)
-  const storageKey = useMemo(() => (projectId ? `rcpt:overview:${projectId}` : ""), [projectId])
-
   // Load form schema
   useEffect(() => {
     if (!projectId) return
     let cancelled = false
     setSchemaLoading(true)
     setSchemaError(null)
-    fetch("/forms/projectOverview.schema.json")
+    const schemaUrl = new URL('forms/projectOverview.schema.json', window.location.origin).href
+    fetch(schemaUrl, { cache: "no-cache" })
       .then(res => {
         if (!res.ok) throw new Error(`Failed to fetch schema: ${res.status}`)
         return res.json()
       })
       .then((json: FormSchema) => {
-        if (!cancelled) setSchema(json)
+        if (cancelled) return
+        // Ensure any optionsUrl in the schema is BASE_URL-aware
+        const fields = Array.isArray((json as any)?.fields)
+          ? (json as any).fields.map((f: any) => {
+              if (f && typeof f.optionsUrl === "string") {
+                const u = f.optionsUrl as string
+                const isHttp = /^https?:\/\//i.test(u)
+                const prefixed = isHttp ? u : new URL(u.replace(/^\//, ""), window.location.origin).href
+                return { ...f, optionsUrl: prefixed }
+              }
+              return f
+            })
+          : (json as any)?.fields
+        setSchema({ ...(json as any), fields })
       })
       .catch(e => {
         if (!cancelled) setSchemaError(e.message || "Failed to load form schema")
@@ -47,24 +60,34 @@ export function ProjectOverviewTab() {
     return () => { cancelled = true }
   }, [projectId])
 
-  // Load initial overview data
+  // Load initial overview data via engine
   useEffect(() => {
     if (!projectId) return
     let cancelled = false
     setDataLoading(true)
     setDataError(null)
-    projectService
-      .getProjectOverview(projectId)
-      .then(d => {
-        if (!cancelled) setOverview(d)
+    rcptEngine
+      .loadData(projectId)
+      .then(() => {
+        if (cancelled) return
+        setOverview(rcptEngine.getProjectData(projectId)?.overview ?? null)
       })
       .catch(e => {
-        if (!cancelled) setDataError(e.message || "Failed to load project overview")
+        if (!cancelled) setDataError(e?.message || "Failed to load project overview")
       })
       .finally(() => {
         if (!cancelled) setDataLoading(false)
       })
     return () => { cancelled = true }
+  }, [projectId])
+
+  // Optional: subscribe for cross-tab updates
+  useEffect(() => {
+    if (!projectId) return
+    const unsubscribe = rcptEngine.subscribe(projectId, () => {
+      setOverview(rcptEngine.getProjectData(projectId)?.overview ?? null)
+    })
+    return unsubscribe
   }, [projectId])
 
   // Map service data to form initial data shape
@@ -79,18 +102,12 @@ export function ProjectOverviewTab() {
     }
   }
 
-   // --- TMP - just for dev and will update with API data ---
-  // Prefer session values if available
+  // Prefer form data for initialData; fall back to mapping from overview
   const initialData: ProjectOverviewFormData | undefined = useMemo(() => {
     if (!projectId) return undefined
-    try {
-      const raw = sessionStorage.getItem(storageKey)
-      if (raw) return JSON.parse(raw) as ProjectOverviewFormData
-    } catch {
-      // ignore parse errors
-    }
-    return toInitialData(overview)
-  }, [projectId, storageKey, overview])
+    const formData = rcptEngine.loadFormData<ProjectOverviewFormData>(projectId, "overview")
+    return formData || toInitialData(overview)
+  }, [projectId, overview])
 
   // Live title updates with form changes
   const [liveTitle, setLiveTitle] = useState<string>("")
@@ -101,19 +118,15 @@ export function ProjectOverviewTab() {
   async function handleSubmit(values: ProjectOverviewFormData) {
     if (!projectId) return
     // TODO: cross-field validation (endDate >= startDate)
-    await projectService.updateProjectOverview(projectId, values)
+    await rcptEngine.updateProjectOverview(projectId, values)
+    rcptEngine.clearFormData(projectId, "overview")
     setSuccessMsg("Saved")
     setTimeout(() => setSuccessMsg(null), 1500)
   }
 
-  // Autosave to session and update title on any change
+  // Autosave via form storage
   function handleChange(values: ProjectOverviewFormData) {
-    if (!storageKey) return
-    try {
-      sessionStorage.setItem(storageKey, JSON.stringify(values))
-    } catch {
-      // ignore storage errors
-    }
+    rcptEngine.saveFormData(projectId ?? "", "overview", values)
     if (typeof values.title === "string") setLiveTitle(values.title)
   }
 
