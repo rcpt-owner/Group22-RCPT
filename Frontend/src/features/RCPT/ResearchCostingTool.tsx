@@ -3,6 +3,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { ProjectOverviewTab } from "./tabs/ProjectOverviewTab"
 import CostTab from "./tabs/CostTab"
 import ExportTab from "./tabs/ExportTab"
+import PricingTab from "./tabs/PricingTab"
 
 
 export function ResearchCostingTool({
@@ -44,7 +45,7 @@ export function ResearchCostingTool({
             <CostTab projectId={projectId ?? ""} />
           </TabsContent>
           <TabsContent value="Pricing" className="animate-in fade-in-0">
-            <div>Pricing Tab Content (placeholder)</div>
+            <PricingTab projectId={projectId ?? ""} />
           </TabsContent>
           <TabsContent value="Export" className="animate-in fade-in-0">
             <ExportTab

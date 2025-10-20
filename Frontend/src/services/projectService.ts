@@ -63,6 +63,12 @@ export const projectService = {
   getExportSummary(projectId: string) {
     return getJson<ProjectExportSummary>(`${base(projectId)}/export.json`)
   },
+  getStaffCosts(projectId: string) {
+    return getJson<StaffCost[]>(`${base(projectId)}/staffCosts.json`)
+  },
+  getNonStaffCosts(projectId: string) {
+    return getJson<NonStaffCost[]>(`${base(projectId)}/nonStaffCosts.json`)
+  },
   async submitReview(projectId: string) {
     // Mock (TODO: replace with POST)
     return { projectId, submittedAt: new Date().toISOString(), status: "Queued" }

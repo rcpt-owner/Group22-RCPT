@@ -106,11 +106,13 @@ class RcptEngine {
     }
 
     // Fetch all service resources in parallel; defensive handling
-    const [ovRes, costRes, priceRes, exportRes] = await Promise.allSettled([
+    const [ovRes, costRes, priceRes, exportRes, staffRes, nonStaffRes] = await Promise.allSettled([
       projectService.getProjectOverview(projectId),
       projectService.getCostData(projectId),
       projectService.getPricingData(projectId),
       projectService.getExportSummary(projectId),
+      projectService.getStaffCosts(projectId),
+      projectService.getNonStaffCosts(projectId),
     ])
 
     // Merge successes into data; keep local staff/non-staff rows if present
@@ -133,6 +135,11 @@ class RcptEngine {
     if (costRes.status === "fulfilled") data.costData = costRes.value
     if (priceRes.status === "fulfilled") data.pricingData = priceRes.value
     if (exportRes.status === "fulfilled") data.exportSummary = exportRes.value
+    if (staffRes.status === "fulfilled") data.staffCosts = staffRes.value
+    if (nonStaffRes.status === "fulfilled") data.nonStaffCosts = nonStaffRes.value
+
+    // Optional: Add fallback or programmatic population here if JSON is missing
+    // Example: if (!data.staffCosts?.length) data.staffCosts = [/* default rows */]
 
     // Merge canonical form data into data after loading from server
     const overviewForm = this.loadFormData(projectId, "overview")
@@ -309,6 +316,71 @@ class RcptEngine {
 
   setNonStaffCosts(projectId: string, rows: NonStaffCost[]): void {
     this.saveFormData(projectId, "nonStaffCosts", rows)
+  }
+
+  getStaffCosts(projectId: string): StaffCost[] {
+    const data = this.getProjectData(projectId)
+    return data?.staffCosts ?? []
+  }
+
+  getNonStaffCosts(projectId: string): NonStaffCost[] {
+    const data = this.getProjectData(projectId)
+    return data?.nonStaffCosts ?? []
+  }
+
+  getTotalCosts(projectId: string): number {
+    const staff = this.getStaffCosts(projectId)
+    const nonStaff = this.getNonStaffCosts(projectId)
+    let total = 0
+    for (const s of staff) {
+      total += safeNum(s.year1) + safeNum(s.year2) + safeNum(s.year3)
+    }
+    for (const ns of nonStaff) {
+      if (!ns.inKind) {
+        total += safeNum(ns.year1) + safeNum(ns.year2) + safeNum(ns.year3)
+      }
+    }
+    return total
+  }
+
+  getTotalStaffCosts(projectId: string): number {
+    const staff = this.getStaffCosts(projectId)
+    let total = 0
+    for (const s of staff) {
+      total += safeNum(s.year1) + safeNum(s.year2) + safeNum(s.year3)
+    }
+    return total
+  }
+
+  getTotalNonStaffCosts(projectId: string): number {
+    const nonStaff = this.getNonStaffCosts(projectId)
+    let total = 0
+    for (const ns of nonStaff) {      
+      total += safeNum(ns.year1) + safeNum(ns.year2) + safeNum(ns.year3)
+    }
+    return total
+  }
+
+  getInKindCostTotal(projectId: string): number {
+    const nonStaff = this.getNonStaffCosts(projectId)
+    let total = 0
+    for (const ns of nonStaff) {
+      if (ns.inKind) {
+        total += safeNum(ns.year1) + safeNum(ns.year2) + safeNum(ns.year3)
+      }
+    }
+    return total
+  }
+
+  getTotalPricing(projectId: string): number {
+    const totalCosts = this.getTotalCosts(projectId)
+    const inKindTotal = this.getInKindCostTotal(projectId)
+    return totalCosts - inKindTotal
+  }
+
+  getMultiplierCost(projectId: string, multiplier: number): number {
+    const totalCosts = this.getTotalCosts(projectId)
+    return totalCosts * (multiplier - 1)
   }
 
   subscribe(projectId: string, listener: () => void): () => void {
