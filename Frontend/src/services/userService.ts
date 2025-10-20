@@ -1,5 +1,5 @@
-// Mock user service consuming /public/api/users/... JSON files.
-
+// Using a tmp "userId" of "1" for all calls until auth is implemented
+// Using a tmp cache in sessionStorage for new projects until backend is ready
 const BASE = "/api/users"
 
 async function getJson<T>(path: string): Promise<T> {
@@ -50,10 +50,70 @@ export type Project = {
 }
 
 /**
- * Fetch projects for a user.
+ * Fetch projects for a user, merging with cached new projects.
  * TODO: Integrate real API/auth logic and error handling as backend evolves.
  */
 export async function getUserProjects(userId: string): Promise<Project[]> {
   // Load from static mock for now
-  return getJson<Project[]>(`${BASE}/${userId}/projects.json`)
+  const fetched = await getJson<Project[]>(`${BASE}/${userId}/projects.json`);
+  // Merge with cached new projects
+  const cached = getCachedProjects(userId);
+  const merged = [...fetched, ...cached.filter(cp => !fetched.some(fp => fp.id === cp.id))];
+  return merged;
+}
+
+/**
+ * Create and cache a new project for the user.
+ */
+export function createUserProject(userId: string, project: Project): void {
+  const cached = getCachedProjects(userId);
+  cached.push(project);
+  setCachedProjects(userId, cached);
+}
+
+/**
+ * Delete a cached project for the user.
+ */
+export function deleteUserProject(userId: string, projectId: string): void {
+  const cached = getCachedProjects(userId);
+  const updated = cached.filter(p => p.id !== projectId);
+  setCachedProjects(userId, updated);
+}
+
+/**
+ * Update the title of a cached project for the user.
+ */
+export function updateProjectTitle(userId: string, projectId: string, newTitle: string): void {
+  const cached = getCachedProjects(userId);
+  const project = cached.find(p => p.id === projectId);
+  if (project) {
+    project.title = newTitle;
+    project.updatedAt = new Date().toISOString();
+    setCachedProjects(userId, cached);
+  }
+}
+
+/**
+ * Get cached projects from session storage.
+ */
+function getCachedProjects(userId: string): Project[] {
+  try {
+    const key = `user:${userId}:projects`;
+    const raw = sessionStorage.getItem(key);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Set cached projects in session storage.
+ */
+function setCachedProjects(userId: string, projects: Project[]): void {
+  try {
+    const key = `user:${userId}:projects`;
+    sessionStorage.setItem(key, JSON.stringify(projects));
+  } catch {
+    // Ignore storage errors
+  }
 }

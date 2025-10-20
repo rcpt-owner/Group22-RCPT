@@ -153,7 +153,7 @@ export function ProjectOverviewTab() {
       {/* Bottom Section: Project Overview Form */}
       <Card className="border rounded-lg">
         <CardHeader>
-          <CardTitle className="text-lg">{liveTitle || overview?.title || "Project Overview"}</CardTitle>
+          <CardTitle className="text-lg">{"Project Overview"}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
           {successMsg && <p className="text-green-600">{successMsg}</p>}
@@ -162,7 +162,7 @@ export function ProjectOverviewTab() {
             initialData={initialData}
             onSubmit={handleSubmit}
             onChange={handleChange}
-            hideSubmit
+            submitLabel="Save Overview" 
             card={false}
             formId="project-overview-form"
           />

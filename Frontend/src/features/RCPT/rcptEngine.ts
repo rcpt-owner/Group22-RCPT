@@ -87,8 +87,9 @@ class RcptEngine {
     this.options = { ...this.options, ...options }
   }
 
-  async loadData(projectId: string): Promise<void> {
+  async loadData(projectId: string, userId: string): Promise<void> {
     if (!projectId) throw new Error("Missing projectId")
+    if (!userId) throw new Error("Missing userId")
 
     // Serve from cache if not expired
     const existing = this.cache.get(projectId)
@@ -120,8 +121,17 @@ class RcptEngine {
       const serverOv = ovRes.value
       if (!data.overview) {
         data.overview = serverOv
+      } else {
+        // Prefer the newer one by lastUpdated
+        const localTs = Date.parse(data.overview.lastUpdated ?? "")
+        const serverTs = Date.parse(serverOv.lastUpdated ?? "")
+        if (isFinite(localTs) && isFinite(serverTs)) {
+          data.overview = localTs >= serverTs ? data.overview : serverOv
+        } else {
+          // If timestamps are missing, keep local to avoid clobbering user edits
+          data.overview = data.overview
+        }
       }
-      // Always prefer local overview to preserve user edits
     }
     if (costRes.status === "fulfilled") data.costData = costRes.value
     if (priceRes.status === "fulfilled") data.pricingData = priceRes.value
@@ -263,7 +273,7 @@ class RcptEngine {
     // Merge fields (form uses "description" which maps to "summary")
     const merged: ProjectOverview = {
       ...existing,
-      title: payload.title && payload.title.trim() ? payload.title : "Unnamed Project",
+      title: payload.title && payload.title.trim() ? payload.title : "Untitled",
       summary: payload.description ?? existing.summary,
       lastUpdated: new Date().toISOString(),
     }
@@ -271,7 +281,7 @@ class RcptEngine {
 
     // Sync title to project metadata
     const { updateProjectTitle } = await import("@/services/userService")
-    updateProjectTitle("1", projectId, merged.title) // Assuming userId is "1"
+    updateProjectTitle(userId, projectId, merged.title)
 
     // Cache any selection options as a string to ensure reliable session serialization
     const maybeOptions =
@@ -403,7 +413,7 @@ class RcptEngine {
       return session
     }
     const fresh: CacheEntry = {
-      data: { projectId, staffCosts: [], nonStaffCosts: [] },
+      data: { projectId, userId: "", staffCosts: [], nonStaffCosts: [] },
       totals: this.computeTotals({ projectId, staffCosts: [], nonStaffCosts: [] }),
       expiresAt: Date.now() + this.options.ttlMs,
     }
@@ -529,7 +539,7 @@ class RcptEngine {
     return {
       ...existing,
       projectId: existing?.projectId ?? "",
-      title: formValues.title ?? existing?.title ?? "Unnamed Project",
+      title: formValues.title ?? existing?.title ?? "",
       summary: formValues.description ?? existing?.summary ?? "",
       budget: existing?.budget ?? 0,
       status: existing?.status ?? "Draft",

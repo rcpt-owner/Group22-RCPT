@@ -7,7 +7,7 @@ import { StaffCostsDataTable } from "./CostTabFeatures/StaffCostsDataTable"
 import { AddStaffDialog } from "./CostTabFeatures/AddStaffDialog"
 import { AddNonStaffDialog } from "./CostTabFeatures/AddNonStaffDialog"
 import { NonStaffCostsDataTable } from "./CostTabFeatures/NonStaffCostsDataTable"
-import { rcptEngine, type StaffCost, type NonStaffCost } from "./rcptEngine"
+import { rcptEngine, type StaffCost, type NonStaffCost } from "../rcptEngine"
 
 // CostTab: hosts cost subcomponents and orchestrates data/state for this tab.
 // Tables are presentational; CostTab owns state and passes data + callbacks.

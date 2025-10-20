@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { StaffCost } from "../rcptEngine" // use engine type
+import type { StaffCost } from "../../rcptEngine" // use engine type
 
 // AUD formatter (fix invalid locale and align with the rest of the app)
 const fmtCurrency = (n: number) =>

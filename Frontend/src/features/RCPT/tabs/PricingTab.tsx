@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import StatsCard from "../../../components/stats/StatsCard";
-import { rcptEngine } from "./rcptEngine"; 
+import { rcptEngine } from "../rcptEngine"; 
 import { Scale } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";

@@ -17,7 +17,7 @@ export function ResearchCostingTool({
   userId?: string
   initialTab?: string
 }) {
-  return (
+  return (  
     <div className="space-y-4">
       <Tabs defaultValue={initialTab} className="w-full">
         {/* Header with tabs + Exit button */}
@@ -25,7 +25,7 @@ export function ResearchCostingTool({
           {/* Use auto-fit so tabs auto-adjust when one is removed; wraps on small screens */}
           <TabsList className="grid w-full grid-cols-[repeat(auto-fit,minmax(8rem,1fr))] gap-2">
             <TabsTrigger value="Project Overview" className="text-sm">Project Overview</TabsTrigger>
-            <TabsTrigger value="Cost" className="text-sm">Cost</TabsTrigger>
+            <TabsTrigger value="Costs" className="text-sm">Costs</TabsTrigger>
             <TabsTrigger value="Pricing" className="text-sm">Pricing</TabsTrigger>
             <TabsTrigger value="Export" className="text-sm">Export</TabsTrigger>
           </TabsList>
@@ -41,7 +41,7 @@ export function ResearchCostingTool({
           <TabsContent value="Project Overview" className="animate-in fade-in-0">
             <ProjectOverviewTab />
           </TabsContent>
-          <TabsContent value="Cost" className="animate-in fade-in-0">
+          <TabsContent value="Costs" className="animate-in fade-in-0">
             <CostTab projectId={projectId ?? ""} />
           </TabsContent>
           <TabsContent value="Pricing" className="animate-in fade-in-0">
