@@ -54,12 +54,13 @@ export type Project = {
  * TODO: Integrate real API/auth logic and error handling as backend evolves.
  */
 export async function getUserProjects(userId: string): Promise<Project[]> {
+  // Similar procedure can be applied to other user-specific data fetching functions and using the api and needing to merge with cached data.
   // Load from static mock for now
-  const fetched = await getJson<Project[]>(`${BASE}/${userId}/projects.json`);
+  // const fetched = await getJson<Project[]>(`${BASE}/${userId}/projects.json`);
   // Merge with cached new projects
   const cached = getCachedProjects(userId);
-  const merged = [...fetched, ...cached.filter(cp => !fetched.some(fp => fp.id === cp.id))];
-  return merged;
+  // const merged = [...fetched, ...cached.filter(cp => !fetched.some(fp => fp.id === cp.id))];
+  return cached;
 }
 
 /**
