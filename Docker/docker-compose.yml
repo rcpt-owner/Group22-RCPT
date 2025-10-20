@@ -50,6 +50,8 @@ services:
       CORS_ALLOWED_ORIGINS: http://localhost:3000
       JAVA_TOOL_OPTIONS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75"
       MONGO_URI: mongodb://rcptapp:rcptapppw@mongo:27017/rcpt?authSource=admin
+      SPRING_DATA_MONGODB_URI: mongodb://rcptapp:rcptapppw@mongo:27017/rcpt?authSource=admin
+      SPRING_DATA_MONGODB_DATABASE: rcpt
     ports:
       - "8080:8080"
     depends_on:

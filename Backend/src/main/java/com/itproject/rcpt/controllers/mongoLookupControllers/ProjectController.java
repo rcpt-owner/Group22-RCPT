@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.util.Optional;
 
 @RestController
@@ -33,10 +33,22 @@ public class ProjectController {
      * Note: ownerUserId is passed explicitly for now
      */
     @PostMapping
-    public ResponseEntity<ProjectResponse> create(@RequestBody ProjectCreateRequest request,
-                                                  @RequestParam String ownerUserId) {
-        Project project = service.create(request, ownerUserId);
-        return ResponseEntity.ok(mapper.toResponse(project));
+    public ResponseEntity<ProjectResponse> create(
+        @RequestBody ProjectCreateRequest req,
+        @RequestHeader(name="X-User-Id", required=false) String ownerHeader,
+        @RequestParam(name="ownerUserId", required=false) String ownerParam) {
+
+    String ownerUserId = (ownerHeader != null && !ownerHeader.isBlank()) ? ownerHeader : ownerParam;
+    if (ownerUserId == null || ownerUserId.isBlank()) {
+        throw new IllegalArgumentException("ownerUserId missing (send X-User-Id header or ownerUserId query param)");
+    }
+
+    var saved = service.create(req, ownerUserId);
+
+    var location = org.springframework.web.servlet.support.ServletUriComponentsBuilder
+        .fromCurrentRequest().path("/{id}").buildAndExpand(saved.getId()).toUri();
+
+    return ResponseEntity.created(location).body(mapper.toResponse(saved));  
     }
 
     /**

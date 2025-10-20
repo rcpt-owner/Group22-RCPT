@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS non_staff_costs (
     cost_subcategory TEXT PRIMARY KEY,
     cost_category TEXT NOT NULL
-;
+);
 
 --------- Insert Values ---------
 INSERT INTO non_staff_costs (cost_subcategory, cost_category) VALUES
