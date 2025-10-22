@@ -7,13 +7,24 @@ import com.itproject.rcpt.dto.project.ProjectUpdateRequest;
 import com.itproject.rcpt.enums.ProjectStatus;
 import com.itproject.rcpt.mapper.ProjectMapper;
 import com.itproject.rcpt.service.ProjectService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import java.util.Optional;
+
+/**
+ * Project CRUD.
+ * Base path: /api/v1/projects
+ *
+ * Create requires an owner user id via:
+ *  - Header: X-User-Id
+ *  - Query : ?ownerUserId=...
+ */
 
 @RestController
 @RequestMapping("/api/v1/projects")
@@ -30,25 +41,31 @@ public class ProjectController {
 
     /**
      * Create a new project.
-     * Note: ownerUserId is passed explicitly for now
+     * Returns 201 with Location header /api/v1/projects/{id}
      */
     @PostMapping
     public ResponseEntity<ProjectResponse> create(
-        @RequestBody ProjectCreateRequest req,
-        @RequestHeader(name="X-User-Id", required=false) String ownerHeader,
-        @RequestParam(name="ownerUserId", required=false) String ownerParam) {
+            @RequestBody ProjectCreateRequest req,
+            @RequestHeader(name = "X-User-Id", required = false) String ownerHeader,
+            @RequestParam(name = "ownerUserId", required = false) String ownerParam
+    ) {
+        String ownerUserId = !isBlank(ownerHeader) ? ownerHeader.trim() :
+                             (!isBlank(ownerParam) ? ownerParam.trim() : null);
 
-    String ownerUserId = (ownerHeader != null && !ownerHeader.isBlank()) ? ownerHeader : ownerParam;
-    if (ownerUserId == null || ownerUserId.isBlank()) {
-        throw new IllegalArgumentException("ownerUserId missing (send X-User-Id header or ownerUserId query param)");
-    }
+        if (isBlank(ownerUserId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "ownerUserId missing (send X-User-Id header or ownerUserId query param)");
+        }
 
-    var saved = service.create(req, ownerUserId);
+        Project saved = service.create(req, ownerUserId);
 
-    var location = org.springframework.web.servlet.support.ServletUriComponentsBuilder
-        .fromCurrentRequest().path("/{id}").buildAndExpand(saved.getId()).toUri();
+        var location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(saved.getId())
+                .toUri();
 
-    return ResponseEntity.created(location).body(mapper.toResponse(saved));  
+        return ResponseEntity.created(location).body(mapper.toResponse(saved));
     }
 
     /**
@@ -57,12 +74,14 @@ public class ProjectController {
     @GetMapping("/{id}")
     public ResponseEntity<ProjectResponse> get(@PathVariable String id) {
         Optional<Project> project = service.get(id);
-        return project.map(value -> ResponseEntity.ok(mapper.toResponse(value)))
-                      .orElse(ResponseEntity.notFound().build());
+        return project
+                .map(p -> ResponseEntity.ok(mapper.toResponse(p)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /**
-     * List projects with optional filtering.
+     * List projects with optional filter by owner and status.
+     * Example: /api/v1/projects?page=0&size=10&ownerUserId=dev-user-001&status=DRAFT
      */
     @GetMapping
     public Page<ProjectResponse> list(@RequestParam(defaultValue = "0") int page,
@@ -74,7 +93,7 @@ public class ProjectController {
     }
 
     /**
-     * Update an existing project.
+     * Update an existing project (full replace semantics).
      */
     @PutMapping("/{id}")
     public ResponseEntity<ProjectResponse> update(@PathVariable String id,
@@ -90,5 +109,9 @@ public class ProjectController {
     public ResponseEntity<Void> delete(@PathVariable String id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private static boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
     }
 }
