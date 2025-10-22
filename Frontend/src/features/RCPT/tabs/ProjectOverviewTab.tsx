@@ -119,7 +119,7 @@ export function ProjectOverviewTab() {
     if (!projectId) return
     // TODO: cross-field validation (endDate >= startDate)
     await rcptEngine.updateProjectOverview(projectId, values)
-    rcptEngine.clearFormData(projectId, "overview")
+    // rcptEngine.clearFormData(projectId, "overview")
     setSuccessMsg("Saved")
     setTimeout(() => setSuccessMsg(null), 1500)
   }

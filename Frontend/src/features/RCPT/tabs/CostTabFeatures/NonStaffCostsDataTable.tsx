@@ -33,9 +33,7 @@ export type NonStaffCost = {
   subcategory: string
   description?: string
   inKind: boolean
-  year1: number
-  year2: number
-  year3: number
+  years: Record<string, number>
 }
 
 const fmtCurrency = (n: number) =>
@@ -45,7 +43,7 @@ interface NonStaffCostsDataTableProps {
   data: NonStaffCost[]
   onEdit?: (row: NonStaffCost) => void
   onDelete?: (row: NonStaffCost) => void
-  yearLabels?: [string, string, string]
+  yearLabels?: string[]
 }
 
 export function NonStaffCostsDataTable({
@@ -59,7 +57,7 @@ export function NonStaffCostsDataTable({
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [columnsMenuOpen, setColumnsMenuOpen] = React.useState(false)
 
-  const columns: ColumnDef<NonStaffCost>[] = [
+  const staticColumns: ColumnDef<NonStaffCost>[] = [
     {
       accessorKey: "category",
       header: ({ column }) => (
@@ -104,87 +102,68 @@ export function NonStaffCostsDataTable({
       },
       sortingFn: (a, b, id) => Number(a.getValue(id)) - Number(b.getValue(id)),
     },
-    {
-      accessorKey: "year1",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="ml-auto flex w-full justify-end"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          {yearLabels[0]}
-          <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const v = Number(row.getValue("year1"))
-        return <div className="text-right font-medium">{fmtCurrency(v)}</div>
-      },
+  ]
+
+  const yearColumns: ColumnDef<NonStaffCost>[] = (yearLabels ?? []).map((year) => ({
+    id: `year-${year}`,
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="ml-auto flex w-full justify-end"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        {year}
+        <ArrowUpDown />
+      </Button>
+    ),
+    accessorFn: (row) => row.years?.[year] ?? 0,
+    cell: ({ row }) => {
+      const v = Number(row.original.years?.[year] ?? 0)
+      return <div className="text-right font-medium">{fmtCurrency(v)}</div>
     },
-    {
-      accessorKey: "year2",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="ml-auto flex w-full justify-end"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          {yearLabels[1]}
-          <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const v = Number(row.getValue("year2"))
-        return <div className="text-right font-medium">{fmtCurrency(v)}</div>
-      },
+    sortingFn: (a, b, id) => {
+      const va = a.original.years?.[year] ?? 0
+      const vb = b.original.years?.[year] ?? 0
+      return Number(va) - Number(vb)
     },
-    {
-      accessorKey: "year3",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="ml-auto flex w-full justify-end"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          {yearLabels[2]}
-          <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const v = Number(row.getValue("year3"))
-        return <div className="text-right font-medium">{fmtCurrency(v)}</div>
-      },
+    enableHiding: true,
+  }))
+
+  const actionsColumn: ColumnDef<NonStaffCost> = {
+    id: "actions",
+    enableHiding: false,
+    enableSorting: false,
+    cell: ({ row }) => {
+      const item = row.original
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => onEdit?.(item)}>
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={() => onDelete?.(item)}
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
     },
-    {
-      id: "actions",
-      enableHiding: false,
-      enableSorting: false,
-      cell: ({ row }) => {
-        const item = row.original
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => onEdit?.(item)}>
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={() => onDelete?.(item)}
-              >
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )
-      },
-    },
+  }
+
+  const columns: ColumnDef<NonStaffCost>[] = [
+    ...staticColumns,
+    ...yearColumns,
+    actionsColumn,
   ]
 
   const table = useReactTable({

@@ -94,12 +94,8 @@ export default function CostTab({ projectId }: CostTabProps) {
     }
   }, [])
 
-  // Compute year labels from the loaded form schema (fallback to Year 1–3)
-  const yearLabels: [string, string, string] = [
-    ((formSchema as any)?.fields?.find((f: any) => f.name === "year1")?.label) ?? "Year 1",
-    ((formSchema as any)?.fields?.find((f: any) => f.name === "year2")?.label) ?? "Year 2",
-    ((formSchema as any)?.fields?.find((f: any) => f.name === "year3")?.label) ?? "Year 3",
-  ]
+  // Compute year labels from rcptEngine (dynamic)
+  const yearLabels: string[] = rcptEngine.getProjectYears(projectId)
 
   // Helper mappers
   const toTitle = (s: string | undefined) =>
@@ -115,16 +111,22 @@ export default function CostTab({ projectId }: CostTabProps) {
   }
 
   // FUTURE: integrate with backend data model for a projects length so these years will have to be dynamic
-  const mapFormToStaffRow = (values: Record<string, any>): StaffCost => ({
-    role: String(values.role ?? ""),
-    employmentType: mapEmploymentType(values.employmentType),
-    category: toTitle(values.category),
-    employmentClassification: toTitle(values.employmentClassification),
-    fteType: toTitle(values.fteType),
-    year1: Number(values.year1 ?? 0) || 0,
-    year2: Number(values.year2 ?? 0) || 0,
-    year3: Number(values.year3 ?? 0) || 0,
-  })
+  const mapFormToStaffRow = (values: Record<string, any>): StaffCost => {
+    const years: Record<string, number> = {}
+    if (values.years && typeof values.years === "object") {
+      for (const y of yearLabels) years[y] = Number(values.years[y] ?? 0) || 0
+    } else {
+      for (const y of yearLabels) years[y] = 0
+    }
+    return {
+      role: String(values.role ?? ""),
+      employmentType: mapEmploymentType(values.employmentType),
+      category: toTitle(values.category),
+      employmentClassification: toTitle(values.employmentClassification),
+      fteType: toTitle(values.fteType),
+      years,
+    }
+  }
 
   // Reverse mapping to prefill form from a StaffCost row
   const staffRowToFormValues = (row: StaffCost) => {
@@ -135,34 +137,36 @@ export default function CostTab({ projectId }: CostTabProps) {
     }
     return {
       role: row.role,
-      employmentType: slug(row.employmentType), // e.g., "Full-Time" -> "full-time"
+      employmentType: slug(row.employmentType),
       category: normalizeCategory(row.category),
-      employmentClassification: slug(row.employmentClassification), // "Level A" -> "level-a"
-      fteType: row.fteType.toLowerCase(), // "FTE" -> "fte"
-      year1: row.year1,
-      year2: row.year2,
-      year3: row.year3,
+      employmentClassification: slug(row.employmentClassification),
+      fteType: row.fteType.toLowerCase(),
+      years: { ...row.years },
     }
   }
 
   // Non-staff helpers
-  const mapFormToNonStaffRow = (values: Record<string, any>): NonStaffCost => ({
-    category: String(values.category ?? ""),
-    subcategory: String(values.subcategory ?? ""),
-    description: String(values.description ?? ""),
-    inKind: Boolean(values.inKind),
-    year1: Number(values.year1 ?? 0) || 0,
-    year2: Number(values.year2 ?? 0) || 0,
-    year3: Number(values.year3 ?? 0) || 0,
-  })
+  const mapFormToNonStaffRow = (values: Record<string, any>): NonStaffCost => {
+    const years: Record<string, number> = {}
+    if (values.years && typeof values.years === "object") {
+      for (const y of yearLabels) years[y] = Number(values.years[y] ?? 0) || 0
+    } else {
+      for (const y of yearLabels) years[y] = 0
+    }
+    return {
+      category: String(values.category ?? ""),
+      subcategory: String(values.subcategory ?? ""),
+      description: String(values.description ?? ""),
+      inKind: Boolean(values.inKind),
+      years,
+    }
+  }
   const nonStaffRowToFormValues = (row: NonStaffCost) => ({
     category: row.category,
     subcategory: row.subcategory,
     description: row.description ?? "",
     inKind: Boolean(row.inKind),
-    year1: row.year1,
-    year2: row.year2,
-    year3: row.year3,
+    years: { ...row.years },
   })
 
   const handleAddStaff = async (values: Record<string, any>) => {

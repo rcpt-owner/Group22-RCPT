@@ -49,6 +49,7 @@ type DynamicFormProps = {
   formId?: string                    // Optional external id to submit from outside
   hideSubmit?: boolean               // Hide internal submit button (use external actions)
   onChange?: (data: any) => void     // emit values on any change
+  projectId?: string                // projectId for dynamic years
 }
 
 // Support optional layout metadata without changing FormSchema type.

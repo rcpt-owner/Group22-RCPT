@@ -21,9 +21,7 @@ export interface StaffCost {
   category: string
   employmentClassification: string
   fteType: string
-  year1: number
-  year2: number
-  year3: number
+  years: Record<string, number> // e.g. { "2023": 1000, "2024": 2000 } this number can be changed from money to time later if needed
 }
 
 export interface NonStaffCost {
@@ -31,9 +29,7 @@ export interface NonStaffCost {
   subcategory: string
   description?: string
   inKind: boolean
-  year1: number
-  year2: number
-  year3: number
+  years: Record<string, number>
 }
 
 export interface RCPTProjectData {
@@ -47,13 +43,14 @@ export interface RCPTProjectData {
   lastLoadedAt?: string
   // Cached selection options for the Project Overview tab (serialized)
   overviewSelectionOptions?: string
+  overviewFormData?: ProjectOverviewFormData
 }
 
 export interface RcptCalculatedTotals {
   totalDirect: number
   totalIndirect: number
   totalAll: number
-  perYear?: Array<{ yearIndex: number; direct: number; indirect: number; total: number }>
+  perYear?: Array<{ yearIndex: number; year?: string; direct: number; indirect: number; total: number }>
   currency?: string
 }
 
@@ -294,6 +291,8 @@ class RcptEngine {
     this.cache.set(projectId, entry)
     this.writeSession(entry)
     this.notify(projectId)
+    // Notify listeners to update years
+    this.notify(projectId)
   }
 
   async submitReview(projectId: string): Promise<void> {
@@ -330,17 +329,50 @@ class RcptEngine {
     return data?.nonStaffCosts ?? []
   }
 
+  
+  // BUGGED
+  getProjectYears(projectId: string): string[] {
+    const data = this.getProjectData(projectId)
+    // Defensive: fallback to 3 years if missing
+    let startYear: number | undefined, endYear: number | undefined
+
+    // Extract from ProjectOverviewFormData, not ProjectOverview
+    const overviewForm = data?.overviewFormData
+    if (overviewForm) {
+      // Only use the year part (ignore months)
+      const extractYear = (date: any) => {
+        if (!date) return undefined
+        if (typeof date === "string") {
+          const m = date.match(/(\d{4})/)
+          return m ? parseInt(m[1], 10) : undefined
+        }
+        if (typeof date === "object" && date.year) return Number(date.year)
+        return undefined
+      }
+      startYear = extractYear((overviewForm as any).startDate)
+      endYear = extractYear((overviewForm as any).endDate)
+    }
+
+    if (typeof startYear === "number" && typeof endYear === "number" && endYear >= startYear) {
+      const years: string[] = []
+      for (let y = startYear; y <= endYear; ++y) years.push(String(y))
+      return years
+    }
+    // fallback: 3 years from current year
+    const now = new Date()
+    const base = now.getFullYear()
+    return [String(base), String(base + 1), String(base + 2)]
+  }
+
   getTotalCosts(projectId: string): number {
     const staff = this.getStaffCosts(projectId)
     const nonStaff = this.getNonStaffCosts(projectId)
     let total = 0
     for (const s of staff) {
-      total += safeNum(s.year1) + safeNum(s.year2) + safeNum(s.year3)
+      for (const v of Object.values(s.years ?? {})) total += safeNum(v)
     }
     for (const ns of nonStaff) {
-      if (!ns.inKind) {
-        total += safeNum(ns.year1) + safeNum(ns.year2) + safeNum(ns.year3)
-      }
+      for (const v of Object.values(ns.years ?? {})) total += safeNum(v)
     }
     return total
   }
@@ -349,7 +381,7 @@ class RcptEngine {
     const staff = this.getStaffCosts(projectId)
     let total = 0
     for (const s of staff) {
-      total += safeNum(s.year1) + safeNum(s.year2) + safeNum(s.year3)
+      for (const v of Object.values(s.years ?? {})) total += safeNum(v)
     }
     return total
   }
@@ -357,8 +389,8 @@ class RcptEngine {
   getTotalNonStaffCosts(projectId: string): number {
     const nonStaff = this.getNonStaffCosts(projectId)
     let total = 0
-    for (const ns of nonStaff) {      
-      total += safeNum(ns.year1) + safeNum(ns.year2) + safeNum(ns.year3)
+    for (const ns of nonStaff) {
+      for (const v of Object.values(ns.years ?? {})) total += safeNum(v)
     }
     return total
   }
@@ -368,7 +400,7 @@ class RcptEngine {
     let total = 0
     for (const ns of nonStaff) {
       if (ns.inKind) {
-        total += safeNum(ns.year1) + safeNum(ns.year2) + safeNum(ns.year3)
+        for (const v of Object.values(ns.years ?? {})) total += safeNum(v)
       }
     }
     return total
@@ -433,38 +465,58 @@ class RcptEngine {
 
     const staff = data.staffCosts ?? []
     const nonStaff = data.nonStaffCosts ?? []
-    const y = [0, 0, 0] as [number, number, number]
-
+    // Get dynamic years
+    let years: string[] = []
+    if (data.overview) {
+      const parseYear = (d: any) => {
+        if (!d) return undefined
+        if (typeof d === "string") {
+          const m = d.match(/(\d{4})/)
+          return m ? parseInt(m[1], 10) : undefined
+        }
+        if (typeof d === "object" && d.year) return Number(d.year)
+        return undefined
+      }
+      const startYear = parseYear((data.overview as any).startDate)
+      const endYear = parseYear((data.overview as any).endDate)
+      if (typeof startYear === "number" && typeof endYear === "number" && endYear >= startYear) {
+        for (let y = startYear; y <= endYear; ++y) years.push(String(y))
+      }
+    }
+    if (years.length === 0) {
+      const now = new Date()
+      const base = now.getFullYear()
+      years = [String(base), String(base + 1), String(base + 2)]
+    }
+    const y: number[] = years.map(() => 0)
     for (const row of staff) {
-      y[0] += safeNum(row.year1)
-      y[1] += safeNum(row.year2)
-      y[2] += safeNum(row.year3)
+      years.forEach((year, i) => { y[i] += safeNum(row.years?.[year]) })
     }
     for (const row of nonStaff) {
-      // If inKind is true, treat it as zero cost for totals
-      const k1 = row.inKind ? 0 : safeNum(row.year1)
-      const k2 = row.inKind ? 0 : safeNum(row.year2)
-      const k3 = row.inKind ? 0 : safeNum(row.year3)
-      y[0] += k1
-      y[1] += k2
-      y[2] += k3
+      years.forEach((year, i) => {
+        const v = row.inKind ? 0 : safeNum(row.years?.[year])
+        y[i] += v
+      })
     }
-
-    const direct = y[0] + y[1] + y[2]
+    const direct = y.reduce((a, b) => a + b, 0)
     let indirect = 0
     const rate = data.costData?.overheadRate
     if (isFiniteNum(rate) && rate! > 0) {
       indirect = direct * (rate as number)
     }
     const total = direct + indirect
-
-    const perYear = y.map((dy, i) => ({
-      yearIndex: i + 1,
-      direct: dy,
-      indirect: isFiniteNum(rate) && rate! > 0 ? dy * (rate as number) : 0,
-      total: isFiniteNum(rate) && rate! > 0 ? dy * (1 + (rate as number)) : dy,
-    }))
-
+    const perYear = years.map((year, i) => {
+      const directVal = safeNum(y[i])
+      const indirectVal = isFiniteNum(rate) && rate! > 0 ? directVal * (rate as number) : 0
+      const totalVal = isFiniteNum(rate) && rate! > 0 ? directVal * (1 + (rate as number)) : directVal
+      return {
+        yearIndex: i + 1,
+        year,
+        direct: directVal,
+        indirect: indirectVal,
+        total: totalVal,
+      }
+    })
     return {
       totalDirect: direct,
       totalIndirect: indirect,

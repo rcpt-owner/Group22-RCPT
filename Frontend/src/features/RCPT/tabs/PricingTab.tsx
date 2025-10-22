@@ -18,6 +18,7 @@ const PricingTab: React.FC<{ projectId: string }> = ({ projectId }) => {
   const totalPricing = rcptEngine.getTotalPricing(projectId);
 
   const [nonStaffCosts, setNonStaffCosts] = useState(rcptEngine.getNonStaffCosts(projectId));
+  const yearLabels = rcptEngine.getProjectYears(projectId);
 
   useEffect(() => {
     const unsubscribe = rcptEngine.subscribe(projectId, () => {
@@ -130,7 +131,7 @@ const PricingTab: React.FC<{ projectId: string }> = ({ projectId }) => {
             </TableHeader>
             <TableBody>
               {nonStaffCosts.map((item, index) => {
-                const total = item.year1 + item.year2 + item.year3;
+                const total = yearLabels.reduce((sum, y) => sum + (item.years?.[y] ?? 0), 0);
                 return (
                   <TableRow key={index}>
                     <TableCell>{item.description || item.subcategory || item.category}</TableCell>

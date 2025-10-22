@@ -8,6 +8,8 @@ import PricingTab from "./tabs/PricingTab"
 import { rcptEngine } from "./rcptEngine"
 
 
+
+
 export function ResearchCostingTool({
   onExit,
   projectId,
@@ -19,7 +21,10 @@ export function ResearchCostingTool({
   userId?: string
   initialTab?: string
 }) {
+  
+
   const [overviewComplete, setOverviewComplete] = useState(false)
+
 
   useEffect(() => {
     if (!projectId) return
@@ -31,9 +36,15 @@ export function ResearchCostingTool({
     return unsubscribe
   }, [projectId])
 
-  const totalCost = rcptEngine.getTotalCosts(projectId ?? "")
   const staffCount = rcptEngine.getStaffCosts(projectId ?? "").length
   const nonStaffCount = rcptEngine.getNonStaffCosts(projectId ?? "").length
+
+  // Constants hardcoded for now; to be moved to config/service later
+  const staffTotal = rcptEngine.getTotalStaffCosts(projectId ?? ""); 
+  const nonStaffTotal = rcptEngine.getTotalNonStaffCosts(projectId ?? ""); 
+  const multiplier = 1.5;  // NEED TO GET FROM SERVICES LATER
+  const multiplierCost = rcptEngine.getMultiplierCost(projectId ?? "", multiplier);
+  const totalCosts = staffTotal + nonStaffTotal + multiplierCost;
 
   return (  
     <div className="space-y-4">
@@ -67,7 +78,7 @@ export function ResearchCostingTool({
           </TabsContent>
           <TabsContent value="Export" className="animate-in fade-in-0">
             <ExportTab
-              totalCost={totalCost}
+              totalCost={totalCosts}
               staffCount={staffCount}
               nonStaffCount={nonStaffCount}
             />

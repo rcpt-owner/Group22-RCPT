@@ -40,7 +40,7 @@ export function AddStaffDialog({
   onOpenChange,
   hideTrigger = false,
   onChange,
-}: AddStaffDialogProps) {
+}: AddStaffDialogProps & { projectId?: string }) {
   // Support controlled or uncontrolled open state
   const isControlled = typeof open === "boolean"
   const [internalOpen, setInternalOpen] = React.useState(false)
@@ -52,6 +52,9 @@ export function AddStaffDialog({
     onOpenChange?.(next)
     if (next) setFormKey((k) => k + 1) // reset form each open
   }
+
+  // Get projectId from initialData if available
+  const projectId = (initialData && initialData.projectId) || undefined
 
   return (
     <Dialog open={actualOpen} onOpenChange={setOpen}>
@@ -81,6 +84,7 @@ export function AddStaffDialog({
             initialData={initialData}
             formId={formSchema?.formId || "add-staff-member-form"}
             hideSubmit
+            projectId={projectId}
           />
         ) : (
           <p className="text-sm text-muted-foreground">Loading staff member form...</p>
