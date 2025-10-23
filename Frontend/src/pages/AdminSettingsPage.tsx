@@ -15,9 +15,21 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import { Settings, Home, Bell } from "lucide-react";
+import { Settings, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+
+// Define all API endpoints
+const endpoints = {
+  eba: "/api/eba",
+  payrollTax: "/api/payroll-tax",
+  departments: "/api/departments",
+  regions: "/api/regions",
+  salaryRates: "/api/salary-rates",
+  multipliers: "/api/salary-rate-multipliers",
+  staffBenefits: "/api/staff-benefits",
+  stipends: "/api/stipends",
+};
 
 export function AdminSettingsPage() {
   const navigate = useNavigate();
@@ -41,9 +53,6 @@ export function AdminSettingsPage() {
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
             <Home className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Bell className="h-5 w-5" />
           </Button>
           <Button variant="default" size="icon" onClick={() => navigate("/adminSettings")}>
             <Settings className="h-5 w-5" />
@@ -73,53 +82,50 @@ export function AdminSettingsPage() {
           {/* Salary Rates */}
           <SectionCard
             title="Salary Rates"
-            description="Update the salary rates by going off the ID, Payroll Type, etc."
+            description="Update a salary rate based on its code. Eg 'CasualAcademicRA Grade 1.1' or 'CasualAcademicLevel E.1'."
             fields={[
-              { label: "Vlookup ID", type: "input", placeholder: "Enter Vlookup ID" },
-              { label: "Rate", type: "input", placeholder: "Enter new salary rate" },
+              { label: "Code", type: "input", placeholder: "Enter the code you wish to change the rate of" },
+              { label: "Rate", type: "input", placeholder: "Enter the new salary rate" },
             ]}
           />
 
           {/* Multipliers */}
           <SectionCard
             title="Multipliers"
-            description="Update the pricing multipliers."
+            description="Update the pricing multipliers based on year."
             fields={[
-              { label: "EBA Multiplier", type: "input", placeholder: "Enter new multiplier value as a decimal" },
-              { label: "Salary Rate Multiplier", type: "input", placeholder: "Enter new multiplier value as a decimal" },
-              { label: "Full Cost Recovery Multiplier", type: "input", placeholder: "Enter new multiplier value as a decimal" },
+              { label: "Year", type: "input", placeholder: "Enter the year" },
+              { label: "EBA Multiplier", type: "input", placeholder: "Enter new eba multiplier value as a decimal" },
+              { label: "Salary Rate Multiplier", type: "input", placeholder: "Enter new salary rate multiplier value as a decimal" },
             ]}
           />
 
-          {/* Leave and Employment Settings */}
+          {/* Employment Settings */}
           <SectionCard
-            title="Leave and Employment Settings"
-            description="Update the leave and other employment rates."
+            title="Employment Settings"
+            description="Update the employment settings based on year."
             fields={[
-              { label: "Stipend Rate", type: "input", placeholder: "Enter stipend rate as a dollar amount" },
+              { label: "Year", type: "input", placeholder: "Enter the year" },
+              { label: "Stipend Rate", type: "input", placeholder: "Enter new stipend rate as a dollar amount" },
+              { label: "Payroll Tax", type: "input", placeholder: "Enter new payroll tax value as a decimal" },
+              { label: "Working Days", type: "input", placeholder: "Enter new number of working days" },
+            ]}
+          />
+
+          {/* Staff Benefits */}
+          <SectionCard
+            title="Staff Benefits"
+            description="Update the staff benefit rates based on staff type."
+            fields={[
+              { label: "Staff Type", type: "input", placeholder: "Casual, Fixed-Term or Continuing " },
               { label: "Superannuation Rate", type: "input", placeholder: "Enter super value as a percentage" },
               { label: "Leave Loading", type: "input", placeholder: "Enter loading value as a percentage" },
-              { label: "Payroll Tax", type: "input", placeholder: "Enter tax value as a percentage" },
               { label: "Work Cover", type: "input", placeholder: "Enter work cover industry rate" },
               { label: "Parental Leave", type: "input", placeholder: "Enter weekly rate as a dollar amount" },
-              { label: "Working days", type: "input", placeholder: "Enter number of working days" },
+              { label: "Long-Service Leave", type: "input", placeholder: "Enter weekly rate as a dollar amount" },
+              { label: "Annual Leave", type: "input", placeholder: "Enter weekly rate as a dollar amount" },
             ]}
           />
-
-          {/* Lookup Lists */}
-          <SectionCard
-            title="Lookup Lists"
-            description="Add a new option to a drop down menu."
-            fields={[
-              { label: "Research Type", type: "input", placeholder: "Add new list option" },
-              { label: "Regions", type: "input", placeholder: "Add new list option" },
-              { label: "Deliverable Types", type: "input", placeholder: "Add new list option" },
-              { label: "Departments", type: "input", placeholder: "Add new list option" },
-              { label: "Revenue Categories", type: "input", placeholder: "Add new list option" },
-              { label: "Non-Staff Cost Types", type: "input", placeholder: "Add new list option" },
-            ]}
-          />
-
         </div>
       </main>
     </div>
