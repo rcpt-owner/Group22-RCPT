@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 // import { projectService, type ProjectOverview, type ProjectOverviewFormData } from "@/services/projectService"
 import { rcptEngine } from "../rcptEngine"
-import type { ProjectOverview, ProjectOverviewFormData } from "@/services/projectService"
+import type { ProjectOverviewFormData } from "@/services/projectService"
 import { DynamicForm } from "@/components/forms/DynamicForm"
 import type { FormSchema } from "@/types/FormSchema"
 import { FileText } from "lucide-react"
@@ -17,7 +17,7 @@ export function ProjectOverviewTab() {
   const [schemaError, setSchemaError] = useState<string | null>(null)
   const [schemaLoading, setSchemaLoading] = useState(false)
 
-  const [overview, setOverview] = useState<ProjectOverview | null>(null)
+  const [overview, setOverview] = useState<ProjectOverviewFormData | null>(null)
   const [dataError, setDataError] = useState<string | null>(null)
   const [dataLoading, setDataLoading] = useState(false)
 
@@ -70,7 +70,7 @@ export function ProjectOverviewTab() {
       .loadData(projectId)
       .then(() => {
         if (cancelled) return
-        setOverview(rcptEngine.getProjectData(projectId)?.overview ?? null)
+        setOverview(rcptEngine.getProjectData(projectId)?.overviewFormData ?? null)
       })
       .catch(e => {
         if (!cancelled) setDataError(e?.message || "Failed to load project overview")
@@ -85,55 +85,53 @@ export function ProjectOverviewTab() {
   useEffect(() => {
     if (!projectId) return
     const unsubscribe = rcptEngine.subscribe(projectId, () => {
-      setOverview(rcptEngine.getProjectData(projectId)?.overview ?? null)
+      setOverview(rcptEngine.getProjectData(projectId)?.overviewFormData ?? null)
     })
     return unsubscribe
   }, [projectId])
 
   // Map service data to form initial data shape
-  function toInitialData(d: ProjectOverview | null): ProjectOverviewFormData {
+  function toInitialData(d: ProjectOverviewFormData | null): ProjectOverviewFormData {
     return {
       title: d?.title ?? "",
-      description: d?.summary ?? "",
-      funder: "",
-      department: "",
-      startDate: "",
-      endDate: ""
+      description: d?.description ?? "",
+      funder: d?.funder ?? "",
+      department: d?.department ?? "",
+      startDate: d?.startDate ?? "",
+      endDate: d?.endDate ?? ""
     }
   }
 
   // Prefer form data for initialData; fall back to mapping from overview
   const initialData: ProjectOverviewFormData | undefined = useMemo(() => {
     if (!projectId) return undefined
-    const formData = rcptEngine.loadFormData<ProjectOverviewFormData>(projectId, "overview")
-    return formData || toInitialData(overview)
+    // Always prefer cached form data if available
+    const formData = rcptEngine.loadFormData<ProjectOverviewFormData>(projectId, "project-overview-form")
+    if (formData) return formData
+    // Fallback to overview loaded from engine
+    return overview ? toInitialData(overview) : undefined
   }, [projectId, overview])
 
   // Live title updates with form changes
   const [liveTitle, setLiveTitle] = useState<string>("")
   useEffect(() => {
-    if (initialData?.title != null) setLiveTitle(initialData.title)
+    // Always use ProjectOverviewFormData's title for live updates
+    setLiveTitle(initialData?.title ?? "")
   }, [initialData?.title])
 
   async function handleSubmit(values: ProjectOverviewFormData) {
     if (!projectId) return
-    // TODO: cross-field validation (endDate >= startDate)
-    await rcptEngine.updateProjectOverview(projectId, values)
-    // rcptEngine.clearFormData(projectId, "overview")
+    rcptEngine.saveFormData(projectId, "project-overview-form", values)
+    await rcptEngine.refreshCache(projectId) 
     setSuccessMsg("Saved")
     setTimeout(() => setSuccessMsg(null), 1500)
-  }
-
-  // Autosave via form storage
-  function handleChange(values: ProjectOverviewFormData) {
-    rcptEngine.saveFormData(projectId ?? "", "overview", values)
-    if (typeof values.title === "string") setLiveTitle(values.title)
   }
 
   if (!projectId) return <p className="text-sm text-muted-foreground">No project selected.</p>
   if (schemaLoading || dataLoading) return <p className="text-sm text-muted-foreground">Loading overview...</p>
   if (schemaError || dataError) return <p className="text-sm text-destructive">Error: {schemaError || dataError}</p>
   if (!schema) return <p className="text-sm text-destructive">Error: Missing form schema.</p>
+  //if (!initialData) return <p className="text-sm text-muted-foreground">Loading form data...</p>
 
   return (
     <div className="w-full space-y-6">
@@ -158,10 +156,10 @@ export function ProjectOverviewTab() {
         <CardContent className="space-y-4 text-sm">
           {successMsg && <p className="text-green-600">{successMsg}</p>}
           <DynamicForm
+            projectId={projectId}
             schema={schema}
             initialData={initialData}
             onSubmit={handleSubmit}
-            onChange={handleChange}
             card={false}
             formId="project-overview-form"
           />

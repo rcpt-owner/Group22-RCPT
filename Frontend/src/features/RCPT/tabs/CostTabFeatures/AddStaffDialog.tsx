@@ -26,6 +26,7 @@ type AddStaffDialogProps = {
   onOpenChange?: (open: boolean) => void
   hideTrigger?: boolean
   onChange?: (values: Record<string, any>) => void
+  projectId: string
 }
 
 export function AddStaffDialog({
@@ -40,6 +41,7 @@ export function AddStaffDialog({
   onOpenChange,
   hideTrigger = false,
   onChange,
+  projectId,
 }: AddStaffDialogProps & { projectId?: string }) {
   // Support controlled or uncontrolled open state
   const isControlled = typeof open === "boolean"
@@ -52,9 +54,6 @@ export function AddStaffDialog({
     onOpenChange?.(next)
     if (next) setFormKey((k) => k + 1) // reset form each open
   }
-
-  // Get projectId from initialData if available
-  const projectId = (initialData && initialData.projectId) || undefined
 
   return (
     <Dialog open={actualOpen} onOpenChange={setOpen}>

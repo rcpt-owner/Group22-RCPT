@@ -17,7 +17,7 @@ export function ResearchCostingTool({
   initialTab = "Project Overview",
 }: {
   onExit?: () => void
-  projectId?: string
+  projectId: string
   userId?: string
   initialTab?: string
 }) {
@@ -71,7 +71,7 @@ export function ResearchCostingTool({
             <ProjectOverviewTab />
           </TabsContent>
           <TabsContent value="Costs" className="animate-in fade-in-0">
-            <CostTab projectId={projectId ?? ""} />
+            <CostTab projectId={projectId} />
           </TabsContent>
           <TabsContent value="Pricing" className="animate-in fade-in-0">
             <PricingTab projectId={projectId ?? ""} />

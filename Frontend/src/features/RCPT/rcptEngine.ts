@@ -67,7 +67,7 @@ type CacheEntry = {
 }
 
 // Canonical formIds that mirror directly into RCPTProjectData for totals/subscriptions
-const CANONICAL_FORM_IDS = new Set(["overview", "staffCosts", "nonStaffCosts"])
+const CANONICAL_FORM_IDS = new Set(["overview", "staffCosts", "nonStaffCosts", "project-overview-form"])
 
 const defaultOptions: RcptEngineOptions = {
   ttlMs: 10 * 60 * 1000, // 10 minutes
@@ -130,9 +130,17 @@ class RcptEngine {
     // Example: if (!data.staffCosts?.length) data.staffCosts = [/* default rows */]
 
     // Merge canonical form data into data after loading from server
-    const overviewForm = this.loadFormData(projectId, "overview")
+    const overviewForm = this.loadFormData(projectId, "project-overview-form")
     if (overviewForm) {
+      data.overviewFormData = this.mapFormToOverviewForm(overviewForm)
       data.overview = this.mapFormToOverview(overviewForm, data.overview)
+    } else {
+      // fallback: try "overview" formId for legacy support
+      const legacyOverviewForm = this.loadFormData(projectId, "overview")
+      if (legacyOverviewForm) {
+        data.overviewFormData = this.mapFormToOverviewForm(legacyOverviewForm)
+        data.overview = this.mapFormToOverview(legacyOverviewForm, data.overview)
+      }
     }
     const staffForm = this.loadFormData(projectId, "staffCosts")
     if (staffForm) {
@@ -204,11 +212,12 @@ class RcptEngine {
     this.persistFormToSession(projectId, formId, values)
     // Mirror to cache if canonical
     if (CANONICAL_FORM_IDS.has(formId)) {
-      if (formId === "overview") {
+      if (formId === "overview" || formId === "project-overview-form") {
+        entry.data.overviewFormData = this.mapFormToOverviewForm(values)
         entry.data.overview = this.mapFormToOverview(values, entry.data.overview)
-      } else if (formId === "staffCosts") {
+      } else if (formId === "add-staff-cost-form") {
         entry.data.staffCosts = Array.isArray(values) ? values : []
-      } else if (formId === "nonStaffCosts") {
+      } else if (formId === "add-nonstaff-cost-form") {
         entry.data.nonStaffCosts = Array.isArray(values) ? values : []
       }
       entry.totals = this.computeTotals(entry.data)
@@ -252,26 +261,15 @@ class RcptEngine {
   async updateProjectOverview(projectId: string, payload: ProjectOverviewFormData): Promise<void> {
     await projectService.updateProjectOverview(projectId, payload)
     const entry = this.ensureEntry(projectId)
-    const existing = entry.data.overview ?? {
-      projectId,
-      title: "",
-      summary: "",
-      budget: 0,
-      status: "Draft",
-      lastUpdated: new Date().toISOString(),
-    }
-    // Merge fields (form uses "description" which maps to "summary")
-    const merged: ProjectOverview = {
-      ...existing,
-      title: payload.title && payload.title.trim() ? payload.title : "Unnamed Project",
-      summary: payload.description ?? existing.summary,
-      lastUpdated: new Date().toISOString(),
-    }
-    entry.data.overview = merged
+    // Always update overviewFormData as canonical
+    entry.data.overviewFormData = this.mapFormToOverviewForm(payload, entry.data.overviewFormData)
+    // Optionally update overview for legacy/compat
+    entry.data.overview = this.mapFormToOverview(payload, entry.data.overview)
 
     // Sync title to project metadata
     const { updateProjectTitle } = await import("@/services/userService")
-    updateProjectTitle("1", projectId, merged.title) // Assuming userId is "1"
+    const title = entry.data.overviewFormData?.title ?? (payload as any)?.title ?? "Unnamed Project"
+    updateProjectTitle("1", projectId, title) // Assuming userId is "1"
 
     // Cache any selection options as a string to ensure reliable session serialization
     const maybeOptions =
@@ -291,7 +289,6 @@ class RcptEngine {
     this.cache.set(projectId, entry)
     this.writeSession(entry)
     this.notify(projectId)
-    // Notify listeners to update years
     this.notify(projectId)
   }
 
@@ -312,11 +309,11 @@ class RcptEngine {
   }
 
   setStaffCosts(projectId: string, rows: StaffCost[]): void {
-    this.saveFormData(projectId, "staffCosts", rows)
+    this.saveFormData(projectId, "add-staff-cost-form", rows)
   }
 
   setNonStaffCosts(projectId: string, rows: NonStaffCost[]): void {
-    this.saveFormData(projectId, "nonStaffCosts", rows)
+    this.saveFormData(projectId, "add-staff-cost-form", rows)
   }
 
   getStaffCosts(projectId: string): StaffCost[] {
@@ -333,13 +330,9 @@ class RcptEngine {
   // BUGGED
   getProjectYears(projectId: string): string[] {
     const data = this.getProjectData(projectId)
-    // Defensive: fallback to 3 years if missing
     let startYear: number | undefined, endYear: number | undefined
-
-    // Extract from ProjectOverviewFormData, not ProjectOverview
     const overviewForm = data?.overviewFormData
     if (overviewForm) {
-      // Only use the year part (ignore months)
       const extractYear = (date: any) => {
         if (!date) return undefined
         if (typeof date === "string") {
@@ -352,16 +345,15 @@ class RcptEngine {
       startYear = extractYear((overviewForm as any).startDate)
       endYear = extractYear((overviewForm as any).endDate)
     }
-
     if (typeof startYear === "number" && typeof endYear === "number" && endYear >= startYear) {
       const years: string[] = []
       for (let y = startYear; y <= endYear; ++y) years.push(String(y))
       return years
     }
-    // fallback: 3 years from current year
     const now = new Date()
     const base = now.getFullYear()
-    return [String(base), String(base + 1), String(base + 2)]
+    const fallbackYears = [String(base), String(base + 1), String(base + 2)]
+    return fallbackYears
   }
 
   getTotalCosts(projectId: string): number {
@@ -419,7 +411,7 @@ class RcptEngine {
 
   isOverviewComplete(projectId: string): boolean {
     const data = this.getProjectData(projectId)
-    return !!(data?.overview?.title && data.overview.title.trim())
+    return !!(data?.overviewFormData?.title && data.overviewFormData.title.trim())
   }
 
   subscribe(projectId: string, listener: () => void): () => void {
@@ -585,6 +577,17 @@ class RcptEngine {
     } catch { /* ignore */ }
   }
 
+  private mapFormToOverviewForm(input: any, existing?: ProjectOverviewFormData): ProjectOverviewFormData {
+    return {
+      title: input?.title ?? existing?.title ?? "",
+      description: input?.description ?? input?.summary ?? existing?.description ?? "",
+      funder: input?.funder ?? existing?.funder ?? "",
+      department: input?.department ?? existing?.department ?? "",
+      startDate: input?.startDate ?? existing?.startDate ?? "",
+      endDate: input?.endDate ?? existing?.endDate ?? ""
+    }
+  }
+
   private mapFormToOverview(formValues: any, existing?: ProjectOverview): ProjectOverview {
     return {
       ...existing,
@@ -596,6 +599,8 @@ class RcptEngine {
       lastUpdated: new Date().toISOString(),
     }
   }
+
+
 
   private getFormKey(projectId: string, formId: string): string {
     return `${this.options.sessionKeyPrefix}:project:${projectId}:form:${formId}`

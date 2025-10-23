@@ -258,8 +258,9 @@ export default function CostTab({ projectId }: CostTabProps) {
               <AddStaffDialog 
                 formSchema={formSchema} 
                 onSubmit={handleAddStaff}
-                initialData={rcptEngine.loadFormData(projectId, "addStaff")}
-                onChange={(values) => rcptEngine.saveFormData(projectId, "addStaff", values)}
+                projectId={projectId}
+                initialData={rcptEngine.loadFormData(projectId, "")}
+                onChange={(values) => rcptEngine.saveFormData(projectId, "add-staff-cost-form", values)}
               />
             </CardHeader>
 
@@ -285,11 +286,12 @@ export default function CostTab({ projectId }: CostTabProps) {
                   {editIndex != null && (
                     <AddStaffDialog
                       formSchema={formSchema}
+                      projectId={projectId}
                       onSubmit={handleEditSave}
                       title="Edit Staff Member"
                       submitLabel="Save changes"
                       initialData={rcptEngine.loadFormData(projectId, "editStaff") || staffRowToFormValues(staffRows[editIndex])}
-                      onChange={(values) => rcptEngine.saveFormData(projectId, "editStaff", values)}
+                      onChange={(values) => rcptEngine.saveFormData(projectId, "add-staff-cost-form", values)}
                       open={editOpen}
                       onOpenChange={(o) => {
                         setEditOpen(o)
@@ -315,8 +317,9 @@ export default function CostTab({ projectId }: CostTabProps) {
               <AddNonStaffDialog 
                 formSchema={nonStaffFormSchema} 
                 onSubmit={handleAddNonStaff}
+                projectId={projectId}
                 initialData={rcptEngine.loadFormData(projectId, "addNonStaff")}
-                onChange={(values) => rcptEngine.saveFormData(projectId, "addNonStaff", values)}
+                onChange={(values) => rcptEngine.saveFormData(projectId, "add-nonstaff-cost-form", values)}
               />
             </CardHeader>
 
@@ -344,14 +347,15 @@ export default function CostTab({ projectId }: CostTabProps) {
                       onSubmit={handleNonStaffEditSave}
                       title="Edit Non-staff Cost"
                       submitLabel="Save changes"
-                      initialData={rcptEngine.loadFormData(projectId, "editNonStaff") || nonStaffRowToFormValues(nonStaffRows[nsEditIndex])}
-                      onChange={(values) => rcptEngine.saveFormData(projectId, "editNonStaff", values)}
+                      initialData={rcptEngine.loadFormData(projectId, "add-nonstaff-cost-form") || nonStaffRowToFormValues(nonStaffRows[nsEditIndex])}
+                      onChange={(values) => rcptEngine.saveFormData(projectId, "add-nonstaff-cost-form", values)}
                       open={nsEditOpen}
+                      projectId={projectId}
                       onOpenChange={(o) => {
                         setNsEditOpen(o)
                         if (!o) {
                           setNsEditIndex(null)
-                          rcptEngine.clearFormData(projectId, "editNonStaff")
+                          rcptEngine.clearFormData(projectId, "add-nonstaff-cost-form")
                         }
                       }}
                       hideTrigger

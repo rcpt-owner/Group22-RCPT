@@ -50,7 +50,7 @@ export function NonStaffCostsDataTable({
   data,
   onEdit,
   onDelete,
-  yearLabels = ["Year 1", "Year 2", "Year 3"],
+  yearLabels,
 }: NonStaffCostsDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   // const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])

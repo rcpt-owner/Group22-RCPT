@@ -25,6 +25,7 @@ type AddNonStaffDialogProps = {
   onOpenChange?: (open: boolean) => void
   hideTrigger?: boolean
   onChange?: (values: Record<string, any>) => void
+  projectId: string
 }
 
 export function AddNonStaffDialog({
@@ -39,6 +40,7 @@ export function AddNonStaffDialog({
   onOpenChange,
   hideTrigger = false,
   onChange,
+  projectId,
 }: AddNonStaffDialogProps & { projectId?: string }) {
   const isControlled = typeof open === "boolean"
   const [internalOpen, setInternalOpen] = React.useState(false)
@@ -50,8 +52,6 @@ export function AddNonStaffDialog({
     onOpenChange?.(next)
     if (next) setFormKey((k) => k + 1) // reset form each open
   }
-
-  const projectId = (initialData && initialData.projectId) || undefined
 
   return (
     <Dialog open={actualOpen} onOpenChange={setOpen}>

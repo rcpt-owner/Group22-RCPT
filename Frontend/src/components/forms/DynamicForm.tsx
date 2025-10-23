@@ -49,7 +49,7 @@ type DynamicFormProps = {
   formId?: string                    // Optional external id to submit from outside
   hideSubmit?: boolean               // Hide internal submit button (use external actions)
   onChange?: (data: any) => void     // emit values on any change
-  projectId?: string                // projectId for dynamic years
+  projectId: string                // projectId for dynamic years
 }
 
 // Support optional layout metadata without changing FormSchema type.
@@ -69,6 +69,7 @@ export function DynamicForm({
   formId,
   hideSubmit = false,
   onChange, 
+  projectId, 
 }: DynamicFormProps) {
   const [saving, setSaving] = useState(false)
 
@@ -80,7 +81,7 @@ export function DynamicForm({
   // Initialize React Hook Form using dynamic resolver mapping to zodSchema.
   const form = useForm({
     resolver: zodResolver(zodSchema as z.ZodTypeAny),
-    defaultValues: initialData || {}
+    defaultValues: initialData || {} 
   })
 
   // Emit values to parent on any change (autosave / live updates)
@@ -235,24 +236,30 @@ export function DynamicForm({
               const cols = Math.min(Math.max(rowFields.length, 1), 3)
               return (
                 <div key={`row-${idx}`} className="grid gap-6" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
-                  {rowFields.map((f) => (
-                    <FieldForm key={f.name} field={f} control={form.control} />
-                  ))}
+                  {rowFields.map((f) => {
+                    return (
+                      <FieldForm projectId={projectId} key={f.name} field={f} control={form.control} />
+                    )
+                  })}
                 </div>
               )
             })}
             {/* Render remaining fields not included in rows */}
             {renderFields
               .filter((f: any) => !rows.flat().includes(f.name))
-              .map((f: any) => (
-                <FieldForm key={f.name} field={f} control={form.control} />
-              ))}
+              .map((f: any) => {
+                return (
+                  <FieldForm projectId={projectId} key={f.name} field={f} control={form.control} />
+                )
+              })}
           </>
         ) : (
           // Legacy default: simple vertical list
-          renderFields.map((f: any) => (
-            <FieldForm key={f.name} field={f} control={form.control} />
-          ))
+          renderFields.map((f: any) => {
+            return (
+              <FieldForm projectId={projectId} key={f.name} field={f} control={form.control} />
+            )
+          })
         )}
         {/* internal submit button can be hidden (e.g., when used inside a dialog with external actions) */}
         {!hideSubmit && (

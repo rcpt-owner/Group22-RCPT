@@ -44,7 +44,7 @@ export function StaffCostsDataTable({
   data,
   onEdit,
   onDelete,
-  yearLabels = ["Year 1", "Year 2", "Year 3"],
+  yearLabels,
 }: StaffCostsDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])

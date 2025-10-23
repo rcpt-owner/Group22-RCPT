@@ -19,7 +19,6 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       setLoading(true)
       const result = await signInWithPopup(auth, provider)
       const user = result.user
-      console.log("Logged in user:", user)
       onLogin()
     } catch (error) {
       console.error("Google Sign-In failed:", error)
