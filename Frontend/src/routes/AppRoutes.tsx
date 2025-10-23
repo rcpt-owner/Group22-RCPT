@@ -1,7 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { LoginPage } from "../pages/LoginPage";
 import { DashboardPage } from "../pages/DashboardPage";
-import { WorkspaceLayout } from "../features/Layouts/WorkspaceLayout"; // changed 'Layouts' -> 'layouts'
+import { WorkspaceLayout } from "../features/Layouts/WorkspaceLayout";
+import { AdminSettingsPage } from "../pages/AdminSettingsPage";
 
 // Simple auth gate (local to routing layer)
 function Protected({ authed, children }: { authed: boolean; children: React.ReactNode }) {
@@ -41,6 +42,14 @@ export function AppRoutes(props: {
         element={
           <Protected authed={authenticated}>
             <WorkspaceLayout />
+          </Protected>
+        }
+      />
+      <Route
+        path="/adminSettings"
+        element={
+          <Protected authed={authenticated}>
+            <AdminSettingsPage/>
           </Protected>
         }
       />
