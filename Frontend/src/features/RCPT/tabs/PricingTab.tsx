@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import StatsCard from "../../../components/stats/StatsCard";
 import { rcptEngine } from "../rcptEngine"; 
-import { Scale } from "lucide-react";
+import { CircleDollarSign, BadgeDollarSign } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -39,7 +39,7 @@ const PricingTab: React.FC<{ projectId: string }> = ({ projectId }) => {
       <Card className="border rounded-lg">
         <CardHeader className="space-y-2">
           <div className="flex items-center gap-3">
-            <Scale className="h-6 w-6 " />
+            <CircleDollarSign className="h-6 w-6 " />
             <CardTitle>Costs Stats</CardTitle>
           </div>
           <CardDescription>
@@ -84,7 +84,7 @@ const PricingTab: React.FC<{ projectId: string }> = ({ projectId }) => {
       <Card className="border rounded-lg">
         <CardHeader className="space-y-2">
           <div className="flex items-center gap-3">
-            <Scale className="h-6 w-6 " />
+            <BadgeDollarSign className="h-6 w-6 " />
             <CardTitle>Pricing</CardTitle>
           </div>
           <CardDescription>
