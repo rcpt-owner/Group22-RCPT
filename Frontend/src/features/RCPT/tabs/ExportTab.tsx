@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -97,48 +97,8 @@ export default function ExportTab({ totalCost, staffCount, nonStaffCount }: Expo
           </Card>
         </CardContent>
       </Card>
-      {/* Quick Export Templates Section */}
-      <Card className="border rounded-lg mt-6">
-        <CardHeader className="space-y-1">
-          <CardTitle>Quick Export Templates</CardTitle>
-          <CardDescription>Pre-configured export sets for common use cases</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Executive Summary */}
-          <Card className="border rounded-lg p-4 flex flex-col justify-between">
-            <div>
-              <h4 className="font-medium text-sm">Executive Summary</h4>
-              <p className="text-xs text-muted-foreground mt-1">
-                Project info, cost breakdown, and summary
-              </p>
-            </div>
-            <Button className="mt-4 w-full" size="sm">Select Template</Button>
-          </Card>
 
-          {/* Detailed Report */}
-          <Card className="border rounded-lg p-4 flex flex-col justify-between">
-            <div>
-              <h4 className="font-medium text-sm">Detailed Report</h4>
-              <p className="text-xs text-muted-foreground mt-1">
-                All data including full cost breakdown
-              </p>
-            </div>
-            <Button className="mt-4 w-full" size="sm">Select Template</Button>
-          </Card>
-
-          {/* Budget Only */}
-          <Card className="border rounded-lg p-4 flex flex-col justify-between">
-            <div>
-              <h4 className="font-medium text-sm">Budget Only</h4>
-              <p className="text-xs text-muted-foreground mt-1">
-                Cost breakdown and financial summary
-              </p>
-            </div>
-            <Button className="mt-4 w-full" size="sm">Select Template</Button>
-          </Card>
-        </CardContent>
-      </Card>
-
+      
     </div>
   )
 }

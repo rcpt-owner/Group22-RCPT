@@ -24,6 +24,8 @@ type AddNonStaffDialogProps = {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   hideTrigger?: boolean
+  onChange?: (values: Record<string, any>) => void
+  projectId: string
 }
 
 export function AddNonStaffDialog({
@@ -37,7 +39,9 @@ export function AddNonStaffDialog({
   open,
   onOpenChange,
   hideTrigger = false,
-}: AddNonStaffDialogProps) {
+  onChange,
+  projectId,
+}: AddNonStaffDialogProps & { projectId?: string }) {
   const isControlled = typeof open === "boolean"
   const [internalOpen, setInternalOpen] = React.useState(false)
   const actualOpen = isControlled ? (open as boolean) : internalOpen
@@ -72,10 +76,12 @@ export function AddNonStaffDialog({
               onSubmit(vals)
               setOpen(false)
             }}
+            onChange={onChange}
             card={false}
             initialData={initialData}
             formId={formSchema?.formId || "add-nonstaff-cost-form"}
             hideSubmit
+            projectId={projectId}
           />
         ) : (
           <p className="text-sm text-muted-foreground">Loading non-staff cost form...</p>

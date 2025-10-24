@@ -1,12 +1,12 @@
 {
-  "formId": "add-staff-member-form",
+  "formId": "add-staff-cost-form",
   "submitLabel": "Save",
   "layout": {
     "rows": [
       ["role"], 
       ["employmentClassification", "fteType"],
       ["employmentType", "category"],
-      ["year1", "year2", "year3"]
+      ["__dynamic_years__"]
     ]
   },
   "fields": [
@@ -59,8 +59,10 @@
         { "value": "hourly", "label": "Hourly" }
       ]
     },
-    { "name": "year1", "type": "number", "label": "Year 1: 2026", "placeholder": "Enter total working time for 2026", "validation": { "min": 0 } },
-    { "name": "year2", "type": "number", "label": "Year 2: 2027", "placeholder": "Enter total working time for 2027", "validation": { "min": 0 } },
-    { "name": "year3", "type": "number", "label": "Year 3: 2028", "placeholder": "Enter total working time for 2028", "validation": { "min": 0 } }
+    {
+      "name": "years",
+      "type": "dynamic_years",
+      "label": "Yearly Amounts"
+    }
   ]
 }
