@@ -336,7 +336,7 @@ class RcptEngine {
   }
 
   
-  // BUGGED
+  // FIXED
   getProjectYears(projectId: string): string[] {
     const data = this.getProjectData(projectId)
     let startYear: number | undefined, endYear: number | undefined
