@@ -1,0 +1,11 @@
+{
+  "options": [
+    { "value": "level-a-1", "label": "Level A.1" },
+    { "value": "level-a-2", "label": "Level A.2" },
+    { "value": "level-b-1", "label": "Level B.1" },
+    { "value": "level-c-1", "label": "Level C.1" },
+    { "value": "level-d-1", "label": "Level D.1" },
+    { "value": "level-e-1", "label": "Level E.1" },
+    { "value": "ra-1.1", "label": "RA Grade 1.1" }
+  ]
+}

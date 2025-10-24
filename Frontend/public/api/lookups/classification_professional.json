@@ -1,0 +1,14 @@
+{
+  "options": [
+    { "value": "uom-1.1", "label": "UOM 1.1" },
+    { "value": "uom-1.2", "label": "UOM 1.2" },
+    { "value": "uom-1.3", "label": "UOM 1.3" },
+    { "value": "uom-2.1", "label": "UOM 2.1" },
+    { "value": "uom-2.2", "label": "UOM 2.2" },
+    { "value": "uom-3.1", "label": "UOM 3.1" },
+    { "value": "uom-4.1", "label": "UOM 4.1" },
+    { "value": "uom-5.1", "label": "UOM 5.1" },
+    { "value": "uom-6.1", "label": "UOM 6.1" },
+    { "value": "uom-10", "label": "UOM 10" }
+  ]
+}

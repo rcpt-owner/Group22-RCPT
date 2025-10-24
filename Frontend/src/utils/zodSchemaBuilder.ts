@@ -38,6 +38,22 @@ export function buildFieldSchema(field: FieldDefinition): z.ZodTypeAny {
         applyCommonNumberValidations(z.number({ invalid_type_error: "Must be a number" }), field)
       )
       break
+    case "dynamic_years": {
+      // Accept an object mapping year -> numeric value.
+      // Each value can be a numeric string (coerced) or a number.
+      const coerceNumber = z.preprocess((v) => {
+        if (typeof v === "string") {
+          const s = v.trim()
+          if (s === "") return undefined
+          const n = Number(s.replace(/,/g, ""))
+          return isNaN(n) ? v : n
+        }
+        return v
+      }, z.number({ invalid_type_error: "Must be a number" }))
+
+      schema = z.record(coerceNumber).optional()
+      break
+    }
     case "date":
       // store as string (ISO or yyyy-mm-dd)
       schema = z.string().refine(

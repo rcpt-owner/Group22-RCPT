@@ -3,7 +3,7 @@
   "submitLabel": "Save",
   "layout": {
     "rows": [
-      ["role"], 
+      ["role"],
       ["employmentClassification", "fteType"],
       ["employmentType", "category"],
       ["__dynamic_years__"]
@@ -17,10 +17,9 @@
       "label": "Employment Type",
       "placeholder": "Select the correct employment type",
       "options": [
-        { "value": "full-time", "label": "Full-Time" },
-        { "value": "part-time", "label": "Part-Time" },
-        { "value": "casual", "label": "Casual" },
-        { "value": "contract", "label": "Contract" }
+        { "value": "continuing", "label": "Continuing" },
+        { "value": "fixed-term", "label": "Fixed-term" },
+        { "value": "casual", "label": "Casual" }
       ]
     },
     {
@@ -40,29 +39,51 @@
       "type": "select",
       "label": "Employment Classification",
       "placeholder": "Select the correct employment classification",
-      "options": [
-        { "value": "level-a", "label": "Level A" },
-        { "value": "level-b", "label": "Level B" },
-        { "value": "level-c", "label": "Level C" },
-        { "value": "level-d", "label": "Level D" },
-        { "value": "level-e", "label": "Level E" }
-      ]
+      "dependsOn": "category",
+      "disableUntilParent": true,
+      "clearOnParentChange": true,
+      "placeholderWhenDisabled": "Select category first",
+      "optionsMap": {
+        "professional": "/api/lookups/classification_professional.json",
+        "academic": "/api/lookups/classification_academic.json",
+        "technical": [],
+        "other": []
+      }
     },
     {
       "name": "fteType",
       "type": "select",
       "label": "FTE / Daily / Hourly",
       "placeholder": "Select the correct time of payment",
-      "options": [
-        { "value": "fte", "label": "FTE" },
-        { "value": "daily", "label": "Daily" },
-        { "value": "hourly", "label": "Hourly" }
-      ]
+      "dependsOn": "employmentType",
+      "disableUntilParent": true,
+      "clearOnParentChange": true,
+      "placeholderWhenDisabled": "Select employment type first",
+      "optionsMap": {
+        "continuing": [
+          { "value": "fte", "label": "FTE" }
+        ],
+        "fixed-term": [
+          { "value": "fte", "label": "FTE" },
+          { "value": "daily", "label": "Daily" }
+        ],
+        "casual": [
+          { "value": "hourly", "label": "Hourly" }
+        ]
+      }
     },
     {
       "name": "years",
       "type": "dynamic_years",
-      "label": "Yearly Amounts"
+      "label": "Yearly Amounts",
+      "dependsOn": "fteType",
+      "disableUntilParent": true,
+      "clearOnParentChange": true,
+      "conditionalValidation": {
+        "fte": { "min": 0, "max": 1, "message": "For FTE the value must be between 0 and 1." },
+        "daily": { "min": 0, "message": "For Daily/Hourly the value must be 0 or greater." },
+        "hourly": { "min": 0, "message": "For Daily/Hourly the value must be 0 or greater." }
+      }
     }
   ]
 }
