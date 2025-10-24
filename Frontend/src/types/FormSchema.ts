@@ -22,19 +22,24 @@ export type OptionDef = { value: string; label: string }
 // `type` determines the input (form) component to render.
 // `validation` is used to build a runtime Zod schema.
 // `fields` and `defaultEntry` are only used for repeatable field arrays.
-export type FieldDefinition = {
-  name: string
-  type: "text" | "textarea" | "number" | "date" | "select" | "checkbox" | "repeatable"
-  label: string
-  placeholder?: string
-  message?: string
-  prefix?: string
-  options?: OptionDef[]
-  validation?: ValidationRules
-  // For repeatable fields:
-  fields?: FieldDefinition[]
-  defaultEntry?: Record<string, any>
-}
+export type FieldDefinition =
+  | {
+      name: string
+      type: "text" | "textarea" | "number" | "date" | "select" | "checkbox" | "repeatable" | "monthYearDate"
+      label: string
+      placeholder?: string
+      message?: string
+      prefix?: string
+      options?: OptionDef[]
+      validation?: ValidationRules
+      // For repeatable fields:
+      fields?: FieldDefinition[]
+      defaultEntry?: Record<string, any>
+      minYear?: number
+      maxYear?: number
+      defaultValue?: string
+      disabled?: boolean
+    }
 
 // Definition for a complete dynamic form.
 // `formId` is used for identification (e.g. in API calls).

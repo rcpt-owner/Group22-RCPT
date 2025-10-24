@@ -1,0 +1,8 @@
+{
+  "options": [
+    { "label": "Computer Science", "value": "CS" },
+    { "label": "Engineering", "value": "ENG" },
+    { "label": "Biology", "value": "BIO" },
+    { "label": "Mathematics", "value": "MATH" }
+  ]
+}

@@ -6,6 +6,7 @@ import { FormDateInput } from "./FormDateInput"
 import { FormSelect } from "./FormSelect"
 import { FormCheckbox } from "./FormCheckbox"
 import { FormRepeatableArray } from "./FormRepeatableArray"
+import { FormMonthYearDateInput } from "./FormMonthYearDateInput"
 
 /*
   DynamicFormField: single authoritative renderer for a JSON field definition.
@@ -44,6 +45,17 @@ export const FieldForm = ({ field, control, nameOverride }: DynamicFormFieldProp
       break
     case "date":
       rendered = <FormDateInput {...commonProps} />
+      break
+    case "monthYearDate":
+      rendered = (
+        <FormMonthYearDateInput
+          {...commonProps}
+          minYear={field.minYear}
+          maxYear={field.maxYear}
+          disabled={field.disabled}
+          defaultValue={field.defaultValue}
+        />
+      )
       break
     case "select":
       rendered = <FormSelect {...commonProps} options={field.options || []} />

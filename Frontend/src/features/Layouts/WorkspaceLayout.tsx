@@ -8,25 +8,26 @@ export function WorkspaceLayout() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="border-b bg-background">
-        {/* Added centered container with responsive side padding */}
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
-          <h1 className="text-lg font-semibold">
-            {projectId ? `${projectId} Workspace` : "Workspace"}
-          </h1>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/dashboard")}
-            >
-              Dashboard
-            </Button>
-          </div>
+      {/* 🔹 Top Navigation Bar */}
+      <header className="w-full flex items-center justify-between px-10 py-5 border-b shadow-sm">
+        <div className="flex items-center gap-4">
+          <img
+            src="/resources/University-of-Melbourne-logo-1.png"
+            alt="Unimelb Logo"
+            className="h-16 w-auto"
+          />
+        </div>
+
+        <h1 className="text-xl md:text-2xl font-semibold text-center tracking-wide uppercase">
+          Research Costing and Pricing Tool
+        </h1>
+
+        <div className="flex items-center gap-4">
+          {/* Dashboard Page Navigation */}
+          <Button variant="outline" onClick={() => navigate("/dashboard")}>Dashboard</Button>
         </div>
       </header>
 
-      {/* Main content now centered with same max width + side padding */}
       <main className="flex-1">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           <ResearchCostingTool
