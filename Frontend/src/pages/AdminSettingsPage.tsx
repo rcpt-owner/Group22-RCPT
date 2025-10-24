@@ -187,15 +187,6 @@ export function AdminSettingsPage() {
     }
   };
 
-  /** ---------------- Save Handler ---------------- */
-  const handleSave = (section: string) => {
-    toast({
-      title: "Saved successfully!",
-      description: `${section} have been updated.`,
-      duration: 2500,
-    });
-  };
-
   return (
     <div className="min-h-screen bg-white flex flex-col">
 
@@ -375,10 +366,35 @@ export function AdminSettingsPage() {
   );
 }
 
-/** ---------------- SectionCard Component ---------------- */
+/** ---------------- Section Card Component ---------------- */
 function SectionCard({ title, description, fields }: { title: string; description?: string, fields: any[] }) {
   const { toast } = useToast();
   const colsClass = fields.length >= 8 ? "grid-cols-4" : fields.length >= 4 ? "grid-cols-4" : "grid-cols-3";
+  const [values, setValues] = useState<Record<string, any>>({});
+
+  /** ---------------- Save Handler ---------------- */
+  const handleSave = async () => {
+    try {
+      const res = await fetch(endpoints[section], {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      if (!res.ok) throw new Error("Save failed");
+      toast({
+        title: "Saved successfully!",
+        description: `${title} updated.`,
+        duration: 2500,
+      });
+      setValues({});
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <Card className="border border-gray-200 shadow-sm rounded-2xl">
@@ -406,10 +422,7 @@ function SectionCard({ title, description, fields }: { title: string; descriptio
           ))}
         </div>
         <div className="flex items-center justify-end gap-4 pt-1">
-          <Button
-            onClick={() => toast({ title: "Saved successfully!", description: `${title} updated.`, duration: 2500 })}
-            className="bg-black text-white px-6"
-          >
+          <Button onClick={handleSave} className="bg-black text-white px-6">
             Save
           </Button>
         </div>
