@@ -72,9 +72,8 @@ const CANONICAL_FORM_IDS = new Set([
   "staffCosts",
   "nonStaffCosts",
   "project-overview-form",
-  // also accept the JSON/form filenames so onChange/onSubmit from forms is mirrored
-  "add-staff-cost-form",
-  "add-nonstaff-cost-form",
+  // previously included "add-staff-cost-form" and "add-nonstaff-cost-form" here,
+  // but those are per-item draft forms and SHOULD NOT be mirrored into the canonical arrays.
 ])
 
 const defaultOptions: RcptEngineOptions = {
@@ -215,19 +214,26 @@ class RcptEngine {
 
   saveFormData(projectId: string, formId: string, values: any): void {
     const entry = this.ensureEntry(projectId)
-    // Store in sessionStorage
+    // Store in sessionStorage (always persist drafts)
     this.persistFormToSession(projectId, formId, values)
-    // Mirror to cache if this formId corresponds to canonical data we care about.
-    // Accept both internal keys (staffCosts/nonStaffCosts) and the form filenames used by the UI.
-    if (CANONICAL_FORM_IDS.has(formId)) {
-      if (formId === "overview" || formId === "project-overview-form") {
-        entry.data.overviewFormData = this.mapFormToOverviewForm(values)
-        entry.data.overview = this.mapFormToOverview(values, entry.data.overview)
-      } else if (formId === "staffCosts" || formId === "add-staff-cost-form") {
-        entry.data.staffCosts = Array.isArray(values) ? values : []
-      } else if (formId === "nonStaffCosts" || formId === "add-nonstaff-cost-form") {
-        entry.data.nonStaffCosts = Array.isArray(values) ? values : []
-      }
+
+    // Mirror to cache only when this formId corresponds to canonical data we care about.
+    // Do NOT mirror per-item draft form IDs (e.g. add-staff-cost-form) — they are drafts, not the full array.
+    let mirrored = false
+
+    if (formId === "overview" || formId === "project-overview-form") {
+      entry.data.overviewFormData = this.mapFormToOverviewForm(values)
+      entry.data.overview = this.mapFormToOverview(values, entry.data.overview)
+      mirrored = true
+    } else if (formId === "staffCosts") {
+      entry.data.staffCosts = Array.isArray(values) ? values : entry.data.staffCosts ?? []
+      mirrored = true
+    } else if (formId === "nonStaffCosts") {
+      entry.data.nonStaffCosts = Array.isArray(values) ? values : entry.data.nonStaffCosts ?? []
+      mirrored = true
+    }
+
+    if (mirrored) {
       // Recompute totals, persist and notify subscribers
       entry.totals = this.computeTotals(entry.data)
       this.cache.set(projectId, entry)

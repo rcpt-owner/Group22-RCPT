@@ -292,14 +292,14 @@ export default function CostTab({ projectId }: CostTabProps) {
                       onSubmit={handleEditSave}
                       title="Edit Staff Member"
                       submitLabel="Save changes"
-                      initialData={rcptEngine.loadFormData(projectId, "editStaff") || (staffRows[editIndex] ? staffRowToFormValues(staffRows[editIndex]) : undefined)}
+                      initialData={rcptEngine.loadFormData(projectId, "add-staff-cost-form") || (staffRows[editIndex] ? staffRowToFormValues(staffRows[editIndex]) : undefined)}
                       onChange={(values) => rcptEngine.saveFormData(projectId, "add-staff-cost-form", values)}
                       open={editOpen}
                       onOpenChange={(o) => {
                         setEditOpen(o)
                         if (!o) {
                           setEditIndex(null)
-                          rcptEngine.clearFormData(projectId, "editStaff")
+                          rcptEngine.clearFormData(projectId, "add-staff-cost-form")
                         }
                       }}
                       hideTrigger
