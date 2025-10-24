@@ -109,16 +109,50 @@ export function buildFormSchema(fields: FieldDefinition[]) {
       const s = data?.startDate as string | undefined
       const e = data?.endDate as string | undefined
       if (!s || !e) return
-      const ys = parseInt(String(s).slice(0, 4), 10)
-      const ye = parseInt(String(e).slice(0, 4), 10)
-      if (Number.isFinite(ys) && Number.isFinite(ye)) {
-        if (Math.abs(ye - ys) > 10) {
+
+      // Helper to extract year and month from common formats: YYYY-MM, YYYY-MM-DD, MM-YYYY
+      const parseYearMonth = (val: string) => {
+        if (typeof val !== "string") return null
+        // YYYY-MM or YYYY-MM-DD
+        let m = val.match(/^(\d{4})-(\d{2})(?:-\d{2})?$/)
+        if (m) return { year: parseInt(String(m[1]), 10), month: parseInt(String(m[2]), 10) }
+        // MM-YYYY
+        m = val.match(/^(\d{2})-(\d{4})$/)
+        if (m) return { year: parseInt(String(m[2]), 10), month: parseInt(String(m[1]), 10) }
+        // Fallback: try to extract 4-digit year anywhere
+        const y = val.match(/(\d{4})/)
+        if (y) return { year: parseInt(String(y[1]), 10), month: 1 }
+        return null
+      }
+
+      const start = parseYearMonth(String(s))
+      const end = parseYearMonth(String(e))
+
+      if (start && end) {
+        // Compare year/month tuples
+        const startValue = start.year * 12 + (start.month ?? 1)
+        const endValue = end.year * 12 + (end.month ?? 1)
+        if (endValue < startValue) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["endDate"],
+            message: "End date must be the same or after the start date",
+          })
+          // also return early; still allow other checks to run if desired
+          return
+        }
+
+        // Existing 10-year span check (year-only); keep this check as well
+        if (Math.abs(end.year - start.year) > 10) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["endDate"],
             message: "Maximum range is 10 years",
           })
         }
+      } else {
+        // If we could not parse, keep previous behaviour of ignoring the check.
+        return
       }
     })
   }

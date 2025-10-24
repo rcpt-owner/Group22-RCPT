@@ -20,11 +20,13 @@
     "noUncheckedIndexedAccess": true,
 
     /* Path aliases */
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },
-    "ignoreDeprecations": "5.0"
+    "ignoreDeprecations": "5.0",
+
+    /* Skip type checking of declaration files */
+    "skipLibCheck": true
   },
   "include": ["src"]
 }

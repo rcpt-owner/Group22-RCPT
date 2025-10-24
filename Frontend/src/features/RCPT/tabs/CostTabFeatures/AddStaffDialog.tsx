@@ -25,6 +25,8 @@ type AddStaffDialogProps = {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   hideTrigger?: boolean
+  onChange?: (values: Record<string, any>) => void
+  projectId: string
 }
 
 export function AddStaffDialog({
@@ -38,7 +40,9 @@ export function AddStaffDialog({
   open,
   onOpenChange,
   hideTrigger = false,
-}: AddStaffDialogProps) {
+  onChange,
+  projectId,
+}: AddStaffDialogProps & { projectId?: string }) {
   // Support controlled or uncontrolled open state
   const isControlled = typeof open === "boolean"
   const [internalOpen, setInternalOpen] = React.useState(false)
@@ -74,10 +78,12 @@ export function AddStaffDialog({
               onSubmit(vals)
               setOpen(false)
             }}
+            onChange={onChange}
             card={false}
             initialData={initialData}
             formId={formSchema?.formId || "add-staff-member-form"}
             hideSubmit
+            projectId={projectId}
           />
         ) : (
           <p className="text-sm text-muted-foreground">Loading staff member form...</p>

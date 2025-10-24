@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Home, Settings, Plus } from "lucide-react";
 import { ProjectCard } from "@/components/projects/ProjectCard";
-import { getUserProjects, type Project } from "@/services/userService";
+import { getUserProjects, createUserProject, type Project } from "@/services/userService";
 
 interface DashboardPageProps {
   onLogout: () => void;
@@ -15,6 +15,7 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -23,12 +24,46 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
         setProjects(data);
       } catch (err) {
         console.error(err);
+        setError("Failed to load projects. Please try again.");
       } finally {
         setLoading(false);
       }
     };
     fetchProjects();
   }, [userId]);
+
+  // Listen for title updates emitted by rcptEngine.updateProjectOverview
+  useEffect(() => {
+    const handler = (e: Event) => {
+      try {
+        const detail = (e as CustomEvent).detail || {}
+        const pid = detail.projectId as string | undefined
+        const title = detail.title as string | undefined
+        if (!pid) return
+        setProjects(prev => prev.map(p => (p.id === pid && title ? { ...p, title } : p)))
+      } catch { /* ignore */ }
+    }
+    window.addEventListener("rcpt:projectTitleUpdated", handler as EventListener)
+    return () => window.removeEventListener("rcpt:projectTitleUpdated", handler as EventListener)
+  }, [])
+
+  const handleCreateProject = () => {
+    const newProject: Project = {
+      id: crypto.randomUUID(),
+      title: "Unnamed Project",
+      ownerUserId: userId,
+      currency: "AUD",
+      status: "Draft",
+      staffCosts: 0,
+      nonStaffCosts: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    createUserProject(userId, newProject);
+    setProjects((prev) => [...prev, newProject]);
+    onEnterWorkspace?.(newProject.id);
+    navigate(`/projects/${newProject.id}`);
+  };
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -75,7 +110,7 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
           </div>
           <Button
             className="bg-[#4B2E83] hover:bg-[#3a2364] text-white"
-            onClick={() => navigate("/projects/new")}
+            onClick={handleCreateProject}
           >
             <Plus className="mr-2 h-4 w-4" /> Create New Project
           </Button>
@@ -83,6 +118,8 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
 
         {loading ? (
           <p>Loading projects...</p>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
         ) : projects.length === 0 ? (
           <p>No projects yet — create a new one to get started.</p>
         ) : (
