@@ -6,10 +6,13 @@ import com.itproject.rcpt.dto.project.ProjectResponse;
 import com.itproject.rcpt.dto.project.ProjectUpdateRequest;
 import com.itproject.rcpt.enums.ProjectStatus;
 import com.itproject.rcpt.mapper.ProjectMapper;
+import com.itproject.rcpt.service.ProjectExportService;
 import com.itproject.rcpt.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,11 +35,13 @@ public class ProjectController {
 
     private final ProjectService service;
     private final ProjectMapper mapper;
+    private final ProjectExportService projectExportService;
 
     @Autowired
-    public ProjectController(ProjectService service, ProjectMapper mapper) {
+    public ProjectController(ProjectService service, ProjectMapper mapper, ProjectExportService projectExportService) {
         this.service = service;
         this.mapper = mapper;
+        this.projectExportService = projectExportService;
     }
 
     /**
@@ -114,4 +119,16 @@ public class ProjectController {
     private static boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
     }
+
+    @GetMapping("/{id}/export")
+    public ResponseEntity<byte[]> exportProjectToPdf(@PathVariable String id) {
+        byte[] pdfBytes = projectExportService.exportProjectToPdf(id);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "project_" + id + ".pdf");
+
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    }
+
 }
