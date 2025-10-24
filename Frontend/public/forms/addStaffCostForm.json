@@ -4,8 +4,8 @@
   "layout": {
     "rows": [
       ["role"],
-      ["employmentClassification", "fteType"],
       ["employmentType", "category"],
+      ["employmentClassification", "fteType"],
       ["__dynamic_years__"]
     ]
   },
