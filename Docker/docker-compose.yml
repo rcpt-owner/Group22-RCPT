@@ -64,6 +64,7 @@ services:
     build:
       context: ../Frontend
       dockerfile: ../Docker/frontend.Dockerfile
+      target: prod
     environment:
       # CRA uses REACT_APP_* ; Vite uses VITE_* (we set both)
       REACT_APP_API_BASE: http://localhost:8080
@@ -76,9 +77,6 @@ services:
     depends_on:
       backend:
         condition: service_started
-    volumes:
-      - ../Frontend/rcpt:/app
-      - /app/node_modules
     healthcheck:
       test: [ "CMD-SHELL", "wget -qO- http://localhost:3000 >/dev/null 2>&1 || exit 1" ]
       interval: 5s
@@ -86,47 +84,7 @@ services:
       retries: 30
       start_period: 20s
 
-  #  lookup-service:
-  # Small service that exposes lookup/reference data over HTTP
-  # so the API doesn't need to connect to two databases directly.
-  #    build: ./lookup-service
-  #    environment:
-  #      DB_URL: jdbc:postgresql://postgres:5432/lookups
-  #      DB_USER: rcpt
-  #      DB_PASSWORD: rcptpw
-  #      SERVER_PORT: "8081"
-  #    depends_on:
-  #      postgres:
-  #        condition: service_healthy
-  #    healthcheck:
-  #      test: ["CMD", "curl", "-fsS", "http://localhost:8081/health"]
-  #      interval: 10s
-  #      timeout: 5s
-  #      retries: 5
 
-  #api-service:
-  # Spring Boot app that:
-  # - Serves REST API (/api/…)
-  # - Serves the SPA static build (index.html + assets)
-  # - Calls lookup-service for reference data
-  #build: ./api
-  #environment:
-  #MONGO_URI: mongodb://rcptapp:rcptapppw@mongo:27017/rcpt?authSource=admin
-  #LOOKUP_BASE_URL: http://lookup-service:8081
-  #SERVER_PORT: "8080"
-  #CORS_ORIGINS: http://localhost:8080
-  #ports:
-  #- "8080:8080"
-  #depends_on:
-  #mongo:
-  #condition: service_healthy
-  #lookup-service:
-  #condition: service_healthy
-  #healthcheck:
-  #test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
-  #interval: 10s
-  #timeout: 5s
-  #retries: 5
 volumes:
   pgdata:
   mongodata:
