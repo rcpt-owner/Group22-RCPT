@@ -67,7 +67,6 @@ export function WorkspaceLayout() {
         </div>
       </header>
 
-      {/* Main content now centered with same max width + side padding */}
       <main className="flex-1">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           <ResearchCostingTool

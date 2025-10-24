@@ -1,0 +1,14 @@
+spring:
+  profiles:
+    active: dev
+
+  config:
+    activate:
+      on-profile: dev
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017}
+      database: rcpt_dev
+
+server:
+  port: 8080
