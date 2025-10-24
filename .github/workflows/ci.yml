@@ -2,7 +2,6 @@ name: CI
 
 on:
   push:
-<<<<<<< Updated upstream
     branches: ["main", "dev"]
   pull_request:
     branches: ["main", "dev"]
@@ -65,21 +64,3 @@ jobs:
 
       - name: Run tests
         run: ./mvnw test
-=======
-    braanches: [ "dev" ]
-  pull_request:
-    branches: [ "dev" ]
-
-jobs:
-
-  # This workflow contains a single job called "build" which is for Docker Image
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      working-directory: Docker
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
->>>>>>> Stashed changes
