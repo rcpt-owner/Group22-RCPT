@@ -32,6 +32,21 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
     fetchProjects();
   }, [userId]);
 
+  // Listen for title updates emitted by rcptEngine.updateProjectOverview
+  useEffect(() => {
+    const handler = (e: Event) => {
+      try {
+        const detail = (e as CustomEvent).detail || {}
+        const pid = detail.projectId as string | undefined
+        const title = detail.title as string | undefined
+        if (!pid) return
+        setProjects(prev => prev.map(p => (p.id === pid && title ? { ...p, title } : p)))
+      } catch { /* ignore */ }
+    }
+    window.addEventListener("rcpt:projectTitleUpdated", handler as EventListener)
+    return () => window.removeEventListener("rcpt:projectTitleUpdated", handler as EventListener)
+  }, [])
+
   const handleCreateProject = () => {
     const newProject: Project = {
       id: crypto.randomUUID(),

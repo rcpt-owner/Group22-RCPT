@@ -278,7 +278,17 @@ class RcptEngine {
     // Sync title to project metadata
     const { updateProjectTitle } = await import("@/services/userService")
     const title = entry.data.overviewFormData?.title ?? (payload as any)?.title ?? "Unnamed Project"
-    updateProjectTitle("1", projectId, title) // Assuming userId is "1"
+    // Await the title update and dispatch a window event so other UIs (e.g. Dashboard) can update immediately.
+    try {
+      await updateProjectTitle("1", projectId, title) // Assuming userId is "1"
+    } catch {
+      // ignore errors from userService update
+    }
+    try {
+      if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+        window.dispatchEvent(new CustomEvent("rcpt:projectTitleUpdated", { detail: { projectId, title } }))
+      }
+    } catch { /* ignore */ }
 
     // Cache any selection options as a string to ensure reliable session serialization
     const maybeOptions =

@@ -114,10 +114,15 @@ export function ProjectOverviewTab() {
 
   async function handleSubmit(values: ProjectOverviewFormData) {
     if (!projectId) return
-    rcptEngine.saveFormData(projectId, "project-overview-form", values)
-    await rcptEngine.refreshCache(projectId) 
-    setSuccessMsg("Saved")
-    setTimeout(() => setSuccessMsg(null), 1500)
+    try {
+      await rcptEngine.updateProjectOverview(projectId, values)
+      rcptEngine.saveFormData(projectId, "project-overview-form", values)
+      await rcptEngine.refreshCache(projectId)
+      setSuccessMsg("Saved")
+      setTimeout(() => setSuccessMsg(null), 1500)
+    } catch (e: any) {
+      setDataError(e?.message ?? "Failed to save project overview")
+    }
   }
 
   if (!projectId) return <p className="text-sm text-muted-foreground">No project selected.</p>
