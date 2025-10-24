@@ -1,5 +1,7 @@
 // Legacy project service - to be replaced by backend API calls, then used in rcptEngine
 
+import type { StaffCost, NonStaffCost } from "@/features/RCPT/rcptEngine"
+
 async function getJson<T>(path: string): Promise<T> {
   const res = await fetch(path)
   if (!res.ok) throw new Error(`Failed to fetch ${path}: ${res.status}`)

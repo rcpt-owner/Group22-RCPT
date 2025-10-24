@@ -67,7 +67,15 @@ type CacheEntry = {
 }
 
 // Canonical formIds that mirror directly into RCPTProjectData for totals/subscriptions
-const CANONICAL_FORM_IDS = new Set(["overview", "staffCosts", "nonStaffCosts", "project-overview-form"])
+const CANONICAL_FORM_IDS = new Set([
+  "overview",
+  "staffCosts",
+  "nonStaffCosts",
+  "project-overview-form",
+  // also accept the JSON/form filenames so onChange/onSubmit from forms is mirrored
+  "add-staff-cost-form",
+  "add-nonstaff-cost-form",
+])
 
 const defaultOptions: RcptEngineOptions = {
   ttlMs: 10 * 60 * 1000, // 10 minutes
@@ -192,7 +200,6 @@ class RcptEngine {
       return
     }
     // Clear all
-    const ids = Array.from(this.cache.keys())
     this.cache.clear()
     if (this.hasSession()) {
       // Best effort: remove all keys with prefix
@@ -210,16 +217,18 @@ class RcptEngine {
     const entry = this.ensureEntry(projectId)
     // Store in sessionStorage
     this.persistFormToSession(projectId, formId, values)
-    // Mirror to cache if canonical
+    // Mirror to cache if this formId corresponds to canonical data we care about.
+    // Accept both internal keys (staffCosts/nonStaffCosts) and the form filenames used by the UI.
     if (CANONICAL_FORM_IDS.has(formId)) {
       if (formId === "overview" || formId === "project-overview-form") {
         entry.data.overviewFormData = this.mapFormToOverviewForm(values)
         entry.data.overview = this.mapFormToOverview(values, entry.data.overview)
-      } else if (formId === "add-staff-cost-form") {
+      } else if (formId === "staffCosts" || formId === "add-staff-cost-form") {
         entry.data.staffCosts = Array.isArray(values) ? values : []
-      } else if (formId === "add-nonstaff-cost-form") {
+      } else if (formId === "nonStaffCosts" || formId === "add-nonstaff-cost-form") {
         entry.data.nonStaffCosts = Array.isArray(values) ? values : []
       }
+      // Recompute totals, persist and notify subscribers
       entry.totals = this.computeTotals(entry.data)
       this.cache.set(projectId, entry)
       this.writeSession(entry)
@@ -309,11 +318,11 @@ class RcptEngine {
   }
 
   setStaffCosts(projectId: string, rows: StaffCost[]): void {
-    this.saveFormData(projectId, "add-staff-cost-form", rows)
+    this.saveFormData(projectId, "staffCosts", rows)
   }
 
   setNonStaffCosts(projectId: string, rows: NonStaffCost[]): void {
-    this.saveFormData(projectId, "add-staff-cost-form", rows)
+    this.saveFormData(projectId, "nonStaffCosts", rows)
   }
 
   getStaffCosts(projectId: string): StaffCost[] {
@@ -337,7 +346,7 @@ class RcptEngine {
         if (!date) return undefined
         if (typeof date === "string") {
           const m = date.match(/(\d{4})/)
-          return m ? parseInt(m[1], 10) : undefined
+          return m && m[1] ? parseInt(m[1], 10) : undefined // Ensure m[1] is checked before parseInt
         }
         if (typeof date === "object" && date.year) return Number(date.year)
         return undefined
@@ -435,7 +444,7 @@ class RcptEngine {
       return session
     }
     const fresh: CacheEntry = {
-      data: { projectId, userId: "", staffCosts: [], nonStaffCosts: [] },
+      data: { projectId, staffCosts: [], nonStaffCosts: [] }, // removed userId
       totals: this.computeTotals({ projectId, staffCosts: [], nonStaffCosts: [] }),
       expiresAt: Date.now() + this.options.ttlMs,
     }
@@ -464,7 +473,7 @@ class RcptEngine {
         if (!d) return undefined
         if (typeof d === "string") {
           const m = d.match(/(\d{4})/)
-          return m ? parseInt(m[1], 10) : undefined
+          return m && m[1] ? parseInt(m[1], 10) : undefined
         }
         if (typeof d === "object" && d.year) return Number(d.year)
         return undefined
@@ -482,12 +491,14 @@ class RcptEngine {
     }
     const y: number[] = years.map(() => 0)
     for (const row of staff) {
-      years.forEach((year, i) => { y[i] += safeNum(row.years?.[year]) })
+      years.forEach((year, i) => {
+        if (row.years && typeof y[i] !== "undefined") y[i] += safeNum(row.years[year])
+      })
     }
     for (const row of nonStaff) {
       years.forEach((year, i) => {
-        const v = row.inKind ? 0 : safeNum(row.years?.[year])
-        y[i] += v
+        const v = row.inKind ? 0 : (row.years ? safeNum(row.years[year]) : 0)
+        if (typeof y[i] !== "undefined") y[i] += v
       })
     }
     const direct = y.reduce((a, b) => a + b, 0)

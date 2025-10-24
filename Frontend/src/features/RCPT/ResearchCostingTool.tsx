@@ -7,24 +7,16 @@ import ExportTab from "./tabs/ExportTab"
 import PricingTab from "./tabs/PricingTab"
 import { rcptEngine } from "./rcptEngine"
 
-
-
-
 export function ResearchCostingTool({
   onExit,
   projectId,
-  userId,
   initialTab = "Project Overview",
 }: {
   onExit?: () => void
   projectId: string
-  userId?: string
   initialTab?: string
 }) {
-  
-
   const [overviewComplete, setOverviewComplete] = useState(false)
-
 
   useEffect(() => {
     if (!projectId) return
@@ -40,23 +32,43 @@ export function ResearchCostingTool({
   const nonStaffCount = rcptEngine.getNonStaffCosts(projectId ?? "").length
 
   // Constants hardcoded for now; to be moved to config/service later
-  const staffTotal = rcptEngine.getTotalStaffCosts(projectId ?? ""); 
-  const nonStaffTotal = rcptEngine.getTotalNonStaffCosts(projectId ?? ""); 
-  const multiplier = 1.5;  // NEED TO GET FROM SERVICES LATER
-  const multiplierCost = rcptEngine.getMultiplierCost(projectId ?? "", multiplier);
-  const totalCosts = staffTotal + nonStaffTotal + multiplierCost;
+  const staffTotal = rcptEngine.getTotalStaffCosts(projectId ?? "")
+  const nonStaffTotal = rcptEngine.getTotalNonStaffCosts(projectId ?? "")
+  const multiplier = 1.5 // NEED TO GET FROM SERVICES LATER
+  const multiplierCost = rcptEngine.getMultiplierCost(projectId ?? "", multiplier)
+  const totalCosts = staffTotal + nonStaffTotal + multiplierCost
 
-  return (  
+  return (
     <div className="space-y-4">
       <Tabs defaultValue={initialTab} className="w-full">
         {/* Header with tabs + Exit button */}
         <div className="flex items-center justify-between gap-4">
           {/* Use auto-fit so tabs auto-adjust when one is removed; wraps on small screens */}
           <TabsList className="grid w-full grid-cols-[repeat(auto-fit,minmax(8rem,1fr))] gap-2">
-            <TabsTrigger value="Project Overview" className="text-sm">Project Overview</TabsTrigger>
-            <TabsTrigger value="Costs" className="text-sm" disabled={!overviewComplete}>Costs</TabsTrigger>
-            <TabsTrigger value="Pricing" className="text-sm" disabled={!overviewComplete}>Pricing</TabsTrigger>
-            <TabsTrigger value="Export" className="text-sm" disabled={!overviewComplete}>Export</TabsTrigger>
+            <TabsTrigger value="Project Overview" className="text-sm">
+              Project Overview
+            </TabsTrigger>
+            <TabsTrigger
+              value="Costs"
+              className="text-sm"
+              disabled={!overviewComplete}
+            >
+              Costs
+            </TabsTrigger>
+            <TabsTrigger
+              value="Pricing"
+              className="text-sm"
+              disabled={!overviewComplete}
+            >
+              Pricing
+            </TabsTrigger>
+            <TabsTrigger
+              value="Export"
+              className="text-sm"
+              disabled={!overviewComplete}
+            >
+              Export
+            </TabsTrigger>
           </TabsList>
           {onExit && (
             <Button variant="outline" size="sm" onClick={onExit}>

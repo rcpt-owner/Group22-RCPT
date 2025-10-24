@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { CircleDollarSign, Users, Package } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -174,7 +174,8 @@ export default function CostTab({ projectId }: CostTabProps) {
     const next = [row, ...staffRows]
     setStaffRows(next)
     rcptEngine.setStaffCosts(projectId, next)
-    rcptEngine.clearFormData(projectId, "addStaff")
+    // clear the draft saved under the add-staff-cost-form id
+    rcptEngine.clearFormData(projectId, "add-staff-cost-form")
   }
 
   const handleEditStart = (row: StaffCost) => {
@@ -191,7 +192,8 @@ export default function CostTab({ projectId }: CostTabProps) {
     const next = staffRows.map((r, i) => (i === editIndex ? updated : r))
     setStaffRows(next)
     rcptEngine.setStaffCosts(projectId, next)
-    rcptEngine.clearFormData(projectId, "editStaff")
+    // edits were stored under the same form id; clear that draft
+    rcptEngine.clearFormData(projectId, "add-staff-cost-form")
     setEditOpen(false)
     setEditIndex(null)
   }
@@ -215,7 +217,7 @@ export default function CostTab({ projectId }: CostTabProps) {
     const next = nonStaffRows.map((r, i) => (i === nsEditIndex ? updated : r))
     setNonStaffRows(next)
     rcptEngine.setNonStaffCosts(projectId, next)
-    rcptEngine.clearFormData(projectId, "editNonStaff")
+    rcptEngine.clearFormData(projectId, "add-nonstaff-cost-form")
     setNsEditOpen(false)
     setNsEditIndex(null)
   }
@@ -259,7 +261,7 @@ export default function CostTab({ projectId }: CostTabProps) {
                 formSchema={formSchema} 
                 onSubmit={handleAddStaff}
                 projectId={projectId}
-                initialData={rcptEngine.loadFormData(projectId, "")}
+                initialData={rcptEngine.loadFormData(projectId, "") || undefined}
                 onChange={(values) => rcptEngine.saveFormData(projectId, "add-staff-cost-form", values)}
               />
             </CardHeader>
@@ -290,7 +292,7 @@ export default function CostTab({ projectId }: CostTabProps) {
                       onSubmit={handleEditSave}
                       title="Edit Staff Member"
                       submitLabel="Save changes"
-                      initialData={rcptEngine.loadFormData(projectId, "editStaff") || staffRowToFormValues(staffRows[editIndex])}
+                      initialData={rcptEngine.loadFormData(projectId, "editStaff") || (staffRows[editIndex] ? staffRowToFormValues(staffRows[editIndex]) : undefined)}
                       onChange={(values) => rcptEngine.saveFormData(projectId, "add-staff-cost-form", values)}
                       open={editOpen}
                       onOpenChange={(o) => {
@@ -318,7 +320,7 @@ export default function CostTab({ projectId }: CostTabProps) {
                 formSchema={nonStaffFormSchema} 
                 onSubmit={handleAddNonStaff}
                 projectId={projectId}
-                initialData={rcptEngine.loadFormData(projectId, "addNonStaff")}
+                initialData={rcptEngine.loadFormData(projectId, "addNonStaff") || undefined}
                 onChange={(values) => rcptEngine.saveFormData(projectId, "add-nonstaff-cost-form", values)}
               />
             </CardHeader>
@@ -347,7 +349,7 @@ export default function CostTab({ projectId }: CostTabProps) {
                       onSubmit={handleNonStaffEditSave}
                       title="Edit Non-staff Cost"
                       submitLabel="Save changes"
-                      initialData={rcptEngine.loadFormData(projectId, "add-nonstaff-cost-form") || nonStaffRowToFormValues(nonStaffRows[nsEditIndex])}
+                      initialData={rcptEngine.loadFormData(projectId, "add-nonstaff-cost-form") || (nonStaffRows[nsEditIndex] ? nonStaffRowToFormValues(nonStaffRows[nsEditIndex]) : undefined)}
                       onChange={(values) => rcptEngine.saveFormData(projectId, "add-nonstaff-cost-form", values)}
                       open={nsEditOpen}
                       projectId={projectId}

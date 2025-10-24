@@ -121,7 +121,7 @@ export function StaffCostsDataTable({
       const v = Number(row.original.years?.[year] ?? 0)
       return <div className="text-right font-medium">{fmtCurrency(v)}</div>
     },
-    sortingFn: (a, b, id) => {
+    sortingFn: (a, b) => {
       const va = a.original.years?.[year] ?? 0
       const vb = b.original.years?.[year] ?? 0
       return Number(va) - Number(vb)

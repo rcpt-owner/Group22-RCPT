@@ -71,8 +71,7 @@ export function WorkspaceLayout() {
       <main className="flex-1">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           <ResearchCostingTool
-            projectId={projectId}
-            userId={"1"}
+            projectId={projectId ?? ""}
             // onExit could navigate back if desired:
             // onExit={() => navigate("/dashboard")}
             // Not too necassary since there is a button in the header

@@ -5,7 +5,6 @@ import { FormNumberInput } from "./FormNumberInput"
 import { FormDateInput } from "./FormDateInput"
 import { FormSelect } from "./FormSelect"
 import { FormCheckbox } from "./FormCheckbox"
-import { FormRepeatableArray } from "./FormRepeatableArray"
 import { FormMonthYearDateInput } from "./FormMonthYearDateInput"
 import { rcptEngine } from "@/features/RCPT/rcptEngine"
 
@@ -82,17 +81,6 @@ export const FieldForm = ({ field, control, nameOverride, projectId }: DynamicFo
       break
     case "checkbox":
       rendered = <FormCheckbox {...commonProps} />
-      break
-    case "repeatable":
-      rendered = (
-        <FormRepeatableArray
-          control={control}
-          name={resolvedName}
-          label={field.label}
-          fields={(field.fields || []) as any}
-          defaultEntry={field.defaultEntry || {}}
-        />
-      )
       break
     default:
       rendered = null

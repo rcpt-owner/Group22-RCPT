@@ -112,13 +112,6 @@ export function ProjectOverviewTab() {
     return overview ? toInitialData(overview) : undefined
   }, [projectId, overview])
 
-  // Live title updates with form changes
-  const [liveTitle, setLiveTitle] = useState<string>("")
-  useEffect(() => {
-    // Always use ProjectOverviewFormData's title for live updates
-    setLiveTitle(initialData?.title ?? "")
-  }, [initialData?.title])
-
   async function handleSubmit(values: ProjectOverviewFormData) {
     if (!projectId) return
     rcptEngine.saveFormData(projectId, "project-overview-form", values)
