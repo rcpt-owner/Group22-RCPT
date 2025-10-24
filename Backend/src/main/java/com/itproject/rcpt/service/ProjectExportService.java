@@ -175,17 +175,10 @@ public class ProjectExportService {
 
     // --- Helpers ---
 
-    /** Null-safe string conversion for arbitrary objects. */
     private String safe(Object val) {
         return val == null ? "—" : val.toString();
     }
 
-    /**
-     * Format Money for display. We call toString() on the money object to avoid
-     * depending on specific Money getters that may not exist. If you want
-     * currency+amount formatting, update this to call Money.getAmount()/getCurrency()
-     * if those accessors exist in your Money class.
-     */
     private String safeMoney(Object money) {
         return money == null ? "—" : money.toString();
     }
