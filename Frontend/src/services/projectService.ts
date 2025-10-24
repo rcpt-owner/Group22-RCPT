@@ -54,29 +54,35 @@ export interface ProjectOverviewFormData {
 
 export const projectService = {
   getProjectOverview(projectId: string) {
+    // TODO: implement real backend GET /api/projects/:projectId/overview
     return getJson<ProjectOverview>(`${base(projectId)}/overview.json`)
   },
   getCostData(projectId: string) {
+    // TODO: implement real backend GET /api/projects/:projectId/cost
     return getJson<ProjectCostData>(`${base(projectId)}/cost.json`)
   },
   getPricingData(projectId: string) {
+    // TODO: implement real backend GET /api/projects/:projectId/pricing
     return getJson<ProjectPricingData>(`${base(projectId)}/pricing.json`)
   },
   getExportSummary(projectId: string) {
+    // TODO: implement real backend GET /api/projects/:projectId/export
     return getJson<ProjectExportSummary>(`${base(projectId)}/export.json`)
   },
   getStaffCosts(projectId: string) {
+    // TODO: implement real backend GET /api/projects/:projectId/staffCosts
     return getJson<StaffCost[]>(`${base(projectId)}/staffCosts.json`)
   },
   getNonStaffCosts(projectId: string) {
+    // TODO: implement real backend GET /api/projects/:projectId/nonStaffCosts
     return getJson<NonStaffCost[]>(`${base(projectId)}/nonStaffCosts.json`)
   },
   async submitReview(projectId: string) {
-    // Mock (TODO: replace with POST)
+    // TODO: replace mock with POST /api/projects/:projectId/submitReview
     return { projectId, submittedAt: new Date().toISOString(), status: "Queued" }
   },
   async updateProjectOverview(projectId: string, payload: ProjectOverviewFormData) {
-    // Mock update (TODO: replace with real POST/PUT)
+    // TODO: replace mock with real PUT/POST to backend endpoint
     await new Promise((r) => setTimeout(r, 400))
     return {
       projectId,

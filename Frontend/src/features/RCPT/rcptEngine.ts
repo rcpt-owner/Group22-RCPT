@@ -6,6 +6,7 @@ import {
   type ProjectExportSummary,
   type ProjectOverviewFormData,
 } from "@/services/projectService"
+import { rcptCache, type RCPTProjectData, type CacheEntry, type RcptCalculatedTotals } from "@/services/rcptCache"
 
 export type {
   ProjectOverview,
@@ -21,7 +22,7 @@ export interface StaffCost {
   category: string
   employmentClassification: string
   fteType: string
-  years: Record<string, number> // e.g. { "2023": 1000, "2024": 2000 } this number can be changed from money to time later if needed
+  years: Record<string, number>
 }
 
 export interface NonStaffCost {
@@ -32,8 +33,8 @@ export interface NonStaffCost {
   years: Record<string, number>
 }
 
-export interface RCPTProjectData {
-  projectId: string
+export interface RCPTProjectDataLocal extends RCPTProjectData {
+  // kept for local clarity; rcptCache.RCPTProjectData is a flexible shape
   overview?: ProjectOverview
   costData?: ProjectCostData
   pricingData?: ProjectPricingData
@@ -41,17 +42,8 @@ export interface RCPTProjectData {
   staffCosts?: StaffCost[]
   nonStaffCosts?: NonStaffCost[]
   lastLoadedAt?: string
-  // Cached selection options for the Project Overview tab (serialized)
   overviewSelectionOptions?: string
   overviewFormData?: ProjectOverviewFormData
-}
-
-export interface RcptCalculatedTotals {
-  totalDirect: number
-  totalIndirect: number
-  totalAll: number
-  perYear?: Array<{ yearIndex: number; year?: string; direct: number; indirect: number; total: number }>
-  currency?: string
 }
 
 export interface RcptEngineOptions {
@@ -60,66 +52,50 @@ export interface RcptEngineOptions {
   sessionKeyPrefix: string
 }
 
-type CacheEntry = {
-  data: RCPTProjectData
-  totals?: RcptCalculatedTotals
-  expiresAt: number
-}
+type CacheEntryLocal = CacheEntry
 
-// Canonical formIds that mirror directly into RCPTProjectData for totals/subscriptions
 const CANONICAL_FORM_IDS = new Set([
   "overview",
   "staffCosts",
   "nonStaffCosts",
   "project-overview-form",
-  // previously included "add-staff-cost-form" and "add-nonstaff-cost-form" here,
-  // but those are per-item draft forms and SHOULD NOT be mirrored into the canonical arrays.
 ])
 
 const defaultOptions: RcptEngineOptions = {
-  ttlMs: 10 * 60 * 1000, // 10 minutes
+  ttlMs: 10 * 60 * 1000,
   useSessionCache: true,
   sessionKeyPrefix: "rcpt",
 }
 
 class RcptEngine {
   private options: RcptEngineOptions = { ...defaultOptions }
-  private cache = new Map<string, CacheEntry>()
-  private listeners = new Map<string, Set<() => void>>()
 
   configure(options: Partial<RcptEngineOptions>): void {
     this.options = { ...this.options, ...options }
+    rcptCache.configure(options)
   }
 
   async loadData(projectId: string): Promise<void> {
     if (!projectId) throw new Error("Missing projectId")
 
-    // Serve from cache if not expired
-    const existing = this.cache.get(projectId)
-    if (existing && !this.isExpired(existing)) return
+    // If a non-expired entry exists, nothing to do.
+    const existing = rcptCache.getEntry(projectId)
+    if (existing) return
 
-    // Try session cache as starting point
-    let data: RCPTProjectData | undefined
-    const sessionEntry = this.readSession(projectId)
-    if (sessionEntry && !this.isExpired(sessionEntry)) {
-      data = sessionEntry.data
-    } else if (existing) {
-      data = existing.data
-    } else {
-      data = { projectId }
-    }
+    // Build starting data: prefer session/cache snapshot if present, else fresh
+    const starting = rcptCache.ensureEntry(projectId)
+    let data: RCPTProjectDataLocal = starting.data as RCPTProjectDataLocal
 
     // Fetch all service resources in parallel; defensive handling
     const [ovRes, costRes, priceRes, exportRes, staffRes, nonStaffRes] = await Promise.allSettled([
-      projectService.getProjectOverview(projectId),
-      projectService.getCostData(projectId),
-      projectService.getPricingData(projectId),
-      projectService.getExportSummary(projectId),
-      projectService.getStaffCosts(projectId),
-      projectService.getNonStaffCosts(projectId),
+      projectService.getProjectOverview(projectId), // TODO: replace with real API GET /api/projects/:projectId/overview
+      projectService.getCostData(projectId),       // TODO: replace with real API GET /api/projects/:projectId/cost
+      projectService.getPricingData(projectId),    // TODO: replace with real API GET /api/projects/:projectId/pricing
+      projectService.getExportSummary(projectId),  // TODO: replace with real API GET /api/projects/:projectId/export
+      projectService.getStaffCosts(projectId),     // TODO: replace with real API GET /api/projects/:projectId/staffCosts
+      projectService.getNonStaffCosts(projectId),  // TODO: replace with real API GET /api/projects/:projectId/nonStaffCosts
     ])
 
-    // Merge successes into data; keep local staff/non-staff rows if present
     if (ovRes.status === "fulfilled") {
       const serverOv = ovRes.value
       if (!data.overview) {
@@ -133,162 +109,123 @@ class RcptEngine {
     if (staffRes.status === "fulfilled") data.staffCosts = staffRes.value
     if (nonStaffRes.status === "fulfilled") data.nonStaffCosts = nonStaffRes.value
 
-    // Optional: Add fallback or programmatic population here if JSON is missing
-    // Example: if (!data.staffCosts?.length) data.staffCosts = [/* default rows */]
-
-    // Merge canonical form data into data after loading from server
-    const overviewForm = this.loadFormData(projectId, "project-overview-form")
+    // Merge canonical form data from rcptCache forms into data after loading from server
+    const overviewForm = rcptCache.loadForm(projectId, "project-overview-form")
     if (overviewForm) {
       data.overviewFormData = this.mapFormToOverviewForm(overviewForm)
       data.overview = this.mapFormToOverview(overviewForm, data.overview)
     } else {
-      // fallback: try "overview" formId for legacy support
-      const legacyOverviewForm = this.loadFormData(projectId, "overview")
+      const legacyOverviewForm = rcptCache.loadForm(projectId, "overview")
       if (legacyOverviewForm) {
         data.overviewFormData = this.mapFormToOverviewForm(legacyOverviewForm)
         data.overview = this.mapFormToOverview(legacyOverviewForm, data.overview)
       }
     }
-    const staffForm = this.loadFormData(projectId, "staffCosts")
+    const staffForm = rcptCache.loadForm(projectId, "staffCosts")
     if (staffForm) {
       data.staffCosts = Array.isArray(staffForm) ? staffForm : []
     }
-    const nonStaffForm = this.loadFormData(projectId, "nonStaffCosts")
+    const nonStaffForm = rcptCache.loadForm(projectId, "nonStaffCosts")
     if (nonStaffForm) {
       data.nonStaffCosts = Array.isArray(nonStaffForm) ? nonStaffForm : []
     }
 
-    // Ensure arrays are defined (fallback to empty if not from form/server)
     data.staffCosts = Array.isArray(data.staffCosts) ? data.staffCosts : []
     data.nonStaffCosts = Array.isArray(data.nonStaffCosts) ? data.nonStaffCosts : []
     data.lastLoadedAt = new Date().toISOString()
 
-    const totals = this.computeTotals(data)
-    const entry: CacheEntry = {
+    const totals = this.computeTotals(data as RCPTProjectDataLocal)
+    const entry: CacheEntryLocal = {
       data,
       totals,
       expiresAt: Date.now() + this.options.ttlMs,
     }
 
-    this.cache.set(projectId, entry)
-    this.writeSession(entry)
-    this.notify(projectId)
+    rcptCache.setEntry(projectId, entry)
   }
 
-  getProjectData(projectId: string): RCPTProjectData | null {
-    const entry = this.cache.get(projectId);
-    if (!entry || this.isExpired(entry) || entry.data.projectId !== projectId) {
-      // Invalidate if projectId mismatch
-      if (entry) this.cache.delete(projectId);
-      return null;
-    }
-    return entry.data;
+  getProjectData(projectId: string): RCPTProjectDataLocal | null {
+    const entry = rcptCache.getEntry(projectId)
+    return entry ? (entry.data as RCPTProjectDataLocal) : null
   }
 
   getCalculatedTotals(projectId: string): RcptCalculatedTotals | null {
-    const entry = this.cache.get(projectId)
-    if (!entry || this.isExpired(entry)) return null
-    return entry.totals ?? null
+    const entry = rcptCache.getEntry(projectId)
+    return entry ? (entry.totals ?? null) : null
   }
 
   async refreshCache(projectId?: string): Promise<void> {
     if (projectId) {
-      this.cache.delete(projectId)
-      this.removeSession(projectId)
+      rcptCache.removeEntry(projectId)
       await this.loadData(projectId)
       return
     }
-    // Clear all
-    this.cache.clear()
-    if (this.hasSession()) {
-      // Best effort: remove all keys with prefix
-      try {
-        const prefix = `${this.options.sessionKeyPrefix}:project:`
-        for (let i = 0; i < (window.sessionStorage?.length ?? 0); i++) {
-          const key = window.sessionStorage.key(i)
-          if (key && key.startsWith(prefix)) window.sessionStorage.removeItem(key)
-        }
-      } catch { /* ignore */ }
-    }
+    rcptCache.clearAll()
   }
 
   saveFormData(projectId: string, formId: string, values: any): void {
-    const entry = this.ensureEntry(projectId)
-    // Store in sessionStorage (always persist drafts)
-    this.persistFormToSession(projectId, formId, values)
+    // Persist form draft
+    rcptCache.persistForm(projectId, formId, values)
 
-    // Mirror to cache only when this formId corresponds to canonical data we care about.
-    // Do NOT mirror per-item draft form IDs (e.g. add-staff-cost-form) — they are drafts, not the full array.
+    // Mirror canonical forms into the canonical snapshot
     let mirrored = false
+    const entry = rcptCache.ensureEntry(projectId)
+    const data = entry.data as RCPTProjectDataLocal
 
     if (formId === "overview" || formId === "project-overview-form") {
       entry.data.overviewFormData = this.mapFormToOverviewForm(values)
       entry.data.overview = this.mapFormToOverview(values, entry.data.overview)
       mirrored = true
     } else if (formId === "staffCosts") {
-      entry.data.staffCosts = Array.isArray(values) ? values : entry.data.staffCosts ?? []
+      entry.data.staffCosts = Array.isArray(values) ? values : data.staffCosts ?? []
       mirrored = true
     } else if (formId === "nonStaffCosts") {
-      entry.data.nonStaffCosts = Array.isArray(values) ? values : entry.data.nonStaffCosts ?? []
+      entry.data.nonStaffCosts = Array.isArray(values) ? values : data.nonStaffCosts ?? []
       mirrored = true
     }
 
     if (mirrored) {
-      // Recompute totals, persist and notify subscribers
-      entry.totals = this.computeTotals(entry.data)
-      this.cache.set(projectId, entry)
-      this.writeSession(entry)
-      this.notify(projectId)
+      entry.totals = this.computeTotals(entry.data as RCPTProjectDataLocal)
+      entry.expiresAt = Date.now() + this.options.ttlMs
+      rcptCache.setEntry(projectId, entry)
     }
   }
 
   loadFormData<T = any>(projectId: string, formId: string): T | null {
-    if (!this.hasSession()) return null
-    try {
-      const raw = window.sessionStorage.getItem(this.getFormKey(projectId, formId))
-      return raw ? JSON.parse(raw) : null
-    } catch {
-      return null
-    }
+    return rcptCache.loadForm(projectId, formId) as T | null
   }
 
   clearFormData(projectId: string, formId: string): void {
-    // Remove from sessionStorage
-    this.removeFormFromSession(projectId, formId)
-    // Clear from cache if canonical
+    // Remove persisted form
+    rcptCache.removeForm(projectId, formId)
+    // Clear from canonical snapshot if needed
     if (CANONICAL_FORM_IDS.has(formId)) {
-      const entry = this.cache.get(projectId)
+      const entry = rcptCache.ensureEntry(projectId)
       if (entry) {
         if (formId === "staffCosts") {
           entry.data.staffCosts = []
         } else if (formId === "nonStaffCosts") {
           entry.data.nonStaffCosts = []
         }
-        // Note: Do not clear overview here to preserve saved data
-        entry.totals = this.computeTotals(entry.data)
-        this.cache.set(projectId, entry)
-        this.writeSession(entry)
-        this.notify(projectId)
+        entry.totals = this.computeTotals(entry.data as RCPTProjectDataLocal)
+        entry.expiresAt = Date.now() + this.options.ttlMs
+        rcptCache.setEntry(projectId, entry)
       }
     }
   }
 
   async updateProjectOverview(projectId: string, payload: ProjectOverviewFormData): Promise<void> {
-    await projectService.updateProjectOverview(projectId, payload)
-    const entry = this.ensureEntry(projectId)
-    // Always update overviewFormData as canonical
+    await projectService.updateProjectOverview(projectId, payload) // TODO: wire to PUT/POST backend when available
+    const entry = rcptCache.ensureEntry(projectId)
     entry.data.overviewFormData = this.mapFormToOverviewForm(payload, entry.data.overviewFormData)
-    // Optionally update overview for legacy/compat
     entry.data.overview = this.mapFormToOverview(payload, entry.data.overview)
 
-    // Sync title to project metadata
     const { updateProjectTitle } = await import("@/services/userService")
     const title = entry.data.overviewFormData?.title ?? (payload as any)?.title ?? "Unnamed Project"
-    // Await the title update and dispatch a window event so other UIs (e.g. Dashboard) can update immediately.
     try {
-      await updateProjectTitle("1", projectId, title) // Assuming userId is "1"
+      await updateProjectTitle("1", projectId, title) // TODO: replace "1" with real authenticated user id
     } catch {
-      // ignore errors from userService update
+      // ignore
     }
     try {
       if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
@@ -296,7 +233,6 @@ class RcptEngine {
       }
     } catch { /* ignore */ }
 
-    // Cache any selection options as a string to ensure reliable session serialization
     const maybeOptions =
       (payload as any)?.selectionOptions ??
       (payload as any)?.options ??
@@ -311,15 +247,13 @@ class RcptEngine {
     }
 
     entry.expiresAt = Date.now() + this.options.ttlMs
-    this.cache.set(projectId, entry)
-    this.writeSession(entry)
-    this.notify(projectId)
-    this.notify(projectId)
+    entry.totals = this.computeTotals(entry.data as RCPTProjectDataLocal)
+    rcptCache.setEntry(projectId, entry)
   }
 
   async submitReview(projectId: string): Promise<void> {
     const res = await projectService.submitReview(projectId)
-    const entry = this.ensureEntry(projectId)
+    const entry = rcptCache.ensureEntry(projectId)
     if (entry.data.overview) {
       entry.data.overview = {
         ...entry.data.overview,
@@ -328,9 +262,8 @@ class RcptEngine {
       }
     }
     entry.expiresAt = Date.now() + this.options.ttlMs
-    this.cache.set(projectId, entry)
-    this.writeSession(entry)
-    this.notify(projectId)
+    entry.totals = this.computeTotals(entry.data as RCPTProjectDataLocal)
+    rcptCache.setEntry(projectId, entry)
   }
 
   setStaffCosts(projectId: string, rows: StaffCost[]): void {
@@ -351,8 +284,6 @@ class RcptEngine {
     return data?.nonStaffCosts ?? []
   }
 
-  
-  // FIXED
   getProjectYears(projectId: string): string[] {
     const data = this.getProjectData(projectId)
     let startYear: number | undefined, endYear: number | undefined
@@ -362,7 +293,7 @@ class RcptEngine {
         if (!date) return undefined
         if (typeof date === "string") {
           const m = date.match(/(\d{4})/)
-          return m && m[1] ? parseInt(m[1], 10) : undefined // Ensure m[1] is checked before parseInt
+          return m && m[1] ? parseInt(m[1], 10) : undefined
         }
         if (typeof date === "object" && date.year) return Number(date.year)
         return undefined
@@ -440,49 +371,24 @@ class RcptEngine {
   }
 
   subscribe(projectId: string, listener: () => void): () => void {
-    if (!this.listeners.has(projectId)) this.listeners.set(projectId, new Set())
-    const set = this.listeners.get(projectId)!
-    set.add(listener)
-    return () => {
-      set.delete(listener)
-      if (set.size === 0) this.listeners.delete(projectId)
-    }
+    return rcptCache.subscribe(projectId, listener)
   }
 
   // ---- private helpers ----
 
-  private ensureEntry(projectId: string): CacheEntry {
-    const existing = this.cache.get(projectId)
-    if (existing && !this.isExpired(existing)) return existing
-    const session = this.readSession(projectId)
-    if (session && !this.isExpired(session)) {
-      this.cache.set(projectId, session)
-      return session
-    }
-    const fresh: CacheEntry = {
-      data: { projectId, staffCosts: [], nonStaffCosts: [] }, // removed userId
-      totals: this.computeTotals({ projectId, staffCosts: [], nonStaffCosts: [] }),
-      expiresAt: Date.now() + this.options.ttlMs,
-    }
-    this.cache.set(projectId, fresh)
-    return fresh
-  }
-
-  private computeTotals(data: RCPTProjectData): RcptCalculatedTotals {
+  private computeTotals(data: RCPTProjectDataLocal): RcptCalculatedTotals {
     // Prefer server totals when available
     if (data.costData && isFiniteNum(data.costData.total) && isFiniteNum(data.costData.totalDirect) && isFiniteNum(data.costData.totalIndirect)) {
       return {
         totalAll: data.costData.total,
         totalDirect: data.costData.totalDirect,
         totalIndirect: data.costData.totalIndirect,
-        // perYear unknown from server; omit
         currency: data.pricingData?.currency,
       }
     }
 
     const staff = data.staffCosts ?? []
     const nonStaff = data.nonStaffCosts ?? []
-    // Get dynamic years
     let years: string[] = []
     if (data.overview) {
       const parseYear = (d: any) => {
@@ -545,65 +451,6 @@ class RcptEngine {
     }
   }
 
-  private isExpired(entry: CacheEntry): boolean {
-    return Date.now() > entry.expiresAt
-  }
-
-  private notify(projectId: string) {
-    const set = this.listeners.get(projectId)
-    if (!set) return
-    for (const fn of Array.from(set)) {
-      try { fn() } catch { /* ignore */ }
-    }
-  }
-
-  private getSessionKey(projectId: string): string {
-    return `${this.options.sessionKeyPrefix}:project:${projectId}`
-  }
-
-  private hasSession(): boolean {
-    return typeof window !== "undefined" && typeof window.sessionStorage !== "undefined"
-  }
-
-  private readSession(projectId: string): CacheEntry | null {
-    if (!this.options.useSessionCache || !this.hasSession()) return null
-    try {
-      const raw = window.sessionStorage.getItem(this.getSessionKey(projectId))
-      if (!raw) return null
-      const parsed = JSON.parse(raw)
-      // Basic shape guard
-      if (!parsed || typeof parsed !== "object" || !parsed.data) return null
-      // Coerce
-      const entry: CacheEntry = {
-        data: parsed.data,
-        totals: parsed.totals,
-        expiresAt: typeof parsed.expiresAt === "number" ? parsed.expiresAt : Date.now(), // if missing, expire now
-      }
-      return entry
-    } catch {
-      return null
-    }
-  }
-
-  private writeSession(entry: CacheEntry) {
-    if (!this.options.useSessionCache || !this.hasSession()) return
-    try {
-      window.sessionStorage.setItem(this.getSessionKey(entry.data.projectId), JSON.stringify(entry))
-    } catch {
-      // ignore quota or serialization errors
-    }
-  }
-
-  private removeSession(projectId: string) {
-    if (!this.options.useSessionCache || !this.hasSession()) return
-    try {
-      window.sessionStorage.removeItem(this.getSessionKey(projectId))
-      // Also remove any legacy per-field rows we may write below
-      window.sessionStorage.removeItem(this.getSessionKey(projectId) + ":staffCosts")
-      window.sessionStorage.removeItem(this.getSessionKey(projectId) + ":nonStaffCosts")
-    } catch { /* ignore */ }
-  }
-
   private mapFormToOverviewForm(input: any, existing?: ProjectOverviewFormData): ProjectOverviewFormData {
     return {
       title: input?.title ?? existing?.title ?? "",
@@ -625,26 +472,6 @@ class RcptEngine {
       status: existing?.status ?? "Draft",
       lastUpdated: new Date().toISOString(),
     }
-  }
-
-
-
-  private getFormKey(projectId: string, formId: string): string {
-    return `${this.options.sessionKeyPrefix}:project:${projectId}:form:${formId}`
-  }
-
-  private persistFormToSession(projectId: string, formId: string, values: any): void {
-    if (!this.hasSession()) return
-    try {
-      window.sessionStorage.setItem(this.getFormKey(projectId, formId), JSON.stringify(values))
-    } catch { /* ignore */ }
-  }
-
-  private removeFormFromSession(projectId: string, formId: string): void {
-    if (!this.hasSession()) return
-    try {
-      window.sessionStorage.removeItem(this.getFormKey(projectId, formId))
-    } catch { /* ignore */ }
   }
 }
 

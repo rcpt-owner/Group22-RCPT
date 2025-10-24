@@ -15,24 +15,11 @@ export interface UserDashboard {
   lastLogin: string
 }
 
-// export interface UserNotification {
-//   id: string
-//   type: string
-//   message: string
-//   createdAt: string
-//   read: boolean
-// }
-
 export const UserService = {
   getDashboard(userId = "1") {
+    // TODO: wire to real backend GET /api/users/:userId/dashboard
     return getJson<UserDashboard>(`${BASE}/${userId}/dashboard.json`)
   },
-  // getNotifications(userId = "1") {
-  //   return getJson<UserNotification[]>(`${BASE}/${userId}/notifications.json`)
-  // },
-  // getNotification(notificationId: string, userId = "1") {
-  //   return getJson<UserNotification>(`${BASE}/${userId}/notifications/${notificationId}.json`)
-  // },
 }
 
 export type ProjectStatus = "Draft" | "Submitted" | "Approved" | "Archived"
@@ -41,10 +28,10 @@ export type Project = {
   id: string
   title: string
   ownerUserId: string
-  currency: string // not displayed; assume AUD
+  currency: string
   status: ProjectStatus
-  staffCosts: number // not displayed
-  nonStaffCosts: number // not displayed
+  staffCosts: number
+  nonStaffCosts: number
   createdAt: string | Date
   updatedAt: string | Date
 }
@@ -54,8 +41,8 @@ export type Project = {
  * TODO: Integrate real API/auth logic and error handling as backend evolves.
  */
 export async function getUserProjects(userId: string): Promise<Project[]> {
-  // Load cached projects from separate module (dynamic import to allow code-splitting)
   const { getCachedProjects } = await import("./userProjectCache");
+  // TODO: when backend is ready, GET /api/users/:userId/projects and merge with cached drafts
   return getCachedProjects(userId);
 }
 
@@ -64,6 +51,7 @@ export async function getUserProjects(userId: string): Promise<Project[]> {
  */
 export async function createUserProject(userId: string, project: Project): Promise<void> {
   const { createUserProject: cacheCreate } = await import("./userProjectCache");
+  // TODO: replace with POST to backend and fall back to local cache when offline
   cacheCreate(userId, project);
 }
 
@@ -72,6 +60,7 @@ export async function createUserProject(userId: string, project: Project): Promi
  */
 export async function deleteUserProject(userId: string, projectId: string): Promise<void> {
   const { deleteUserProject: cacheDelete } = await import("./userProjectCache");
+  // TODO: replace with DELETE to backend and handle offline state
   cacheDelete(userId, projectId);
 }
 
@@ -80,5 +69,6 @@ export async function deleteUserProject(userId: string, projectId: string): Prom
  */
 export async function updateProjectTitle(userId: string, projectId: string, newTitle: string): Promise<void> {
   const { updateProjectTitle: cacheUpdate } = await import("./userProjectCache");
+  // TODO: replace with PATCH/PUT to backend and fall back to local cache when offline
   cacheUpdate(userId, projectId, newTitle);
 }

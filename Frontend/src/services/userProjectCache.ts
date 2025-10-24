@@ -2,6 +2,8 @@ import type { Project } from "./userService"
 
 /**
  * Get cached projects from session storage.
+ * NOTE: This module only handles list-of-projects caching (draft/new projects).
+ * Per-project RCPT session/TTL logic lives in /services/rcptCache.ts
  */
 export function getCachedProjects(userId: string): Project[] {
   try {
