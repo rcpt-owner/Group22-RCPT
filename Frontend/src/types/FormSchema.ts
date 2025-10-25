@@ -25,7 +25,7 @@ export type OptionDef = { value: string; label: string }
 export type FieldDefinition =
   | {
       name: string
-      type: "text" | "textarea" | "number" | "date" | "select" | "checkbox" | "repeatable" | "monthYearDate"
+      type: "dynamic_years" | "text" | "textarea" | "number" | "date" | "select" | "checkbox" | "repeatable" | "monthYearDate"
       label: string
       placeholder?: string
       message?: string

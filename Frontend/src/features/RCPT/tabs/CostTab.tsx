@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { CircleDollarSign, Users, Package } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import type { FormSchema } from "@/types/FormSchema"
 import { StaffCostsDataTable } from "./CostTabFeatures/StaffCostsDataTable"
-import type { StaffCost } from "./CostTabFeatures/StaffCostsDataTable"
 import { AddStaffDialog } from "./CostTabFeatures/AddStaffDialog"
 import { AddNonStaffDialog } from "./CostTabFeatures/AddNonStaffDialog"
 import { NonStaffCostsDataTable } from "./CostTabFeatures/NonStaffCostsDataTable"
-import type { NonStaffCost } from "./CostTabFeatures/NonStaffCostsDataTable"
+import { rcptEngine, type StaffCost, type NonStaffCost } from "../rcptEngine"
 
 // CostTab: hosts cost subcomponents and orchestrates data/state for this tab.
 // Tables are presentational; CostTab owns state and passes data + callbacks.
@@ -33,67 +32,41 @@ export default function CostTab({ projectId }: CostTabProps) {
   // New: non-staff schema
   const [nonStaffFormSchema, setNonStaffFormSchema] = useState<FormSchema | null>(null)
 
-  // --- TMP: session storage for staff rows ---
-  // --- Will integrate with backend later ---
-  // Temporary per-workspace session storage for staff rows (local to this tab).
-  const storageKey = React.useMemo(() => `rcpt:costtab:staff:${projectId}`, [projectId])
+  // Remove all sessionStorage based keys/effects. Engine owns persistence.
 
-  // Non-staff session storage key
-  const nsStorageKey = React.useMemo(() => `rcpt:costtab:nonstaff:${projectId}`, [projectId])
-
-  // Load any previously entered rows for this workspace session.
+  // Seed rows from engine on mount and on projectId change (now includes merged form data)
   useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(storageKey)
-      if (raw) setStaffRows(JSON.parse(raw) as StaffCost[])
-    } catch {
-      // ignore
+    let cancelled = false
+    rcptEngine
+      .loadData(projectId)
+      .then(() => {
+        if (cancelled) return
+        const d = rcptEngine.getProjectData(projectId)
+        setStaffRows(d?.staffCosts ?? [])
+        setNonStaffRows(d?.nonStaffCosts ?? [])
+      })
+      .catch(() => {
+        // optional: ignore or show toast
+      })
+    // Subscribe for cross-tab updates
+    const unsubscribe = rcptEngine.subscribe(projectId, () => {
+      const d = rcptEngine.getProjectData(projectId)
+      setStaffRows(d?.staffCosts ?? [])
+      setNonStaffRows(d?.nonStaffCosts ?? [])
+    })
+    return () => {
+      cancelled = true
+      unsubscribe()
     }
-  }, [storageKey])
+  }, [projectId])
 
-  // Load non-staff rows
-  useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(nsStorageKey)
-      if (raw) setNonStaffRows(JSON.parse(raw) as NonStaffCost[])
-    } catch {
-      // ignore
-    }
-  }, [nsStorageKey])
-
-  // Persist rows whenever they change (remove key when empty).
-  useEffect(() => {
-    try {
-      if (staffRows.length > 0) {
-        sessionStorage.setItem(storageKey, JSON.stringify(staffRows))
-      } else {
-        sessionStorage.removeItem(storageKey)
-      }
-    } catch {
-      // ignore
-    }
-  }, [staffRows, storageKey])
-
-  // Persist non-staff rows
-  useEffect(() => {
-    try {
-      if (nonStaffRows.length > 0) {
-        sessionStorage.setItem(nsStorageKey, JSON.stringify(nonStaffRows))
-      } else {
-        sessionStorage.removeItem(nsStorageKey)
-      }
-    } catch {
-      // ignore
-    }
-  }, [nonStaffRows, nsStorageKey])
-
-  // --- END TMP ---
 
   useEffect(() => {
     let cancelled = false
     ;(async () => {
       try {
-        const schema: FormSchema = await fetch("/forms/addStaffCostForm.json").then(r => r.json())
+        const base = (import.meta as any)?.env?.BASE_URL ?? "/"
+        const schema: FormSchema = await fetch(`${base}forms/addStaffCostForm.json`, { cache: "no-cache" }).then(r => r.json())
         if (!cancelled) setFormSchema(schema)
       } catch (e) {
         // no-op for demo
@@ -109,7 +82,8 @@ export default function CostTab({ projectId }: CostTabProps) {
     let cancelled = false
     ;(async () => {
       try {
-        const schema: FormSchema = await fetch("/forms/addNonStaffCostForm.json").then(r => r.json())
+        const base = (import.meta as any)?.env?.BASE_URL ?? "/"
+        const schema: FormSchema = await fetch(`${base}forms/addNonStaffCostForm.json`, { cache: "no-cache" }).then(r => r.json())
         if (!cancelled) setNonStaffFormSchema(schema)
       } catch (e) {
         // no-op for demo
@@ -120,12 +94,8 @@ export default function CostTab({ projectId }: CostTabProps) {
     }
   }, [])
 
-  // Compute year labels from the loaded form schema (fallback to Year 1–3)
-  const yearLabels: [string, string, string] = [
-    ((formSchema as any)?.fields?.find((f: any) => f.name === "year1")?.label) ?? "Year 1",
-    ((formSchema as any)?.fields?.find((f: any) => f.name === "year2")?.label) ?? "Year 2",
-    ((formSchema as any)?.fields?.find((f: any) => f.name === "year3")?.label) ?? "Year 3",
-  ]
+  // Compute year labels from rcptEngine (dynamic)
+  const yearLabels: string[] = rcptEngine.getProjectYears(projectId)
 
   // Helper mappers
   const toTitle = (s: string | undefined) =>
@@ -141,16 +111,22 @@ export default function CostTab({ projectId }: CostTabProps) {
   }
 
   // FUTURE: integrate with backend data model for a projects length so these years will have to be dynamic
-  const mapFormToStaffRow = (values: Record<string, any>): StaffCost => ({
-    role: String(values.role ?? ""),
-    employmentType: mapEmploymentType(values.employmentType),
-    category: toTitle(values.category),
-    employmentClassification: toTitle(values.employmentClassification),
-    fteType: toTitle(values.fteType),
-    year1: Number(values.year1 ?? 0) || 0,
-    year2: Number(values.year2 ?? 0) || 0,
-    year3: Number(values.year3 ?? 0) || 0,
-  })
+  const mapFormToStaffRow = (values: Record<string, any>): StaffCost => {
+    const years: Record<string, number> = {}
+    if (values.years && typeof values.years === "object") {
+      for (const y of yearLabels) years[y] = Number(values.years[y] ?? 0) || 0
+    } else {
+      for (const y of yearLabels) years[y] = 0
+    }
+    return {
+      role: String(values.role ?? ""),
+      employmentType: mapEmploymentType(values.employmentType),
+      category: toTitle(values.category),
+      employmentClassification: toTitle(values.employmentClassification),
+      fteType: toTitle(values.fteType),
+      years,
+    }
+  }
 
   // Reverse mapping to prefill form from a StaffCost row
   const staffRowToFormValues = (row: StaffCost) => {
@@ -161,39 +137,45 @@ export default function CostTab({ projectId }: CostTabProps) {
     }
     return {
       role: row.role,
-      employmentType: slug(row.employmentType), // e.g., "Full-Time" -> "full-time"
+      employmentType: slug(row.employmentType),
       category: normalizeCategory(row.category),
-      employmentClassification: slug(row.employmentClassification), // "Level A" -> "level-a"
-      fteType: row.fteType.toLowerCase(), // "FTE" -> "fte"
-      year1: row.year1,
-      year2: row.year2,
-      year3: row.year3,
+      employmentClassification: slug(row.employmentClassification),
+      fteType: row.fteType.toLowerCase(),
+      years: { ...row.years },
     }
   }
 
   // Non-staff helpers
-  const mapFormToNonStaffRow = (values: Record<string, any>): NonStaffCost => ({
-    category: String(values.category ?? ""),
-    subcategory: String(values.subcategory ?? ""),
-    description: String(values.description ?? ""),
-    inKind: Boolean(values.inKind),
-    year1: Number(values.year1 ?? 0) || 0,
-    year2: Number(values.year2 ?? 0) || 0,
-    year3: Number(values.year3 ?? 0) || 0,
-  })
+  const mapFormToNonStaffRow = (values: Record<string, any>): NonStaffCost => {
+    const years: Record<string, number> = {}
+    if (values.years && typeof values.years === "object") {
+      for (const y of yearLabels) years[y] = Number(values.years[y] ?? 0) || 0
+    } else {
+      for (const y of yearLabels) years[y] = 0
+    }
+    return {
+      category: String(values.category ?? ""),
+      subcategory: String(values.subcategory ?? ""),
+      description: String(values.description ?? ""),
+      inKind: Boolean(values.inKind),
+      years,
+    }
+  }
   const nonStaffRowToFormValues = (row: NonStaffCost) => ({
     category: row.category,
     subcategory: row.subcategory,
     description: row.description ?? "",
     inKind: Boolean(row.inKind),
-    year1: row.year1,
-    year2: row.year2,
-    year3: row.year3,
+    years: { ...row.years },
   })
 
   const handleAddStaff = async (values: Record<string, any>) => {
     const row = mapFormToStaffRow(values)
-    setStaffRows(prev => [row, ...prev])
+    const next = [row, ...staffRows]
+    setStaffRows(next)
+    rcptEngine.setStaffCosts(projectId, next)
+    // clear the draft saved under the add-staff-cost-form id
+    rcptEngine.clearFormData(projectId, "add-staff-cost-form")
   }
 
   const handleEditStart = (row: StaffCost) => {
@@ -207,14 +189,20 @@ export default function CostTab({ projectId }: CostTabProps) {
   const handleEditSave = (values: Record<string, any>) => {
     if (editIndex == null) return
     const updated = mapFormToStaffRow(values)
-    setStaffRows(prev => prev.map((r, i) => (i === editIndex ? updated : r)))
+    const next = staffRows.map((r, i) => (i === editIndex ? updated : r))
+    setStaffRows(next)
+    rcptEngine.setStaffCosts(projectId, next)
+    // edits were stored under the same form id; clear that draft
+    rcptEngine.clearFormData(projectId, "add-staff-cost-form")
     setEditOpen(false)
     setEditIndex(null)
   }
 
   const handleAddNonStaff = (values: Record<string, any>) => {
     const row = mapFormToNonStaffRow(values)
-    setNonStaffRows(prev => [row, ...prev])
+    const next = [row, ...nonStaffRows]
+    setNonStaffRows(next)
+    rcptEngine.setNonStaffCosts(projectId, next)
   }
   const handleNonStaffEditStart = (row: NonStaffCost) => {
     const idx = nonStaffRows.findIndex(r => r === row)
@@ -226,7 +214,10 @@ export default function CostTab({ projectId }: CostTabProps) {
   const handleNonStaffEditSave = (values: Record<string, any>) => {
     if (nsEditIndex == null) return
     const updated = mapFormToNonStaffRow(values)
-    setNonStaffRows(prev => prev.map((r, i) => (i === nsEditIndex ? updated : r)))
+    const next = nonStaffRows.map((r, i) => (i === nsEditIndex ? updated : r))
+    setNonStaffRows(next)
+    rcptEngine.setNonStaffCosts(projectId, next)
+    rcptEngine.clearFormData(projectId, "add-nonstaff-cost-form")
     setNsEditOpen(false)
     setNsEditIndex(null)
   }
@@ -266,7 +257,13 @@ export default function CostTab({ projectId }: CostTabProps) {
               <h3 className="text-lg font-medium">Staff Costs:</h3>
 
               {/* Add dialog (self-triggered) */}
-              <AddStaffDialog formSchema={formSchema} onSubmit={handleAddStaff} />
+              <AddStaffDialog 
+                formSchema={formSchema} 
+                onSubmit={handleAddStaff}
+                projectId={projectId}
+                initialData={rcptEngine.loadFormData(projectId, "") || undefined}
+                onChange={(values) => rcptEngine.saveFormData(projectId, "add-staff-cost-form", values)}
+              />
             </CardHeader>
 
             <CardContent className={staffRows.length === 0 ? "min-h-[220px] flex items-center justify-center text-center" : "p-2 sm:p-4"}>
@@ -281,20 +278,29 @@ export default function CostTab({ projectId }: CostTabProps) {
                     data={staffRows}
                     yearLabels={yearLabels}
                     onEdit={handleEditStart}
-                    onDelete={(row) => setStaffRows(prev => prev.filter(r => r !== row))}
+                    onDelete={(row) => {
+                      const next = staffRows.filter(r => r !== row)
+                      setStaffRows(next)
+                      rcptEngine.setStaffCosts(projectId, next)
+                    }}
                   />
                   {/* Edit dialog (controlled, no trigger) */}
                   {editIndex != null && (
                     <AddStaffDialog
                       formSchema={formSchema}
+                      projectId={projectId}
                       onSubmit={handleEditSave}
                       title="Edit Staff Member"
                       submitLabel="Save changes"
-                      initialData={staffRowToFormValues(staffRows[editIndex])}
+                      initialData={rcptEngine.loadFormData(projectId, "add-staff-cost-form") || (staffRows[editIndex] ? staffRowToFormValues(staffRows[editIndex]) : undefined)}
+                      onChange={(values) => rcptEngine.saveFormData(projectId, "add-staff-cost-form", values)}
                       open={editOpen}
                       onOpenChange={(o) => {
                         setEditOpen(o)
-                        if (!o) setEditIndex(null)
+                        if (!o) {
+                          setEditIndex(null)
+                          rcptEngine.clearFormData(projectId, "add-staff-cost-form")
+                        }
                       }}
                       hideTrigger
                     />
@@ -310,7 +316,13 @@ export default function CostTab({ projectId }: CostTabProps) {
           <Card className="border rounded-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <h3 className="text-lg font-medium">Non-Staff Costs:</h3>
-              <AddNonStaffDialog formSchema={nonStaffFormSchema} onSubmit={handleAddNonStaff} />
+              <AddNonStaffDialog 
+                formSchema={nonStaffFormSchema} 
+                onSubmit={handleAddNonStaff}
+                projectId={projectId}
+                initialData={rcptEngine.loadFormData(projectId, "addNonStaff") || undefined}
+                onChange={(values) => rcptEngine.saveFormData(projectId, "add-nonstaff-cost-form", values)}
+              />
             </CardHeader>
 
             <CardContent className={nonStaffRows.length === 0 ? "min-h-[220px] flex items-center justify-center text-center" : "p-2 sm:p-4"}>
@@ -325,7 +337,11 @@ export default function CostTab({ projectId }: CostTabProps) {
                     data={nonStaffRows}
                     yearLabels={yearLabels}
                     onEdit={handleNonStaffEditStart}
-                    onDelete={(row) => setNonStaffRows(prev => prev.filter(r => r !== row))}
+                    onDelete={(row) => {
+                      const next = nonStaffRows.filter(r => r !== row)
+                      setNonStaffRows(next)
+                      rcptEngine.setNonStaffCosts(projectId, next)
+                    }}
                   />
                   {nsEditIndex != null && (
                     <AddNonStaffDialog
@@ -333,11 +349,16 @@ export default function CostTab({ projectId }: CostTabProps) {
                       onSubmit={handleNonStaffEditSave}
                       title="Edit Non-staff Cost"
                       submitLabel="Save changes"
-                      initialData={nonStaffRowToFormValues(nonStaffRows[nsEditIndex])}
+                      initialData={rcptEngine.loadFormData(projectId, "add-nonstaff-cost-form") || (nonStaffRows[nsEditIndex] ? nonStaffRowToFormValues(nonStaffRows[nsEditIndex]) : undefined)}
+                      onChange={(values) => rcptEngine.saveFormData(projectId, "add-nonstaff-cost-form", values)}
                       open={nsEditOpen}
+                      projectId={projectId}
                       onOpenChange={(o) => {
                         setNsEditOpen(o)
-                        if (!o) setNsEditIndex(null)
+                        if (!o) {
+                          setNsEditIndex(null)
+                          rcptEngine.clearFormData(projectId, "add-nonstaff-cost-form")
+                        }
                       }}
                       hideTrigger
                     />

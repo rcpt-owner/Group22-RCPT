@@ -5,8 +5,8 @@ import { FormNumberInput } from "./FormNumberInput"
 import { FormDateInput } from "./FormDateInput"
 import { FormSelect } from "./FormSelect"
 import { FormCheckbox } from "./FormCheckbox"
-import { FormRepeatableArray } from "./FormRepeatableArray"
 import { FormMonthYearDateInput } from "./FormMonthYearDateInput"
+import { rcptEngine } from "@/features/RCPT/rcptEngine"
 
 /*
   DynamicFormField: single authoritative renderer for a JSON field definition.
@@ -20,9 +20,11 @@ type DynamicFormFieldProps = {
   field: FieldDefinition
   control: any
   nameOverride?: string 
+  projectId: string // projectId for dynamic years
 }
 
-export const FieldForm = ({ field, control, nameOverride }: DynamicFormFieldProps) => {
+export const FieldForm = ({ field, control, nameOverride, projectId }: DynamicFormFieldProps) => {
+
   const resolvedName = nameOverride || field.name
   const commonProps = {
     control,
@@ -34,6 +36,23 @@ export const FieldForm = ({ field, control, nameOverride }: DynamicFormFieldProp
 
   let rendered: React.ReactNode = null
   switch (field.type) {
+    case "dynamic_years":
+      // Get project years from rcptEngine
+      const years = rcptEngine.getProjectYears(projectId)
+      rendered = (
+      <div className="flex flex-col gap-2">
+        {years.map(year => (
+          <FormNumberInput
+            key={year}
+            control={control}
+            name={`years.${year}`}
+            label={year}
+            placeholder={`Enter amount for ${year}`}
+          />
+        ))}
+        </div>
+      )
+      break
     case "text":
       rendered = <FormTextInput {...commonProps} />
       break
@@ -62,17 +81,6 @@ export const FieldForm = ({ field, control, nameOverride }: DynamicFormFieldProp
       break
     case "checkbox":
       rendered = <FormCheckbox {...commonProps} />
-      break
-    case "repeatable":
-      rendered = (
-        <FormRepeatableArray
-          control={control}
-          name={resolvedName}
-          label={field.label}
-          fields={(field.fields || []) as any}
-          defaultEntry={field.defaultEntry || {}}
-        />
-      )
       break
     default:
       rendered = null

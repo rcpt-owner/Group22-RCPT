@@ -27,22 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-// StaffCostsDataTable: presentational table for staff cost rows.
-// - Exports StaffCost as the source-of-truth type.
-// - Accepts data via props; no internal seed data.
-// - Currency uses AUD/en-AU. Year headers driven by yearLabels prop.
-
-export type StaffCost = {
-  role: string
-  employmentType: "Full-Time" | "Part-Time" | "Casual"
-  category: "Academic" | "Professional" | "Research"
-  employmentClassification: string
-  fteType: "FTE" | "Daily" | "Hourly"
-  year1: number
-  year2: number
-  year3: number
-}
+import type { StaffCost } from "../../rcptEngine" // use engine type
 
 // AUD formatter (fix invalid locale and align with the rest of the app)
 const fmtCurrency = (n: number) =>
@@ -52,14 +37,14 @@ interface StaffCostsDataTableProps {
   data: StaffCost[]
   onEdit?: (row: StaffCost) => void
   onDelete?: (row: StaffCost) => void
-  yearLabels?: [string, string, string]
+  yearLabels?: string[]
 }
 
 export function StaffCostsDataTable({
   data,
   onEdit,
   onDelete,
-  yearLabels = ["Year 1", "Year 2", "Year 3"],
+  yearLabels,
 }: StaffCostsDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -67,7 +52,8 @@ export function StaffCostsDataTable({
   const [columnsMenuOpen, setColumnsMenuOpen] = React.useState(false)
 
   // Define columns here so we can use props (yearLabels, onEdit/onDelete)
-  const columns: ColumnDef<StaffCost>[] = [
+  // Static columns
+  const staticColumns: ColumnDef<StaffCost>[] = [
     {
       accessorKey: "role",
       header: "Role",
@@ -115,87 +101,70 @@ export function StaffCostsDataTable({
       ),
       cell: ({ row }) => <div>{row.getValue("fteType")}</div>,
     },
-    {
-      accessorKey: "year1",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="ml-auto flex w-full justify-end"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          {yearLabels[0]}
-          <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const v = Number(row.getValue("year1"))
-        return <div className="text-right font-medium">{fmtCurrency(v)}</div>
-      },
+  ]
+
+  // Dynamic year columns
+  const yearColumns: ColumnDef<StaffCost>[] = (yearLabels ?? []).map((year) => ({
+    id: `year-${year}`,
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="ml-auto flex w-full justify-end"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        {year}
+        <ArrowUpDown />
+      </Button>
+    ),
+    accessorFn: (row) => row.years?.[year] ?? 0,
+    cell: ({ row }) => {
+      const v = Number(row.original.years?.[year] ?? 0)
+      return <div className="text-right font-medium">{fmtCurrency(v)}</div>
     },
-    {
-      accessorKey: "year2",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="ml-auto flex w-full justify-end"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          {yearLabels[1]}
-          <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const v = Number(row.getValue("year2"))
-        return <div className="text-right font-medium">{fmtCurrency(v)}</div>
-      },
+    sortingFn: (a, b) => {
+      const va = a.original.years?.[year] ?? 0
+      const vb = b.original.years?.[year] ?? 0
+      return Number(va) - Number(vb)
     },
-    {
-      accessorKey: "year3",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="ml-auto flex w-full justify-end"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          {yearLabels[2]}
-          <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const v = Number(row.getValue("year3"))
-        return <div className="text-right font-medium">{fmtCurrency(v)}</div>
-      },
+    enableHiding: true,
+  }))
+
+  // Actions column
+  const actionsColumn: ColumnDef<StaffCost> = {
+    id: "actions",
+    enableHiding: false,
+    enableSorting: false,
+    cell: ({ row }) => {
+      const staff = row.original
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => onEdit?.(staff)}>
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={() => onDelete?.(staff)}
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
     },
-    {
-      id: "actions",
-      enableHiding: false,
-      enableSorting: false,
-      cell: ({ row }) => {
-        const staff = row.original
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => onEdit?.(staff)}>
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={() => onDelete?.(staff)}
-              >
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )
-      },
-    },
+  }
+
+  const columns: ColumnDef<StaffCost>[] = [
+    ...staticColumns,
+    ...yearColumns,
+    actionsColumn,
   ]
 
   const table = useReactTable({
