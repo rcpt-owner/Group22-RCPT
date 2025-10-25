@@ -49,6 +49,7 @@ export { endpoints };
 
 export function AdminSettingsPage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   /** ---------------- Salary Rates ---------------- */
   const [code, setCode] = useState("");
@@ -78,7 +79,7 @@ export function AdminSettingsPage() {
       setCurrentRate(data.fteRate);
     } catch {
       setCurrentRate(null);
-      setRateError("Could not find that code in the database.");
+      setRateError("Could not find that code in the database, add a new salary code with its rate.");
     } finally {
       setRateLoading(false);
     }
@@ -114,7 +115,7 @@ export function AdminSettingsPage() {
     } catch {
       setEba("");
       setSalaryRateMultiplier("");
-      setMultiplierError("Could not find multipliers for that year.");
+      setMultiplierError("Could not find multipliers for that year, add a new year with its multipliers.");
     } finally {
       setMultiplierLoading(false);
     }
@@ -158,7 +159,7 @@ export function AdminSettingsPage() {
     } catch {
       setStipendRate("");
       setPayrollTax("");
-      setEmploymentError("Could not find employment settings for that year.");
+      setEmploymentError("Could not find employment settings for that year, add a new year with its employment settings.");
     } finally {
       setEmploymentLoading(false);
     }
@@ -212,11 +213,225 @@ export function AdminSettingsPage() {
       setParentalLeave("");
       setLongServiceLeave("");
       setAnnualLeave("");
-      setStaffError("Could not find staff benefits for that type.");
+      setStaffError("Could not find staff benefits for that type, choose a current staff type or enter new benefits for your new type.");
     } finally {
       setStaffLoading(false);
     }
   };
+
+  /** ---------------- Save Handler ---------------- */
+  /** ---------------- Save Handler with Validation ---------------- */
+  const handleSave = async (title: string) => {
+    console.log("Attempting to save section:", title);
+
+    const titleToKey: Record<string, SectionTitle | SectionTitle[]> = {
+      "Salary Rates": "salaryRates",
+      "Multipliers": ["eba", "salaryRateMultipliers"],
+      "Employment Settings": ["stipends", "payrollTax"],
+      "Staff Benefits": "staffBenefits",
+    };
+
+    const key = titleToKey[title];
+    if (!key) {
+      toast({
+        title: "Error",
+        description: `No endpoint found for ${title}`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    let payload: Record<string, any> = {};
+
+    switch (title) {
+      case "Salary Rates":
+        if (!code.trim() || isNaN(parseFloat(rate))) {
+          toast({
+            title: "Invalid data",
+            description: "Please enter a valid code and numeric rate.",
+            variant: "destructive"
+          });
+          return;
+        }
+        payload = {
+          code,
+          name: code, // or a proper descriptive name from user input
+          payrollType: "Professional", // or input field
+          category: "UOM", // or input field
+          fteRate: parseFloat(rate),
+          dailyRate: null,
+          hourlyRate: null
+        };
+        break;
+
+      case "Multipliers":
+        if (!multiplierYear.trim() || isNaN(parseFloat(eba)) || isNaN(parseFloat(salaryRateMultiplier))) {
+          toast({
+            title: "Invalid data",
+            description: "Please enter a valid year, EBA increase, and multiplier.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Payload for EBA
+        const ebaPayload = {
+          year: parseInt(multiplierYear),
+          ebaIncrease: parseFloat(eba) || 0, // default 0 if empty
+          ebaMultiplier: parseFloat(salaryRateMultiplier)
+        };
+
+        // Payload for Salary Rate Multiplier
+        // Assuming 'unit' is derived from the multiplierYear (or another field)
+        const multiplierPayload = {
+          unit: multiplierYear,
+          multiplier: parseFloat(salaryRateMultiplier)
+        };
+
+        try {
+          // Save EBA first
+          const ebaRes = await fetch(endpoints.eba, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(ebaPayload)
+          });
+          if (!ebaRes.ok) throw new Error(`EBA save failed (${ebaRes.status})`);
+
+          // Save Salary Rate Multiplier
+          const multiplierRes = await fetch(endpoints.salaryRateMultipliers, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(multiplierPayload)
+          });
+          if (!multiplierRes.ok) throw new Error(`Salary Rate Multiplier save failed (${multiplierRes.status})`);
+
+          toast({
+            title: "Saved successfully!",
+            description: "Multipliers updated.",
+            duration: 2500,
+          });
+        } catch (err: any) {
+          toast({
+            title: "Error",
+            description: err.message,
+            variant: "destructive",
+          });
+        }
+
+      case "Employment Settings":
+          if (!employmentYear.trim() || isNaN(parseFloat(stipendRate)) || isNaN(parseFloat(payrollTax))) {
+            toast({
+              title: "Invalid data",
+              description: "Please enter a valid year, stipend rate and payroll tax.",
+              variant: "destructive"
+            });
+            return;
+          }
+
+          // Payloads for separate endpoints
+          const stipendPayload = {
+            year: parseInt(employmentYear),
+            rate: parseFloat(stipendRate),
+          };
+
+          const payrollPayload = {
+            year: parseInt(employmentYear),
+            rate: parseFloat(payrollTax),
+          };
+
+          try {
+            const stipendRes = await fetch(endpoints.stipends, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(stipendPayload),
+            });
+            if (!stipendRes.ok) throw new Error(`Stipend save failed (${stipendRes.status})`);
+
+            const payrollRes = await fetch(endpoints.payrollTax, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payrollPayload),
+            });
+            if (!payrollRes.ok) throw new Error(`Payroll Tax save failed (${payrollRes.status})`);
+
+            toast({
+              title: "Saved successfully!",
+              description: `${title} updated.`,
+              duration: 2500,
+            });
+          } catch (err: any) {
+            toast({
+              title: "Error",
+              description: err.message,
+              variant: "destructive",
+            });
+          }
+          return; // return here so it skips the generic endpoints loop
+
+      case "Staff Benefits":
+        if (
+          !staffType.trim() ||
+          [superannuation, leaveLoading, workCover, parentalLeave, longServiceLeave, annualLeave]
+            .some((v) => isNaN(parseFloat(v)))
+        ) {
+          toast({
+            title: "Invalid data",
+            description: "Please enter valid staff type and numeric values for all benefits.",
+            variant: "destructive"
+          });
+          return;
+        }
+        payload = {
+          staffType: staffType.trim(),
+          superannuation: parseFloat(superannuation),
+          leaveLoading: parseFloat(leaveLoading),
+          workCover: parseFloat(workCover),
+          parentalLeave: parseFloat(parentalLeave),
+          longServiceLeave: parseFloat(longServiceLeave),
+          annualLeave: parseFloat(annualLeave)
+        };
+        break;
+
+      default:
+        toast({
+          title: "Error",
+          description: "Unknown section.",
+          variant: "destructive"
+        });
+        return;
+    }
+
+    console.log("Payload to send:", payload);
+
+    try {
+      const endpointsToCall = Array.isArray(key) ? key : [key];
+      for (const k of endpointsToCall) {
+        console.log("Saving to endpoint:", endpoints[k]);
+        const res = await fetch(endpoints[k], {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Save failed (${res.status}): ${text}`);
+        }
+      }
+      toast({
+        title: "Saved successfully!",
+        description: `${title} updated.`,
+        duration: 2500,
+      });
+    } catch (err: any) {
+      console.error("Save error:", err);
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive"
+      });
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -254,7 +469,8 @@ export function AdminSettingsPage() {
               <CardTitle className="text-lg font-semibold">Admin Settings</CardTitle>
             </div>
             <CardDescription className="text-gray-500 text-sm">
-              Locate the section of the data that must be adjusted and enter in the new values.
+              Locate the section of the data that must be adjusted.
+              Current values will get prefilled upon entering an existing code or year in the lookup table.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -265,7 +481,7 @@ export function AdminSettingsPage() {
         {/* Salary Rates */}
         <SectionCard
           title="Salary Rates"
-          description="Update a salary rate based on its code. Eg 'CasualAcademicRA Grade 1.1' or 'CasualAcademicLevel E.1' etc."
+          description="Update a salary rate based on its code. Eg. 'FortnightProfessionalUOM 1.1' etc."
           fields={[
             {
               label: "Code",
@@ -290,6 +506,7 @@ export function AdminSettingsPage() {
                 : null,
             },
           ]}
+          onSave={() => handleSave("Salary Rates")}
         />
 
         {/* Multipliers */}
@@ -324,6 +541,7 @@ export function AdminSettingsPage() {
               onChange: (e: React.ChangeEvent<HTMLInputElement>) => setSalaryRateMultiplier(e.target.value),
             },
           ]}
+          onSave={() => handleSave("Multipliers")}
         />
 
         {/* Employment Settings */}
@@ -358,6 +576,7 @@ export function AdminSettingsPage() {
               onChange: (e: React.ChangeEvent<HTMLInputElement>) => setPayrollTax(e.target.value),
             },
           ]}
+          onSave={() => handleSave("Employment Settings")}
         />
 
         {/* Staff Benefits */}
@@ -384,6 +603,7 @@ export function AdminSettingsPage() {
             { label: "Long-Service Leave", placeholder: "Enter weekly rate as a dollar amount", type: "input", value: longServiceLeave, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setLongServiceLeave(e.target.value) },
             { label: "Annual Leave", placeholder: "Enter weekly rate as a dollar amount", type: "input", value: annualLeave, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setAnnualLeave(e.target.value) },
           ]}
+          onSave={() => handleSave("Staff Benefits")}
         />
       </main>
     </div>
@@ -394,7 +614,8 @@ export function AdminSettingsPage() {
 function SectionCard({
   title,
   description,
-  fields
+  fields,
+  onSave
 }: {
   title: string;
   description?: string;
@@ -406,46 +627,10 @@ function SectionCard({
     type?: "input" | "select";
     placeholder?: string;
   }[];
+    onSave: (title: string) => void;
 }) {
-  const { toast } = useToast();
   const colsClass = fields.length >= 8 ? "grid-cols-4" : fields.length >= 4 ? "grid-cols-4" : "grid-cols-3";
   const [values, setValues] = useState<Record<string, any>>({});
-  const titleToKey: Record<string, SectionTitle | SectionTitle[]> = {
-    "Salary Rates": "salaryRates",
-    "Multipliers": ["eba", "salaryRateMultipliers"],
-    "Employment Settings": ["stipends", "payrollTax"],
-    "Staff Benefits": "staffBenefits",
-  };
-
-  /** ---------------- Save Handler ---------------- */
-  const handleSave = async () => {
-    const key = titleToKey[title];
-    if (!key) throw new Error(`No endpoint found for ${title}`);
-
-    try {
-      const endpointsToCall = Array.isArray(key) ? key : [key];
-      for (const k of endpointsToCall) {
-        const res = await fetch(endpoints[k], {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
-        });
-        if (!res.ok) throw new Error("Save failed");
-      }
-      toast({
-        title: "Saved successfully!",
-        description: `${title} updated.`,
-        duration: 2500,
-      });
-      setValues({});
-    } catch (err: any) {
-      toast({
-        title: "Error",
-        description: err.message,
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <Card className="border border-gray-200 shadow-sm rounded-2xl">
@@ -473,7 +658,7 @@ function SectionCard({
           ))}
         </div>
         <div className="flex items-center justify-end gap-4 pt-1">
-          <Button onClick={handleSave} className="bg-black text-white px-6">
+          <Button onClick={() => onSave(title)} className="bg-black text-white px-6">
             Save
           </Button>
         </div>
