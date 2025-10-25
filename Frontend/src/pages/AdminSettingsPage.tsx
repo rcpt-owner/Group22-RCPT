@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,9 +19,36 @@ import { Settings, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 
+// Define the section types
+type SectionTitle =
+  | "departments"
+  | "eba"
+  | "payrollTax"
+  | "regions"
+  | "salaryRates"
+  | "salaryRateMultipliers"
+  | "staffBenefits"
+  | "stipends"
+  | "users";
+
+// Define all endpoints
+const endpoints: Record<SectionTitle, string> = {
+  departments: "http://localhost:8080/api/departments",
+  eba: "http://localhost:8080/api/eba",
+  payrollTax: "http://localhost:8080/api/payroll-tax",
+  regions: "http://localhost:8080/api/regions",
+  salaryRates: "http://localhost:8080/api/salary-rates",
+  salaryRateMultipliers: "http://localhost:8080/api/salary-rate-multipliers",
+  staffBenefits: "http://localhost:8080/api/staff-benefits",
+  stipends: "http://localhost:8080/api/stipends",
+  users: "http://localhost:8080/api/users",
+};
+
+export type { SectionTitle };
+export { endpoints };
+
 export function AdminSettingsPage() {
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   /** ---------------- Salary Rates ---------------- */
   const [code, setCode] = useState("");
@@ -59,7 +86,7 @@ export function AdminSettingsPage() {
 
   /** ---------------- Multipliers ---------------- */
   const [multiplierYear, setMultiplierYear] = useState("");
-  const [ebaMultiplier, setEbaMultiplier] = useState("");
+  const [eba, setEba] = useState("");
   const [salaryRateMultiplier, setSalaryRateMultiplier] = useState("");
   const [multiplierLoading, setMultiplierLoading] = useState(false);
   const [multiplierError, setMultiplierError] = useState("");
@@ -71,20 +98,21 @@ export function AdminSettingsPage() {
     setMultiplierError("");
 
     if (!year.trim()) {
-      setEbaMultiplier("");
+      setEba("");
       setSalaryRateMultiplier("");
       setMultiplierLoading(false);
       return;
     }
 
     try {
-      const res = await fetch(`http://localhost:8080/api/eba/${encodeURIComponent(year)}`);
-      if (!res.ok) throw new Error("Not found");
-      const data = await res.json();
-      setEbaMultiplier(data.eba_multiplier.toString());
-      setSalaryRateMultiplier(data.eba_multiplier.toString()); // Adjust if salaryRateMultiplier is separate
+      const ebaRes = await fetch(`${endpoints.eba}/${encodeURIComponent(year)}`);
+      if (!ebaRes.ok) throw new Error("Not found");
+      const ebaData = await ebaRes.json();
+
+      setEba(ebaData.eba_multiplier.toString());
+      setSalaryRateMultiplier(ebaData.eba_multiplier.toString());
     } catch {
-      setEbaMultiplier("");
+      setEba("");
       setSalaryRateMultiplier("");
       setMultiplierError("Could not find multipliers for that year.");
     } finally {
@@ -96,7 +124,6 @@ export function AdminSettingsPage() {
   const [employmentYear, setEmploymentYear] = useState("");
   const [stipendRate, setStipendRate] = useState("");
   const [payrollTax, setPayrollTax] = useState("");
-  const [workingDays, setWorkingDays] = useState("");
   const [employmentLoading, setEmploymentLoading] = useState(false);
   const [employmentError, setEmploymentError] = useState("");
 
@@ -109,27 +136,28 @@ export function AdminSettingsPage() {
     if (!year.trim()) {
       setStipendRate("");
       setPayrollTax("");
-      setWorkingDays("");
       setEmploymentLoading(false);
       return;
     }
 
     try {
       // Fetch stipend
-      const stipendRes = await fetch(`http://localhost:8080/api/stipends/${encodeURIComponent(year)}`);
+      const stipendRes = await fetch(
+        `${endpoints.stipends}/${encodeURIComponent(year)}`
+      );
       const stipendData = stipendRes.ok ? await stipendRes.json() : null;
 
       // Fetch payroll tax
-      const payrollRes = await fetch(`http://localhost:8080/api/payroll-tax/${encodeURIComponent(year)}`);
+      const payrollRes = await fetch(
+        `${endpoints.payrollTax}/${encodeURIComponent(year)}`
+      );
       const payrollData = payrollRes.ok ? await payrollRes.json() : null;
 
       setStipendRate(stipendData?.rate?.toString() ?? "");
       setPayrollTax(payrollData?.rate?.toString() ?? "");
-      setWorkingDays(""); // adjust if you have an endpoint for working days
     } catch {
       setStipendRate("");
       setPayrollTax("");
-      setWorkingDays("");
       setEmploymentError("Could not find employment settings for that year.");
     } finally {
       setEmploymentLoading(false);
@@ -165,15 +193,18 @@ export function AdminSettingsPage() {
     }
 
     try {
-      const res = await fetch(`http://localhost:8080/api/staff-benefits/${encodeURIComponent(type)}`);
-      if (!res.ok) throw new Error("Not found");
-      const data = await res.json();
-      setSuperannuation(data.superannuation.toString());
-      setLeaveLoading(data.leave_loading.toString());
-      setWorkCover(data.work_cover.toString());
-      setParentalLeave(data.parental_leave.toString());
-      setLongServiceLeave(data.long_service_leave.toString());
-      setAnnualLeave(data.annual_leave.toString());
+      const staffBenefitsRes = await fetch(
+        `${endpoints.staffBenefits}/${encodeURIComponent(type)}`
+      );
+      if (!staffBenefitsRes.ok) throw new Error("Not found");
+      const staffBenefitsData = await staffBenefitsRes.json();
+
+      setSuperannuation(staffBenefitsData.superannuation.toString());
+      setLeaveLoading(staffBenefitsData.leave_loading.toString());
+      setWorkCover(staffBenefitsData.work_cover.toString());
+      setParentalLeave(staffBenefitsData.parental_leave.toString());
+      setLongServiceLeave(staffBenefitsData.long_service_leave.toString());
+      setAnnualLeave(staffBenefitsData.annual_leave.toString());
     } catch {
       setSuperannuation("");
       setLeaveLoading("");
@@ -253,7 +284,7 @@ export function AdminSettingsPage() {
               type: "input",
               placeholder: "Enter the new salary rate",
               value: rate,
-              onChange: (e) => setRate(e.target.value),
+              onChange: (e: React.ChangeEvent<HTMLInputElement>) => setRate(e.target.value),
               extra: currentRate !== null && !rateLoading
                 ? <>Current FTE rate for <strong>{code}</strong>: ${currentRate.toLocaleString()}</>
                 : null,
@@ -282,15 +313,15 @@ export function AdminSettingsPage() {
               label: "EBA Multiplier",
               type: "input",
               placeholder: "Enter new eba multiplier (eg. 1.12551)",
-              value: ebaMultiplier,
-              onChange: (e) => setEbaMultiplier(e.target.value),
+              value: eba,
+              onChange: (e: React.ChangeEvent<HTMLInputElement>) => setEba(e.target.value),
             },
             {
               label: "Salary Rate Multiplier",
               type: "input",
               placeholder: "Enter new salary rate multiplier (FTE)",
               value: salaryRateMultiplier,
-              onChange: (e) => setSalaryRateMultiplier(e.target.value),
+              onChange: (e: React.ChangeEvent<HTMLInputElement>) => setSalaryRateMultiplier(e.target.value),
             },
           ]}
         />
@@ -317,21 +348,14 @@ export function AdminSettingsPage() {
               type: "input",
               placeholder: "Enter new stipend rate as a dollar amount",
               value: stipendRate,
-              onChange: (e) => setStipendRate(e.target.value),
+              onChange: (e: React.ChangeEvent<HTMLInputElement>) => setStipendRate(e.target.value),
             },
             {
               label: "Payroll Tax",
               type: "input",
               placeholder: "Enter new payroll tax value as a decimal",
               value: payrollTax,
-              onChange: (e) => setPayrollTax(e.target.value),
-            },
-            {
-              label: "Working Days",
-              type: "input",
-              placeholder: "Enter new number of working days",
-              value: workingDays,
-              onChange: (e) => setWorkingDays(e.target.value),
+              onChange: (e: React.ChangeEvent<HTMLInputElement>) => setPayrollTax(e.target.value),
             },
           ]}
         />
@@ -353,12 +377,12 @@ export function AdminSettingsPage() {
                 ? <span className="text-red-500">{staffError}</span>
                 : null,
             },
-            { label: "Superannuation Rate", type: "input", placeholder: "Enter super value as a percentage", value: superannuation, onChange: (e) => setSuperannuation(e.target.value) },
-            { label: "Leave Loading", type: "input", placeholder: "Enter loading value as a percentage", value: leaveLoading, onChange: (e) => setLeaveLoading(e.target.value) },
-            { label: "Work Cover", type: "input", placeholder: "Enter work cover industry rate", value: workCover, onChange: (e) => setWorkCover(e.target.value) },
-            { label: "Parental Leave", placeholder: "Enter weekly rate as a dollar amount", type: "input", value: parentalLeave, onChange: (e) => setParentalLeave(e.target.value) },
-            { label: "Long-Service Leave", placeholder: "Enter weekly rate as a dollar amount", type: "input", value: longServiceLeave, onChange: (e) => setLongServiceLeave(e.target.value) },
-            { label: "Annual Leave", placeholder: "Enter weekly rate as a dollar amount", type: "input", value: annualLeave, onChange: (e) => setAnnualLeave(e.target.value) },
+            { label: "Superannuation Rate", type: "input", placeholder: "Enter super value as a percentage", value: superannuation, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setSuperannuation(e.target.value) },
+            { label: "Leave Loading", type: "input", placeholder: "Enter loading value as a percentage", value: leaveLoading, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setLeaveLoading(e.target.value) },
+            { label: "Work Cover", type: "input", placeholder: "Enter work cover industry rate", value: workCover, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setWorkCover(e.target.value) },
+            { label: "Parental Leave", placeholder: "Enter weekly rate as a dollar amount", type: "input", value: parentalLeave, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setParentalLeave(e.target.value) },
+            { label: "Long-Service Leave", placeholder: "Enter weekly rate as a dollar amount", type: "input", value: longServiceLeave, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setLongServiceLeave(e.target.value) },
+            { label: "Annual Leave", placeholder: "Enter weekly rate as a dollar amount", type: "input", value: annualLeave, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setAnnualLeave(e.target.value) },
           ]}
         />
       </main>
@@ -367,20 +391,47 @@ export function AdminSettingsPage() {
 }
 
 /** ---------------- Section Card Component ---------------- */
-function SectionCard({ title, description, fields }: { title: string; description?: string, fields: any[] }) {
+function SectionCard({
+  title,
+  description,
+  fields
+}: {
+  title: string;
+  description?: string;
+  fields: {
+    label: string;
+    value: any;
+    onChange: any;
+    extra?: any;
+    type?: "input" | "select";
+    placeholder?: string;
+  }[];
+}) {
   const { toast } = useToast();
   const colsClass = fields.length >= 8 ? "grid-cols-4" : fields.length >= 4 ? "grid-cols-4" : "grid-cols-3";
   const [values, setValues] = useState<Record<string, any>>({});
+  const titleToKey: Record<string, SectionTitle | SectionTitle[]> = {
+    "Salary Rates": "salaryRates",
+    "Multipliers": ["eba", "salaryRateMultipliers"],
+    "Employment Settings": ["stipends", "payrollTax"],
+    "Staff Benefits": "staffBenefits",
+  };
 
   /** ---------------- Save Handler ---------------- */
   const handleSave = async () => {
+    const key = titleToKey[title];
+    if (!key) throw new Error(`No endpoint found for ${title}`);
+
     try {
-      const res = await fetch(endpoints[section], {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-      if (!res.ok) throw new Error("Save failed");
+      const endpointsToCall = Array.isArray(key) ? key : [key];
+      for (const k of endpointsToCall) {
+        const res = await fetch(endpoints[k], {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values),
+        });
+        if (!res.ok) throw new Error("Save failed");
+      }
       toast({
         title: "Saved successfully!",
         description: `${title} updated.`,
@@ -412,10 +463,10 @@ function SectionCard({ title, description, fields }: { title: string; descriptio
             <div key={idx}>
               <Field
                 label={f.label}
-                type={f.type}
-                placeholder={f.placeholder}
                 value={f.value}
                 onChange={f.onChange}
+                type={f.type}
+                placeholder={f.placeholder}
               />
               {f.extra && <div className="mt-1 text-xs text-gray-500">{f.extra}</div>}
             </div>
