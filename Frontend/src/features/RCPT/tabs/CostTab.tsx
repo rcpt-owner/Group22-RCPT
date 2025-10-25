@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { CircleDollarSign, Users, Package } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -94,12 +94,8 @@ export default function CostTab({ projectId }: CostTabProps) {
     }
   }, [])
 
-  // Compute year labels from the loaded form schema (fallback to Year 1–3)
-  const yearLabels: [string, string, string] = [
-    ((formSchema as any)?.fields?.find((f: any) => f.name === "year1")?.label) ?? "Year 1",
-    ((formSchema as any)?.fields?.find((f: any) => f.name === "year2")?.label) ?? "Year 2",
-    ((formSchema as any)?.fields?.find((f: any) => f.name === "year3")?.label) ?? "Year 3",
-  ]
+  // Compute year labels from rcptEngine (dynamic)
+  const yearLabels: string[] = rcptEngine.getProjectYears(projectId)
 
   // Helper mappers
   const toTitle = (s: string | undefined) =>
@@ -115,16 +111,22 @@ export default function CostTab({ projectId }: CostTabProps) {
   }
 
   // FUTURE: integrate with backend data model for a projects length so these years will have to be dynamic
-  const mapFormToStaffRow = (values: Record<string, any>): StaffCost => ({
-    role: String(values.role ?? ""),
-    employmentType: mapEmploymentType(values.employmentType),
-    category: toTitle(values.category),
-    employmentClassification: toTitle(values.employmentClassification),
-    fteType: toTitle(values.fteType),
-    year1: Number(values.year1 ?? 0) || 0,
-    year2: Number(values.year2 ?? 0) || 0,
-    year3: Number(values.year3 ?? 0) || 0,
-  })
+  const mapFormToStaffRow = (values: Record<string, any>): StaffCost => {
+    const years: Record<string, number> = {}
+    if (values.years && typeof values.years === "object") {
+      for (const y of yearLabels) years[y] = Number(values.years[y] ?? 0) || 0
+    } else {
+      for (const y of yearLabels) years[y] = 0
+    }
+    return {
+      role: String(values.role ?? ""),
+      employmentType: mapEmploymentType(values.employmentType),
+      category: toTitle(values.category),
+      employmentClassification: toTitle(values.employmentClassification),
+      fteType: toTitle(values.fteType),
+      years,
+    }
+  }
 
   // Reverse mapping to prefill form from a StaffCost row
   const staffRowToFormValues = (row: StaffCost) => {
@@ -135,34 +137,36 @@ export default function CostTab({ projectId }: CostTabProps) {
     }
     return {
       role: row.role,
-      employmentType: slug(row.employmentType), // e.g., "Full-Time" -> "full-time"
+      employmentType: slug(row.employmentType),
       category: normalizeCategory(row.category),
-      employmentClassification: slug(row.employmentClassification), // "Level A" -> "level-a"
-      fteType: row.fteType.toLowerCase(), // "FTE" -> "fte"
-      year1: row.year1,
-      year2: row.year2,
-      year3: row.year3,
+      employmentClassification: slug(row.employmentClassification),
+      fteType: row.fteType.toLowerCase(),
+      years: { ...row.years },
     }
   }
 
   // Non-staff helpers
-  const mapFormToNonStaffRow = (values: Record<string, any>): NonStaffCost => ({
-    category: String(values.category ?? ""),
-    subcategory: String(values.subcategory ?? ""),
-    description: String(values.description ?? ""),
-    inKind: Boolean(values.inKind),
-    year1: Number(values.year1 ?? 0) || 0,
-    year2: Number(values.year2 ?? 0) || 0,
-    year3: Number(values.year3 ?? 0) || 0,
-  })
+  const mapFormToNonStaffRow = (values: Record<string, any>): NonStaffCost => {
+    const years: Record<string, number> = {}
+    if (values.years && typeof values.years === "object") {
+      for (const y of yearLabels) years[y] = Number(values.years[y] ?? 0) || 0
+    } else {
+      for (const y of yearLabels) years[y] = 0
+    }
+    return {
+      category: String(values.category ?? ""),
+      subcategory: String(values.subcategory ?? ""),
+      description: String(values.description ?? ""),
+      inKind: Boolean(values.inKind),
+      years,
+    }
+  }
   const nonStaffRowToFormValues = (row: NonStaffCost) => ({
     category: row.category,
     subcategory: row.subcategory,
     description: row.description ?? "",
     inKind: Boolean(row.inKind),
-    year1: row.year1,
-    year2: row.year2,
-    year3: row.year3,
+    years: { ...row.years },
   })
 
   const handleAddStaff = async (values: Record<string, any>) => {
@@ -170,7 +174,8 @@ export default function CostTab({ projectId }: CostTabProps) {
     const next = [row, ...staffRows]
     setStaffRows(next)
     rcptEngine.setStaffCosts(projectId, next)
-    rcptEngine.clearFormData(projectId, "addStaff")
+    // clear the draft saved under the add-staff-cost-form id
+    rcptEngine.clearFormData(projectId, "add-staff-cost-form")
   }
 
   const handleEditStart = (row: StaffCost) => {
@@ -187,7 +192,8 @@ export default function CostTab({ projectId }: CostTabProps) {
     const next = staffRows.map((r, i) => (i === editIndex ? updated : r))
     setStaffRows(next)
     rcptEngine.setStaffCosts(projectId, next)
-    rcptEngine.clearFormData(projectId, "editStaff")
+    // edits were stored under the same form id; clear that draft
+    rcptEngine.clearFormData(projectId, "add-staff-cost-form")
     setEditOpen(false)
     setEditIndex(null)
   }
@@ -211,7 +217,7 @@ export default function CostTab({ projectId }: CostTabProps) {
     const next = nonStaffRows.map((r, i) => (i === nsEditIndex ? updated : r))
     setNonStaffRows(next)
     rcptEngine.setNonStaffCosts(projectId, next)
-    rcptEngine.clearFormData(projectId, "editNonStaff")
+    rcptEngine.clearFormData(projectId, "add-nonstaff-cost-form")
     setNsEditOpen(false)
     setNsEditIndex(null)
   }
@@ -254,8 +260,9 @@ export default function CostTab({ projectId }: CostTabProps) {
               <AddStaffDialog 
                 formSchema={formSchema} 
                 onSubmit={handleAddStaff}
-                initialData={rcptEngine.loadFormData(projectId, "addStaff")}
-                onChange={(values) => rcptEngine.saveFormData(projectId, "addStaff", values)}
+                projectId={projectId}
+                initialData={rcptEngine.loadFormData(projectId, "") || undefined}
+                onChange={(values) => rcptEngine.saveFormData(projectId, "add-staff-cost-form", values)}
               />
             </CardHeader>
 
@@ -281,17 +288,18 @@ export default function CostTab({ projectId }: CostTabProps) {
                   {editIndex != null && (
                     <AddStaffDialog
                       formSchema={formSchema}
+                      projectId={projectId}
                       onSubmit={handleEditSave}
                       title="Edit Staff Member"
                       submitLabel="Save changes"
-                      initialData={rcptEngine.loadFormData(projectId, "editStaff") || staffRowToFormValues(staffRows[editIndex])}
-                      onChange={(values) => rcptEngine.saveFormData(projectId, "editStaff", values)}
+                      initialData={rcptEngine.loadFormData(projectId, "add-staff-cost-form") || (staffRows[editIndex] ? staffRowToFormValues(staffRows[editIndex]) : undefined)}
+                      onChange={(values) => rcptEngine.saveFormData(projectId, "add-staff-cost-form", values)}
                       open={editOpen}
                       onOpenChange={(o) => {
                         setEditOpen(o)
                         if (!o) {
                           setEditIndex(null)
-                          rcptEngine.clearFormData(projectId, "editStaff")
+                          rcptEngine.clearFormData(projectId, "add-staff-cost-form")
                         }
                       }}
                       hideTrigger
@@ -311,8 +319,9 @@ export default function CostTab({ projectId }: CostTabProps) {
               <AddNonStaffDialog 
                 formSchema={nonStaffFormSchema} 
                 onSubmit={handleAddNonStaff}
-                initialData={rcptEngine.loadFormData(projectId, "addNonStaff")}
-                onChange={(values) => rcptEngine.saveFormData(projectId, "addNonStaff", values)}
+                projectId={projectId}
+                initialData={rcptEngine.loadFormData(projectId, "addNonStaff") || undefined}
+                onChange={(values) => rcptEngine.saveFormData(projectId, "add-nonstaff-cost-form", values)}
               />
             </CardHeader>
 
@@ -340,14 +349,15 @@ export default function CostTab({ projectId }: CostTabProps) {
                       onSubmit={handleNonStaffEditSave}
                       title="Edit Non-staff Cost"
                       submitLabel="Save changes"
-                      initialData={rcptEngine.loadFormData(projectId, "editNonStaff") || nonStaffRowToFormValues(nonStaffRows[nsEditIndex])}
-                      onChange={(values) => rcptEngine.saveFormData(projectId, "editNonStaff", values)}
+                      initialData={rcptEngine.loadFormData(projectId, "add-nonstaff-cost-form") || (nonStaffRows[nsEditIndex] ? nonStaffRowToFormValues(nonStaffRows[nsEditIndex]) : undefined)}
+                      onChange={(values) => rcptEngine.saveFormData(projectId, "add-nonstaff-cost-form", values)}
                       open={nsEditOpen}
+                      projectId={projectId}
                       onOpenChange={(o) => {
                         setNsEditOpen(o)
                         if (!o) {
                           setNsEditIndex(null)
-                          rcptEngine.clearFormData(projectId, "editNonStaff")
+                          rcptEngine.clearFormData(projectId, "add-nonstaff-cost-form")
                         }
                       }}
                       hideTrigger

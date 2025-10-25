@@ -15,23 +15,10 @@ export interface UserDashboard {
   lastLogin: string
 }
 
-export interface UserNotification {
-  id: string
-  type: string
-  message: string
-  createdAt: string
-  read: boolean
-}
-
 export const UserService = {
   getDashboard(userId = "1") {
+    // TODO: wire to real backend GET /api/users/:userId/dashboard
     return getJson<UserDashboard>(`${BASE}/${userId}/dashboard.json`)
-  },
-  getNotifications(userId = "1") {
-    return getJson<UserNotification[]>(`${BASE}/${userId}/notifications.json`)
-  },
-  getNotification(notificationId: string, userId = "1") {
-    return getJson<UserNotification>(`${BASE}/${userId}/notifications/${notificationId}.json`)
   },
 }
 
@@ -41,10 +28,10 @@ export type Project = {
   id: string
   title: string
   ownerUserId: string
-  currency: string // not displayed; assume AUD
+  currency: string
   status: ProjectStatus
-  staffCosts: number // not displayed
-  nonStaffCosts: number // not displayed
+  staffCosts: number
+  nonStaffCosts: number
   createdAt: string | Date
   updatedAt: string | Date
 }
@@ -54,67 +41,34 @@ export type Project = {
  * TODO: Integrate real API/auth logic and error handling as backend evolves.
  */
 export async function getUserProjects(userId: string): Promise<Project[]> {
-  // Similar procedure can be applied to other user-specific data fetching functions and using the api and needing to merge with cached data.
-  // Load from static mock for now
-  // const fetched = await getJson<Project[]>(`${BASE}/${userId}/projects.json`);
-  // Merge with cached new projects
-  const cached = getCachedProjects(userId);
-  // const merged = [...fetched, ...cached.filter(cp => !fetched.some(fp => fp.id === cp.id))];
-  return cached;
+  const { getCachedProjects } = await import("./userProjectCache");
+  // TODO: when backend is ready, GET /api/users/:userId/projects and merge with cached drafts
+  return getCachedProjects(userId);
 }
 
 /**
  * Create and cache a new project for the user.
  */
-export function createUserProject(userId: string, project: Project): void {
-  const cached = getCachedProjects(userId);
-  cached.push(project);
-  setCachedProjects(userId, cached);
+export async function createUserProject(userId: string, project: Project): Promise<void> {
+  const { createUserProject: cacheCreate } = await import("./userProjectCache");
+  // TODO: replace with POST to backend and fall back to local cache when offline
+  cacheCreate(userId, project);
 }
 
 /**
  * Delete a cached project for the user.
  */
-export function deleteUserProject(userId: string, projectId: string): void {
-  const cached = getCachedProjects(userId);
-  const updated = cached.filter(p => p.id !== projectId);
-  setCachedProjects(userId, updated);
+export async function deleteUserProject(userId: string, projectId: string): Promise<void> {
+  const { deleteUserProject: cacheDelete } = await import("./userProjectCache");
+  // TODO: replace with DELETE to backend and handle offline state
+  cacheDelete(userId, projectId);
 }
 
 /**
  * Update the title of a cached project for the user.
  */
-export function updateProjectTitle(userId: string, projectId: string, newTitle: string): void {
-  const cached = getCachedProjects(userId);
-  const project = cached.find(p => p.id === projectId);
-  if (project) {
-    project.title = newTitle;
-    project.updatedAt = new Date().toISOString();
-    setCachedProjects(userId, cached);
-  }
-}
-
-/**
- * Get cached projects from session storage.
- */
-function getCachedProjects(userId: string): Project[] {
-  try {
-    const key = `user:${userId}:projects`;
-    const raw = sessionStorage.getItem(key);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-/**
- * Set cached projects in session storage.
- */
-function setCachedProjects(userId: string, projects: Project[]): void {
-  try {
-    const key = `user:${userId}:projects`;
-    sessionStorage.setItem(key, JSON.stringify(projects));
-  } catch {
-    // Ignore storage errors
-  }
+export async function updateProjectTitle(userId: string, projectId: string, newTitle: string): Promise<void> {
+  const { updateProjectTitle: cacheUpdate } = await import("./userProjectCache");
+  // TODO: replace with PATCH/PUT to backend and fall back to local cache when offline
+  cacheUpdate(userId, projectId, newTitle);
 }

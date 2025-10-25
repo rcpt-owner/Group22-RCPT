@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import StatsCard from "../../../components/stats/StatsCard";
 import { rcptEngine } from "../rcptEngine"; 
-import { Scale } from "lucide-react";
+import { CircleDollarSign, BadgeDollarSign } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,6 +18,7 @@ const PricingTab: React.FC<{ projectId: string }> = ({ projectId }) => {
   const totalPricing = rcptEngine.getTotalPricing(projectId);
 
   const [nonStaffCosts, setNonStaffCosts] = useState(rcptEngine.getNonStaffCosts(projectId));
+  const yearLabels = rcptEngine.getProjectYears(projectId);
 
   useEffect(() => {
     const unsubscribe = rcptEngine.subscribe(projectId, () => {
@@ -38,7 +39,7 @@ const PricingTab: React.FC<{ projectId: string }> = ({ projectId }) => {
       <Card className="border rounded-lg">
         <CardHeader className="space-y-2">
           <div className="flex items-center gap-3">
-            <Scale className="h-6 w-6 " />
+            <CircleDollarSign className="h-6 w-6 " />
             <CardTitle>Costs Stats</CardTitle>
           </div>
           <CardDescription>
@@ -83,7 +84,7 @@ const PricingTab: React.FC<{ projectId: string }> = ({ projectId }) => {
       <Card className="border rounded-lg">
         <CardHeader className="space-y-2">
           <div className="flex items-center gap-3">
-            <Scale className="h-6 w-6 " />
+            <BadgeDollarSign className="h-6 w-6 " />
             <CardTitle>Pricing</CardTitle>
           </div>
           <CardDescription>
@@ -130,7 +131,7 @@ const PricingTab: React.FC<{ projectId: string }> = ({ projectId }) => {
             </TableHeader>
             <TableBody>
               {nonStaffCosts.map((item, index) => {
-                const total = item.year1 + item.year2 + item.year3;
+                const total = yearLabels.reduce((sum, y) => sum + (item.years?.[y] ?? 0), 0);
                 return (
                   <TableRow key={index}>
                     <TableCell>{item.description || item.subcategory || item.category}</TableCell>
