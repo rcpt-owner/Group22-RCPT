@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Home, Bell, Settings, Plus } from "lucide-react";
+import { Home, Settings, Plus } from "lucide-react";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { getUserProjects, createUserProject, type Project } from "@/services/userService";
 
@@ -70,9 +70,6 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
         <div className="flex items-center gap-4">
           {/* On home page (dashboard) the home button is primary */}
           <Button variant="default" size="icon"><Home className="h-5 w-5" /></Button>
-
-          { /* Other buttons are ghost style and also functionality will come later. */}
-          <Button variant="ghost" size="icon"><Bell className="h-5 w-5" /></Button>
 
           { /* FUTURE: will the settings be just for project-level configurations and lookup table for admin, or will there be some user data too to change? */ }
           <Button variant="ghost" size="icon"><Settings className="h-5 w-5" /></Button>
