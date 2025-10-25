@@ -75,7 +75,7 @@ export function AdminSettingsPage() {
       );
       if (!res.ok) throw new Error("Not found");
       const data = await res.json();
-      setCurrentRate(data.fte_rate);
+      setCurrentRate(data.fteRate);
     } catch {
       setCurrentRate(null);
       setRateError("Could not find that code in the database.");
@@ -109,8 +109,8 @@ export function AdminSettingsPage() {
       if (!ebaRes.ok) throw new Error("Not found");
       const ebaData = await ebaRes.json();
 
-      setEba(ebaData.eba_multiplier.toString());
-      setSalaryRateMultiplier(ebaData.eba_multiplier.toString());
+      setEba(ebaData.ebaIncrease.toString());
+      setSalaryRateMultiplier(ebaData.ebaMultiplier.toString());
     } catch {
       setEba("");
       setSalaryRateMultiplier("");
@@ -200,11 +200,11 @@ export function AdminSettingsPage() {
       const staffBenefitsData = await staffBenefitsRes.json();
 
       setSuperannuation(staffBenefitsData.superannuation.toString());
-      setLeaveLoading(staffBenefitsData.leave_loading.toString());
-      setWorkCover(staffBenefitsData.work_cover.toString());
-      setParentalLeave(staffBenefitsData.parental_leave.toString());
-      setLongServiceLeave(staffBenefitsData.long_service_leave.toString());
-      setAnnualLeave(staffBenefitsData.annual_leave.toString());
+      setLeaveLoading(staffBenefitsData.leaveLoading.toString());
+      setWorkCover(staffBenefitsData.workCover.toString());
+      setParentalLeave(staffBenefitsData.parentalLeave.toString());
+      setLongServiceLeave(staffBenefitsData.longServiceLeave.toString());
+      setAnnualLeave(staffBenefitsData.annualLeave.toString());
     } catch {
       setSuperannuation("");
       setLeaveLoading("");

@@ -76,9 +76,6 @@ services:
     depends_on:
       backend:
         condition: service_started
-    volumes:
-      - ../Frontend/rcpt:/app
-      - /app/node_modules
     healthcheck:
       test: [ "CMD-SHELL", "wget -qO- http://localhost:3000 >/dev/null 2>&1 || exit 1" ]
       interval: 5s
