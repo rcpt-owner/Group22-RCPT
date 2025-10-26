@@ -32,21 +32,6 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
     fetchProjects();
   }, [userId]);
 
-  // Listen for title updates emitted by rcptEngine.updateProjectOverview
-  useEffect(() => {
-    const handler = (e: Event) => {
-      try {
-        const detail = (e as CustomEvent).detail || {}
-        const pid = detail.projectId as string | undefined
-        const title = detail.title as string | undefined
-        if (!pid) return
-        setProjects(prev => prev.map(p => (p.id === pid && title ? { ...p, title } : p)))
-      } catch { /* ignore */ }
-    }
-    window.addEventListener("rcpt:projectTitleUpdated", handler as EventListener)
-    return () => window.removeEventListener("rcpt:projectTitleUpdated", handler as EventListener)
-  }, [])
-
   const handleCreateProject = () => {
     const newProject: Project = {
       id: crypto.randomUUID(),
@@ -86,15 +71,10 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
           {/* On home page (dashboard) the home button is primary */}
           <Button variant="default" size="icon"><Home className="h-5 w-5" /></Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/adminSettings")}
-            title="Admin Settings"
-          >
+          { /* FUTURE: will the settings be just for project-level configurations and lookup table for admin, or will there be some user data too to change? */ }
+          <Button variant="ghost" size="icon" onClick={() => navigate("/adminSettings")}>
             <Settings className="h-5 w-5" />
           </Button>
-          
           <Button variant="outline" onClick={onLogout}>Logout</Button>
         </div>
       </header>
