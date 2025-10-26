@@ -15,11 +15,17 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * Represents an authenticated user (via Firebase) stored in MongoDB.
+ */
 @Document("users")
 public class User {
 
   @Id
   private String id;
+
+  @Indexed(unique = true)
+  private String firebaseUid;
 
   @NotBlank
   @Email
@@ -55,9 +61,12 @@ public class User {
 
   public User() { }
 
-
+  // --- Getters & Setters ---
   public String getId() { return id; }
   public void setId(String id) { this.id = id; }
+
+  public String getFirebaseUid() { return firebaseUid; }
+  public void setFirebaseUid(String firebaseUid) { this.firebaseUid = firebaseUid; }
 
   public String getEmail() { return email; }
   public void setEmail(String email) { this.email = email; }
@@ -94,6 +103,7 @@ public class User {
   public Long getVersion() { return version; }
   public void setVersion(Long version) { this.version = version; }
 
+  // --- Role helpers ---
   public boolean hasRole(String role) {
     if (role == null) return false;
     for (String r : roles) {
