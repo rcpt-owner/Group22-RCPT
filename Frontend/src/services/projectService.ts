@@ -84,20 +84,6 @@ export interface ProjectCostData {
   total: number;
 }
 
-export interface ProjectPricingData {
-  projectId: string;
-  baseCost: number;
-  marginRate: number;
-  suggestedPrice: number;
-  currency: string;
-}
-
-export interface ProjectExportSummary {
-  projectId: string;
-  generatedAt: string;
-  sections: Array<{ id: string; title: string; bytes: number }>;
-}
-
 export interface ProjectOverviewFormData {
   title: string;
   description?: string;
@@ -211,32 +197,6 @@ export const projectService = {
       totalDirect,
       totalIndirect,
       total: totalDirect + totalIndirect
-    };
-  },
-
-  async getPricingData(projectId: string): Promise<ProjectPricingData> {
-    const project = await this.getById(projectId);
-
-    return {
-      projectId: project.id,
-      baseCost: project.priceSummary?.totalCost?.amount || 0,
-      marginRate: project.priceSummary?.marginRate || 0,
-      suggestedPrice: project.priceSummary?.totalPrice?.amount || 0,
-      currency: project.priceSummary?.totalCost?.currency || 'AUD'
-    };
-  },
-
-  async getExportSummary(projectId: string): Promise<ProjectExportSummary> {
-    // This would need a backend endpoint that provides export metadata
-    // For now, return mock data
-    return {
-      projectId,
-      generatedAt: new Date().toISOString(),
-      sections: [
-        { id: 'overview', title: 'Project Overview', bytes: 1024 },
-        { id: 'costs', title: 'Cost Breakdown', bytes: 2048 },
-        { id: 'pricing', title: 'Pricing Summary', bytes: 1536 }
-      ]
     };
   },
 

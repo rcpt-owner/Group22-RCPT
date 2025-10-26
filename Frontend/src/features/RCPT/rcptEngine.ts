@@ -2,8 +2,6 @@ import {
   projectService,
   type ProjectOverview,
   type ProjectCostData,
-  type ProjectPricingData,
-  type ProjectExportSummary,
   type ProjectOverviewFormData,
 } from "@/services/projectService"
 import { rcptCache, type RCPTProjectData, type CacheEntry, type RcptCalculatedTotals } from "@/services/rcptCache"
@@ -11,8 +9,6 @@ import { rcptCache, type RCPTProjectData, type CacheEntry, type RcptCalculatedTo
 export type {
   ProjectOverview,
   ProjectCostData,
-  ProjectPricingData,
-  ProjectExportSummary,
   ProjectOverviewFormData,
 } from "@/services/projectService"
 
@@ -37,8 +33,6 @@ export interface RCPTProjectDataLocal extends RCPTProjectData {
   // kept for local clarity; rcptCache.RCPTProjectData is a flexible shape
   overview?: ProjectOverview
   costData?: ProjectCostData
-  pricingData?: ProjectPricingData
-  exportSummary?: ProjectExportSummary
   staffCosts?: StaffCost[]
   nonStaffCosts?: NonStaffCost[]
   lastLoadedAt?: string
@@ -87,11 +81,9 @@ class RcptEngine {
     let data: RCPTProjectDataLocal = starting.data as RCPTProjectDataLocal
 
     // Fetch all service resources in parallel; defensive handling
-    const [ovRes, costRes, priceRes, exportRes, staffRes, nonStaffRes] = await Promise.allSettled([
+    const [ovRes, costRes, staffRes, nonStaffRes] = await Promise.allSettled([
       projectService.getProjectOverview(projectId), // TODO: replace with real API GET /api/projects/:projectId/overview
       projectService.getCostData(projectId),       // TODO: replace with real API GET /api/projects/:projectId/cost
-      projectService.getPricingData(projectId),    // TODO: replace with real API GET /api/projects/:projectId/pricing
-      projectService.getExportSummary(projectId),  // TODO: replace with real API GET /api/projects/:projectId/export
       projectService.getStaffCosts(projectId),     // TODO: replace with real API GET /api/projects/:projectId/staffCosts
       projectService.getNonStaffCosts(projectId),  // TODO: replace with real API GET /api/projects/:projectId/nonStaffCosts
     ])
@@ -104,8 +96,6 @@ class RcptEngine {
       // Always prefer local overview to preserve user edits
     }
     if (costRes.status === "fulfilled") data.costData = costRes.value
-    if (priceRes.status === "fulfilled") data.pricingData = priceRes.value
-    if (exportRes.status === "fulfilled") data.exportSummary = exportRes.value
     if (staffRes.status === "fulfilled") data.staffCosts = staffRes.value
     if (nonStaffRes.status === "fulfilled") data.nonStaffCosts = nonStaffRes.value
 
