@@ -53,7 +53,7 @@ export function DashboardPage({ onLogout, userId, onEnterWorkspace }: DashboardP
       title: "Unnamed Project",
       ownerUserId: userId,
       currency: "AUD",
-      status: "Draft",
+      status: "DRAFT",
       staffCosts: 0,
       nonStaffCosts: 0,
       createdAt: new Date().toISOString(),

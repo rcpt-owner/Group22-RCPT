@@ -1,94 +1,338 @@
-// Legacy project service - to be replaced by backend API calls, then used in rcptEngine
+// services/projectService.ts
+// Project service connected to Spring Boot backend
 
-import type { StaffCost, NonStaffCost } from "@/features/RCPT/rcptEngine"
+import { apiService, withUserId } from './api';
+import type { StaffCost, NonStaffCost } from '@/features/RCPT/rcptEngine';
 
-async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(path)
-  if (!res.ok) throw new Error(`Failed to fetch ${path}: ${res.status}`)
-  return res.json()
+// ==================== Types ====================
+
+export interface Project {
+  id: string;
+  projectId: string;
+  title: string;
+  description?: string;
+  ownerUserId: string;
+  status: ProjectStatus;
+  details?: ProjectDetails;
+  staffCosts: StaffCost[];
+  nonStaffCosts: NonStaffCost[];
+  priceSummary?: PriceSummary;
+  createdDate: string;
+  updatedDate: string;
+  deletedDate?: string;
 }
 
-const base = (projectId: string) => `/api/projects/${projectId}`
+export enum ProjectStatus {
+  DRAFT = 'DRAFT',
+  IN_REVIEW = 'IN_REVIEW',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED'
+}
 
+export interface ProjectDetails {
+  startDate?: string;
+  endDate?: string;
+  fundingBody?: string;
+  scheme?: string;
+  researchClassification?: string;
+}
+
+export interface PriceSummary {
+  totalStaffCost?: { amount: number; currency: string };
+  totalNonStaffCost?: { amount: number; currency: string };
+  totalDirectCost?: { amount: number; currency: string };
+  indirectCostRate?: number;
+  totalIndirectCost?: { amount: number; currency: string };
+  totalCost?: { amount: number; currency: string };
+  marginRate?: number;
+  totalMargin?: { amount: number; currency: string };
+  totalPrice?: { amount: number; currency: string };
+}
+
+// DTOs for API requests
+export interface ProjectCreateRequest {
+  title: string;
+  description?: string;
+  details?: ProjectDetails;
+}
+
+export interface ProjectUpdateRequest {
+  title?: string;
+  description?: string;
+  status?: ProjectStatus;
+  details?: ProjectDetails;
+}
+
+// Legacy types (keeping for compatibility)
 export interface ProjectOverview {
-  projectId: string
-  title: string
-  summary: string
-  budget: number
-  status: string
-  lastUpdated: string
+  projectId: string;
+  title: string;
+  summary: string;
+  budget: number;
+  status: string;
+  lastUpdated: string;
 }
 
 export interface ProjectCostData {
-  projectId: string
-  staff: Array<{ role: string; fte: number; cost: number }>
-  overheadRate: number
-  totalDirect: number
-  totalIndirect: number
-  total: number
+  projectId: string;
+  staff: Array<{ role: string; fte: number; cost: number }>;
+  overheadRate: number;
+  totalDirect: number;
+  totalIndirect: number;
+  total: number;
 }
 
 export interface ProjectPricingData {
-  projectId: string
-  baseCost: number
-  marginRate: number
-  suggestedPrice: number
-  currency: string
+  projectId: string;
+  baseCost: number;
+  marginRate: number;
+  suggestedPrice: number;
+  currency: string;
 }
 
 export interface ProjectExportSummary {
-  projectId: string
-  generatedAt: string
-  sections: Array<{ id: string; title: string; bytes: number }>
+  projectId: string;
+  generatedAt: string;
+  sections: Array<{ id: string; title: string; bytes: number }>;
 }
 
-// Form payload for the Project Overview DynamicForm
 export interface ProjectOverviewFormData {
-  title: string
-  description?: string
-  funder?: string
-  department?: string
-  startDate: string
-  endDate: string
+  title: string;
+  description?: string;
+  funder?: string;
+  department?: string;
+  startDate: string;
+  endDate: string;
 }
+
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+}
+
+// ==================== Service Implementation ====================
+
+const BASE_PATH = 'api/v1/projects';
+
+// Temporary default user ID until auth is implemented
+const DEFAULT_USER_ID = 'dev-user-001';
 
 export const projectService = {
-  getProjectOverview(projectId: string) {
-    // TODO: implement real backend GET /api/projects/:projectId/overview
-    return getJson<ProjectOverview>(`${base(projectId)}/overview.json`)
+  // ===== CRUD Operations (Connected to Backend) =====
+
+  /**
+   * Create a new project
+   */
+  async create(data: ProjectCreateRequest, userId: string = DEFAULT_USER_ID): Promise<Project> {
+    return apiService.post<Project>(BASE_PATH, data, withUserId(userId));
   },
-  getCostData(projectId: string) {
-    // TODO: implement real backend GET /api/projects/:projectId/cost
-    return getJson<ProjectCostData>(`${base(projectId)}/cost.json`)
+
+  /**
+   * Get project by ID
+   */
+  async getById(id: string): Promise<Project> {
+    return apiService.get<Project>(`${BASE_PATH}/${id}`);
   },
-  getPricingData(projectId: string) {
-    // TODO: implement real backend GET /api/projects/:projectId/pricing
-    return getJson<ProjectPricingData>(`${base(projectId)}/pricing.json`)
+
+  /**
+   * List projects with pagination and filters
+   */
+  async list(params?: {
+    page?: number;
+    size?: number;
+    ownerUserId?: string;
+    status?: ProjectStatus;
+  }): Promise<PageResponse<Project>> {
+    const { page = 0, size = 10, ...filters } = params || {};
+    return apiService.get<PageResponse<Project>>(BASE_PATH, { page, size, ...filters });
   },
-  getExportSummary(projectId: string) {
-    // TODO: implement real backend GET /api/projects/:projectId/export
-    return getJson<ProjectExportSummary>(`${base(projectId)}/export.json`)
+
+  /**
+   * Update project
+   */
+  async update(id: string, data: ProjectUpdateRequest): Promise<Project> {
+    return apiService.put<Project>(`${BASE_PATH}/${id}`, data);
   },
-  getStaffCosts(projectId: string) {
-    // TODO: implement real backend GET /api/projects/:projectId/staffCosts
-    return getJson<StaffCost[]>(`${base(projectId)}/staffCosts.json`)
+
+  /**
+   * Delete project
+   */
+  async delete(id: string): Promise<void> {
+    return apiService.delete(`${BASE_PATH}/${id}`);
   },
-  getNonStaffCosts(projectId: string) {
-    // TODO: implement real backend GET /api/projects/:projectId/nonStaffCosts
-    return getJson<NonStaffCost[]>(`${base(projectId)}/nonStaffCosts.json`)
+
+  /**
+   * Export project to PDF
+   */
+  async exportPdf(id: string): Promise<void> {
+    return apiService.download(`${BASE_PATH}/${id}/export`, `project_${id}.pdf`);
   },
-  async submitReview(projectId: string) {
-    // TODO: replace mock with POST /api/projects/:projectId/submitReview
-    return { projectId, submittedAt: new Date().toISOString(), status: "Queued" }
+
+  // ===== Legacy Methods (Updated to use Backend) =====
+
+  async getProjectOverview(projectId: string): Promise<ProjectOverview> {
+    const project = await this.getById(projectId);
+
+    // Transform backend response to legacy format
+    return {
+      projectId: project.id,
+      title: project.title,
+      summary: project.description || '',
+      budget: project.priceSummary?.totalCost?.amount || 0,
+      status: project.status,
+      lastUpdated: project.updatedDate
+    };
   },
-  async updateProjectOverview(projectId: string, payload: ProjectOverviewFormData) {
-    // TODO: replace mock with real PUT/POST to backend endpoint
-    await new Promise((r) => setTimeout(r, 400))
+
+  async getCostData(projectId: string): Promise<ProjectCostData> {
+    const project = await this.getById(projectId);
+
+    // Transform staff costs to legacy format
+    const staff = project.staffCosts.map(sc => ({
+      role: sc.role || 'Unknown Role',
+      fte: 1, // FTE calculation would need to be based on years data
+      cost: Object.values(sc.years || {}).reduce((sum, val) => sum + val, 0)
+    }));
+
+    const totalDirect = project.priceSummary?.totalDirectCost?.amount || 0;
+    const totalIndirect = project.priceSummary?.totalIndirectCost?.amount || 0;
+
+    return {
+      projectId: project.id,
+      staff,
+      overheadRate: project.priceSummary?.indirectCostRate || 0,
+      totalDirect,
+      totalIndirect,
+      total: totalDirect + totalIndirect
+    };
+  },
+
+  async getPricingData(projectId: string): Promise<ProjectPricingData> {
+    const project = await this.getById(projectId);
+
+    return {
+      projectId: project.id,
+      baseCost: project.priceSummary?.totalCost?.amount || 0,
+      marginRate: project.priceSummary?.marginRate || 0,
+      suggestedPrice: project.priceSummary?.totalPrice?.amount || 0,
+      currency: project.priceSummary?.totalCost?.currency || 'AUD'
+    };
+  },
+
+  async getExportSummary(projectId: string): Promise<ProjectExportSummary> {
+    // This would need a backend endpoint that provides export metadata
+    // For now, return mock data
     return {
       projectId,
-      savedAt: new Date().toISOString(),
-      status: "OK",
+      generatedAt: new Date().toISOString(),
+      sections: [
+        { id: 'overview', title: 'Project Overview', bytes: 1024 },
+        { id: 'costs', title: 'Cost Breakdown', bytes: 2048 },
+        { id: 'pricing', title: 'Pricing Summary', bytes: 1536 }
+      ]
+    };
+  },
+
+  async getStaffCosts(projectId: string): Promise<StaffCost[]> {
+    const project = await this.getById(projectId);
+    return project.staffCosts;
+  },
+
+  async getNonStaffCosts(projectId: string): Promise<NonStaffCost[]> {
+    const project = await this.getById(projectId);
+    return project.nonStaffCosts;
+  },
+
+  async submitReview(projectId: string): Promise<any> {
+    // Update project status to IN_REVIEW
+    const updated = await this.update(projectId, { status: ProjectStatus.IN_REVIEW });
+    return {
+      projectId: updated.id,
+      submittedAt: updated.updatedDate,
+      status: updated.status
+    };
+  },
+
+  async updateProjectOverview(projectId: string, payload: ProjectOverviewFormData): Promise<any> {
+    const updateData: ProjectUpdateRequest = {
+      title: payload.title,
+      description: payload.description,
+      details: {
+        startDate: payload.startDate,
+        endDate: payload.endDate,
+        fundingBody: payload.funder,
+        scheme: payload.department
+      }
+    };
+
+    const updated = await this.update(projectId, updateData);
+
+    return {
+      projectId: updated.id,
+      savedAt: updated.updatedDate,
+      status: 'OK',
       payload
-    }
+    };
+  },
+
+  // ===== Helper Methods =====
+
+  /**
+   * Get projects for current user
+   */
+  async getUserProjects(userId: string = DEFAULT_USER_ID): Promise<Project[]> {
+    const response = await this.list({ ownerUserId: userId, size: 100 });
+    return response.content;
+  },
+
+  /**
+   * Get recent projects (last 5)
+   */
+  async getRecentProjects(userId: string = DEFAULT_USER_ID): Promise<Project[]> {
+    const response = await this.list({ ownerUserId: userId, size: 5 });
+    return response.content;
+  },
+
+  /**
+   * Search projects by title
+   */
+  async searchByTitle(query: string, userId?: string): Promise<Project[]> {
+    // This would need a search endpoint in backend
+    // For now, fetch all and filter client-side
+    const response = await this.list({ ownerUserId: userId, size: 100 });
+    return response.content.filter(p =>
+      p.title.toLowerCase().includes(query.toLowerCase())
+    );
+  },
+
+  /**
+   * Get project statistics
+   */
+  async getStatistics(userId: string = DEFAULT_USER_ID): Promise<{
+    total: number;
+    byStatus: Record<ProjectStatus, number>;
+  }> {
+    const response = await this.list({ ownerUserId: userId, size: 1000 });
+    const projects = response.content;
+
+    const byStatus = projects.reduce((acc, p) => {
+      acc[p.status] = (acc[p.status] || 0) + 1;
+      return acc;
+    }, {} as Record<ProjectStatus, number>);
+
+    return {
+      total: projects.length,
+      byStatus
+    };
   }
-}
+};
+
+// Export the service as default for backward compatibility
+export default projectService;

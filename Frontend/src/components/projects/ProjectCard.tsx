@@ -25,15 +25,18 @@ const statusStyles: Record<
   Status,
   { variant: BadgeVariant; className?: string }
 > = {
-  Draft: { variant: "secondary" },
-  Submitted: { variant: "default" },
-  // Use secondary with green accents for Approved
-  Approved: {
+  DRAFT: { variant: "secondary" },
+  IN_REVIEW: { variant: "default" },
+  APPROVED: {
     variant: "secondary",
     className: "bg-green-100 text-green-800 border border-green-200",
   },
-  // Subtle Archived
-  Archived: { variant: "outline" },
+  REJECTED: { variant: "destructive" },
+  COMPLETED: {
+    variant: "secondary",
+    className: "bg-blue-100 text-blue-800 border border-blue-200",
+  },
+  CANCELLED: { variant: "outline" },
 }
 
 export function ProjectCard({
