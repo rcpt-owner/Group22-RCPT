@@ -1,5 +1,26 @@
-# Logs
-logs
+############
+# Root / General
+############
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Ensure npm lockfile is tracked
+!package-lock.json
+
+############
+# Environment / Secrets
+############
+.env
+.env.*
+!.env.example
+*.local
+
+############
+# Logs & Runtime
+############
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -18,6 +39,12 @@ spring.log
 /Frontend/rcpt/coverage
 /Frontend/rcpt/.eslintcache
 /Frontend/*.tsbuildinfo
+
+
+# Ensure npm lockfile is tracked (in case it was previously ignored)
+!package-lock.json
+# (Deleted prior ignore lines for: package-lock.json, yarn.lock, pnpm-lock.yaml if they existed)
+# -----------------------------------------------------
 
 ############
 # Java / Maven (Backend)
@@ -69,6 +96,11 @@ coverage/
 *.rej
 
 ############
+# Package Managers
+############
+package-lock.json
+
+############
 # Build / Distribution (generic)
 ############
 dist/
@@ -98,6 +130,3 @@ tmp/
 temp/
 
 # End of file
-
-.env
-.env.local
