@@ -1,13 +1,92 @@
+# This stack runs:
+# - Postgres (lookup/reference data)
+# - MongoDB (project documents)
+# - lookup-service (small API in front of Postgres)
+# - api-service (Spring Boot; serves API + SPA static files)
+
 services:
+  postgres:
+    container_name: rcpt-postgres
+    image: postgres:16
+    environment:
+      # Creates a "lookups" DB with a basic user for local dev
+      POSTGRES_DB: lookups
+      POSTGRES_USER: rcpt
+      POSTGRES_PASSWORD: rcptpw
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rcpt -d lookups"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  mongo:
+    container_name: rcpt-mongo
+    image: mongo:7
+    command: ["--auth"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpw         # dev only; use secrets in prod
+    volumes:
+      - mongodata:/data/db
+      - ./mongo/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh -u root -p rootpw --authenticationDatabase admin --eval 'db.runCommand({ ping: 1 })' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
   backend:
     build:
       context: ../Backend
       dockerfile: ../Docker/backend.Dockerfile
+    env_file:
+      - ../Backend/.env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/lookups
+      SPRING_DATASOURCE_USERNAME: rcpt
+      SPRING_DATASOURCE_PASSWORD: rcptpw
+      SPRING_PROFILES_ACTIVE: docker
+      CORS_ALLOWED_ORIGINS: http://localhost:3000
+      JAVA_TOOL_OPTIONS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75"
+      MONGO_URI: mongodb://rcptapp:rcptapppw@mongo:27017/rcpt?authSource=admin
+      SPRING_DATA_MONGODB_URI: mongodb://rcptapp:rcptapppw@mongo:27017/rcpt?authSource=admin
+      SPRING_DATA_MONGODB_DATABASE: rcpt
     ports:
       - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+
   frontend:
     build:
       context: ../Frontend
       dockerfile: ../Docker/frontend.Dockerfile
+      target: prod
+    environment:
+      # CRA uses REACT_APP_* ; Vite uses VITE_* (we set both)
+      REACT_APP_API_BASE: http://localhost:8080
+      VITE_API_BASE: http://localhost:8080
+      HOST: 0.0.0.0
+      PORT: "3000"
+      CHOKIDAR_USEPOLLING: "true"
     ports:
       - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:3000 >/dev/null 2>&1 || exit 1" ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+
+
+volumes:
+  pgdata:
+  mongodata:

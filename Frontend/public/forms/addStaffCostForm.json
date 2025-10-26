@@ -1,0 +1,68 @@
+{
+  "formId": "add-staff-cost-form",
+  "submitLabel": "Save",
+  "layout": {
+    "rows": [
+      ["role"], 
+      ["employmentClassification", "fteType"],
+      ["employmentType", "category"],
+      ["__dynamic_years__"]
+    ]
+  },
+  "fields": [
+    { "name": "role", "type": "text", "label": "Role *", "placeholder": "Name of the role", "validation": { "required": true }, "message": "E.g. Senior Tutor, Lecturer" },
+    {
+      "name": "employmentType",
+      "type": "select",
+      "label": "Employment Type",
+      "placeholder": "Select the correct employment type",
+      "options": [
+        { "value": "full-time", "label": "Full-Time" },
+        { "value": "part-time", "label": "Part-Time" },
+        { "value": "casual", "label": "Casual" },
+        { "value": "contract", "label": "Contract" }
+      ]
+    },
+    {
+      "name": "category",
+      "type": "select",
+      "label": "Category",
+      "placeholder": "Select the correct category of this role",
+      "options": [
+        { "value": "academic", "label": "Academic" },
+        { "value": "professional", "label": "Professional" },
+        { "value": "technical", "label": "Technical" },
+        { "value": "other", "label": "Other" }
+      ]
+    },
+    {
+      "name": "employmentClassification",
+      "type": "select",
+      "label": "Employment Classification",
+      "placeholder": "Select the correct employment classification",
+      "options": [
+        { "value": "level-a", "label": "Level A" },
+        { "value": "level-b", "label": "Level B" },
+        { "value": "level-c", "label": "Level C" },
+        { "value": "level-d", "label": "Level D" },
+        { "value": "level-e", "label": "Level E" }
+      ]
+    },
+    {
+      "name": "fteType",
+      "type": "select",
+      "label": "FTE / Daily / Hourly",
+      "placeholder": "Select the correct time of payment",
+      "options": [
+        { "value": "fte", "label": "FTE" },
+        { "value": "daily", "label": "Daily" },
+        { "value": "hourly", "label": "Hourly" }
+      ]
+    },
+    {
+      "name": "years",
+      "type": "dynamic_years",
+      "label": "Yearly Amounts"
+    }
+  ]
+}

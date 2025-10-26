@@ -8,14 +8,28 @@
         <outputRelativeToContentRoot value="true" />
         <module name="Backend" />
       </profile>
+      <profile name="Annotation profile for RCPT" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct-processor/1.5.5.Final/mapstruct-processor-1.5.5.Final.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct/1.5.5.Final/mapstruct-1.5.5.Final.jar" />
+        </processorPath>
+        <module name="rcpt" />
+        <module name="RCPT" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="Frontend" target="19" />
+      <module name="RCPT" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="Backend" options="-parameters" />
+      <module name="RCPT" options="-parameters" />
+      <module name="rcpt" options="-parameters" />
     </option>
   </component>
 </project>
