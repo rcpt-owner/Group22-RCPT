@@ -93,6 +93,7 @@ export function ResearchCostingTool({
               totalCost={totalCosts}
               staffCount={staffCount}
               nonStaffCount={nonStaffCount}
+              projectId={projectId}
             />
           </TabsContent>
         </div>
