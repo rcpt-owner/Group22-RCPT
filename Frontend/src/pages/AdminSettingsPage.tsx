@@ -54,7 +54,6 @@ export function AdminSettingsPage() {
   /** ---------------- Salary Rates ---------------- */
     const [code, setCode] = useState("");
     const [rate, setRate] = useState("");
-    const [currentRate, setCurrentRate] = useState<number | null>(null);
     const [rateLoading, setRateLoading] = useState(false);
     const [rateError, setRateError] = useState("");
 
@@ -65,7 +64,7 @@ export function AdminSettingsPage() {
       setRateError("");
 
       if (!newCode.trim()) {
-        setRate(null);
+        setRate("");
         setRateLoading(false);
         return;
       }
@@ -77,10 +76,8 @@ export function AdminSettingsPage() {
         if (!res.ok) throw new Error("Not found");
         const data = await res.json();
         setRate(data.hourlyRate?.toString() ?? "");
-        setCurrentRate(data.multiplier ?? null);
       } catch {
         setRate("");
-        setCurrentRate(null);
         setRateError("Could not find that code in the database, add a new salary code with its rate.");
       } finally {
         setRateLoading(false);
@@ -91,11 +88,7 @@ export function AdminSettingsPage() {
     const [multiplierYear, setMultiplierYear] = useState("");
     const [multiplierUnit, setMultiplierUnit] = useState("");
     const [eba, setEba] = useState("");
-    const [currentEba, setCurrentEba] = useState<number | null>(null);
     const [salaryRateMultiplier, setSalaryRateMultiplier] = useState("");
-    const [currentSalMultiplier, setCurrentSalMultiplier] = useState<number | null>(
-      null
-    );
     const [ebaMultiplierLoading, setEbaMultiplierLoading] = useState(false);
     const [salMultiplierLoading, setSalMultiplierLoading] = useState(false);
     const [salMultiplierError, setSalMultiplierError] = useState("");
@@ -111,7 +104,6 @@ export function AdminSettingsPage() {
 
       if (!year.trim()) {
         setEba("");
-        setCurrentEba(null);
         setEbaMultiplierLoading(false);
         return;
       }
@@ -122,10 +114,8 @@ export function AdminSettingsPage() {
         const ebaData = await ebaRes.json();
 
         setEba(ebaData.ebaMultiplier?.toString() ?? "");
-        setCurrentEba(ebaData.ebaMultiplier ?? null);
       } catch {
         setEba("");
-        setCurrentEba(null);
         setEbaMultiplierError(
           "Could not find eba multiplier for that year, add a new year with its multiplier."
         );
@@ -144,7 +134,6 @@ export function AdminSettingsPage() {
 
       if (!unit.trim()) {
         setSalaryRateMultiplier("");
-        setCurrentSalMultiplier(null);
         setSalMultiplierLoading(false);
         return;
       }
@@ -157,10 +146,8 @@ export function AdminSettingsPage() {
         const data = await res.json();
 
         setSalaryRateMultiplier(data.multiplier?.toString() ?? "");
-        setCurrentSalMultiplier(data.multiplier ?? null);
       } catch {
         setSalaryRateMultiplier("");
-        setCurrentSalMultiplier(null);
         setSalMultiplierError(
           "Could not find salary rate multiplier for that unit type, add a new unit with its multiplier."
         );
@@ -743,8 +730,6 @@ function SectionCard({
     onSave: (title: string) => void;
 }) {
   const colsClass = fields.length >= 8 ? "grid-cols-4" : fields.length >= 4 ? "grid-cols-4" : "grid-cols-3";
-  const [values, setValues] = useState<Record<string, any>>({});
-
   return (
     <Card className="border border-gray-200 shadow-sm rounded-2xl">
       <CardHeader className="pb-2">

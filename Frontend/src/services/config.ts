@@ -1,31 +1,28 @@
-// Determine if we are in development mode (Vite sets this at build/runtime)
-export const isDevelopment = import.meta.env.MODE === "development";
+// Barebones API config — always use localhost:8080 for local development.
 
-// Read the dev API base URL from .env (only required in development)
-const devApiUrl = import.meta.env.VITE_FIREBASE_API_URL as string | undefined;
+// Base URL is hardcoded to the local backend.
+// For production, replace this string with your deployed API URL (e.g. 'https://api.myapp.com')
+// or swap to an environment-based value during the build/deploy step.
+export const BASE_URL = 'http://localhost:8080';
 
-// Choose the base URL depending on MODE. In production, use your deployed API URL.
-export const apiBaseUrl: string = isDevelopment
-  ? (() => {
-      // Validate presence during development to fail fast if misconfigured
-      if (!devApiUrl) {
-        throw new Error(
-          "Missing VITE_FIREBASE_API_URL in .env. Create Frontend/.env and set it."
-        );
-      }
-      return devApiUrl;
-    })()
-  : "https://rcpt-unimelb.web.app/api"; // Example production URL (update to real API)
-
-// Optional helper for building endpoints in a type-safe way
+// Minimal API helper object used for fetching
 export const api = {
-  baseUrl: apiBaseUrl,
+  baseUrl: BASE_URL,
+  // Build a full endpoint URL from a relative path (avoids double slashes).
   endpoint(path: string): string {
-    // Joins baseUrl and path without double slashes
-    return `${apiBaseUrl.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
+    const cleanBase = BASE_URL.replace(/\/$/, '');
+    const cleanPath = path.replace(/^\//, '');
+    return `${cleanBase}/${cleanPath}`;
   },
 };
 
-// Example usage in a component:
-// import { api } from "./config";
-// fetch(api.endpoint("/health")).then(...)
+// Common headers for JSON APIs
+export const defaultHeaders = {
+  'Content-Type': 'application/json',
+  Accept: 'application/json',
+};
+
+// Notes for production
+// - Replace BASE_URL with your production API host (and HTTPS).
+// - Consider using environment variables injected at build time for flexibility.
+// - Ensure CORS and appropriate auth/security (tokens, HTTPS) are configured on the server.

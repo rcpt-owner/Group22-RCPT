@@ -42,6 +42,8 @@ services:
     build:
       context: ../Backend
       dockerfile: ../Docker/backend.Dockerfile
+    env_file:
+      - ../Backend/.env
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/lookups
       SPRING_DATASOURCE_USERNAME: rcpt

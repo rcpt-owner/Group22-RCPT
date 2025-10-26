@@ -6,9 +6,10 @@ import { FcGoogle } from "react-icons/fc"
 import { Loader2 } from "lucide-react"
 import { signInWithPopup } from "firebase/auth"
 import { auth, provider } from "../services/firebaseConfig";
+import { api } from "../services/config"; // use configured backend base URL
 
 interface LoginPageProps {
-  onLogin: () => void
+  onLogin: (userId: string) => void
 }
 
 export function LoginPage({ onLogin }: LoginPageProps) {
@@ -17,33 +18,35 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   async function handleGoogleLogin() {
     try {
       setLoading(true);
-  
+
       // Sign in using Firebase
       const result = await signInWithPopup(auth, provider);
-  
+
       // Get the Firebase ID token (JWT)
       const token = await result.user.getIdToken();
-  
+
       // Send token to backend to verify and sync user
-      const res = await fetch("/api/auth/firebase-login", {
+      const res = await fetch(api.endpoint("api/auth/firebase-login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
       });
-  
-      if (!res.ok) throw new Error("Backend login failed");
-  
+
+      if (!res.ok) {
+        const text = await res.text();
+        // provide the backend response text to aid debugging
+        throw new Error(`Backend login failed: ${res.status} ${res.statusText} - ${text}`);
+      }
+
       const user = await res.json();
       console.log("Authenticated user:", user);
-  
-      // Optionally store in localStorage or context
-      localStorage.setItem("user", JSON.stringify(user));
-  
-      // Notify parent (e.g. route change or state update)
-      onLogin();
-    } catch (error) {
+
+      // Lift only the userId to parent (keep identity in memory)
+      onLogin(user.id);
+    } catch (error: any) {
       console.error("Google Sign-In failed:", error);
-      alert("Login failed. Please try again.");
+      // show more informative message
+      alert(`Login failed. ${error?.message ?? ""}`);
     } finally {
       setLoading(false);
     }

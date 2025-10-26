@@ -11,10 +11,11 @@ function Protected({ authed, children }: { authed: boolean; children: React.Reac
 
 export function AppRoutes(props: {
   authenticated: boolean;
-  onLogin: () => void;
+  userId?: string;
+  onLogin: (id?: string) => void;
   onLogout: () => void;
 }) {
-  const { authenticated, onLogin, onLogout } = props;
+  const { authenticated, userId, onLogin, onLogout } = props;
 
   return (
     <Routes>
@@ -32,7 +33,7 @@ export function AppRoutes(props: {
           <Protected authed={authenticated}>
             <DashboardPage
               onLogout={onLogout}
-              userId="1"
+              userId={userId ?? ''}
             />
           </Protected>
         }
