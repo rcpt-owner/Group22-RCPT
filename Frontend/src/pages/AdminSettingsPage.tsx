@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -531,6 +531,7 @@ export function AdminSettingsPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
+
       {/* Top navigation */}
       <header className="w-full flex items-center justify-between px-10 py-5 border-b bg-white shadow-sm">
         <div className="flex items-center gap-4">
@@ -754,7 +755,6 @@ function SectionCard({
           </CardDescription>
         )}
       </CardHeader>
-
       <CardContent className="space-y-5 pt-2">
         <div className={`grid ${colsClass} gap-4`}>
           {fields.map((f, idx) => (
@@ -770,13 +770,11 @@ function SectionCard({
             </div>
           ))}
         </div>
-
         <div className="flex items-center justify-end gap-4 pt-1">
           <Button onClick={() => onSave(title)} className="bg-black text-white px-6">
             Save
           </Button>
         </div>
-
       </CardContent>
     </Card>
   );
