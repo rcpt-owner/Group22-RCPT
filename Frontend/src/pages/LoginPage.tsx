@@ -16,13 +16,36 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
   async function handleGoogleLogin() {
     try {
-      setLoading(true)
-      await signInWithPopup(auth, provider)
-      onLogin()
+      setLoading(true);
+  
+      // Sign in using Firebase
+      const result = await signInWithPopup(auth, provider);
+  
+      // Get the Firebase ID token (JWT)
+      const token = await result.user.getIdToken();
+  
+      // Send token to backend to verify and sync user
+      const res = await fetch("/api/auth/firebase-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+  
+      if (!res.ok) throw new Error("Backend login failed");
+  
+      const user = await res.json();
+      console.log("Authenticated user:", user);
+  
+      // Optionally store in localStorage or context
+      localStorage.setItem("user", JSON.stringify(user));
+  
+      // Notify parent (e.g. route change or state update)
+      onLogin();
     } catch (error) {
-      console.error("Google Sign-In failed:", error)
+      console.error("Google Sign-In failed:", error);
+      alert("Login failed. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
