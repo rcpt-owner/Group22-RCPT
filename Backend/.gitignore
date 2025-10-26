@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignore real Firebase service account and local env files
+/src/main/resources/firebase-service-account.json
+/.env
+.env
+# Ignore common secret locations
+/secrets/
+# Ignore IDE and build artifacts (add more as needed)
+target/
+*.iml
+/.idea/

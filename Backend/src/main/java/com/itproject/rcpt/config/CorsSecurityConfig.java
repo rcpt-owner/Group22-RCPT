@@ -16,7 +16,8 @@ public class CorsSecurityConfig {
         reg.addMapping("/api/**")
            .allowedOrigins(
              "http://localhost:8080",
-             "http://localhost:3000"
+             "http://localhost:3000",
+             "http://localhost:3001"
            )
            .allowedMethods("GET","POST","PATCH","PUT","DELETE","OPTIONS")
            .allowedHeaders("*")
