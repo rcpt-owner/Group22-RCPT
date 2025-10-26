@@ -8,7 +8,7 @@ import { signInWithPopup } from "firebase/auth"
 import { auth, provider } from "../services/firebaseConfig";
 
 interface LoginPageProps {
-  onLogin: () => void
+  onLogin: (userId: string) => void
 }
 
 export function LoginPage({ onLogin }: LoginPageProps) {
@@ -36,11 +36,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       const user = await res.json();
       console.log("Authenticated user:", user);
   
-      // Optionally store in localStorage or context
-      localStorage.setItem("user", JSON.stringify(user));
-  
-      // Notify parent (e.g. route change or state update)
-      onLogin();
+      // Lift only the userId to parent (keep identity in memory)
+      onLogin(user.id);
     } catch (error) {
       console.error("Google Sign-In failed:", error);
       alert("Login failed. Please try again.");

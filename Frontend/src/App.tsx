@@ -6,12 +6,17 @@ import { Toaster } from "@/components/ui/toaster";
 
 export default function App() {
   const [authenticated, setAuthenticated] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  function handleLogin() {
+  // receive userId from LoginPage and keep it in memory
+  function handleLogin(id?: string) {
     setAuthenticated(true);
+    if (id) setUserId(id);
   }
+
   function handleLogout() {
     setAuthenticated(false);
+    setUserId(null);
   }
 
   return (
@@ -20,6 +25,7 @@ export default function App() {
         <div className="min-h-screen bg-background">
           <AppRoutes
             authenticated={authenticated}
+            userId={userId ?? undefined}
             onLogin={handleLogin}
             onLogout={handleLogout}
           />
