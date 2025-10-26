@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -49,76 +49,125 @@ export { endpoints };
 
 export function AdminSettingsPage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   /** ---------------- Salary Rates ---------------- */
-  const [code, setCode] = useState("");
-  const [rate, setRate] = useState("");
-  const [currentRate, setCurrentRate] = useState<number | null>(null);
-  const [rateLoading, setRateLoading] = useState(false);
-  const [rateError, setRateError] = useState("");
+    const [code, setCode] = useState("");
+    const [rate, setRate] = useState("");
+    const [currentRate, setCurrentRate] = useState<number | null>(null);
+    const [rateLoading, setRateLoading] = useState(false);
+    const [rateError, setRateError] = useState("");
 
-  const handleCodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newCode = e.target.value;
-    setCode(newCode);
-    setRateLoading(true);
-    setRateError("");
+    const handleCodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newCode = e.target.value;
+      setCode(newCode);
+      setRateLoading(true);
+      setRateError("");
 
-    if (!newCode.trim()) {
-      setCurrentRate(null);
-      setRateLoading(false);
-      return;
-    }
+      if (!newCode.trim()) {
+        setRate(null);
+        setRateLoading(false);
+        return;
+      }
 
-    try {
-      const res = await fetch(
-        `http://localhost:8080/api/salary-rates/${encodeURIComponent(newCode)}`
-      );
-      if (!res.ok) throw new Error("Not found");
-      const data = await res.json();
-      setCurrentRate(data.fteRate);
-    } catch {
-      setCurrentRate(null);
-      setRateError("Could not find that code in the database.");
-    } finally {
-      setRateLoading(false);
-    }
-  };
+      try {
+        const res = await fetch(
+          `${endpoints.salaryRates}/${encodeURIComponent(newCode)}`
+        );
+        if (!res.ok) throw new Error("Not found");
+        const data = await res.json();
+        setRate(data.hourlyRate?.toString() ?? "");
+        setCurrentRate(data.multiplier ?? null);
+      } catch {
+        setRate("");
+        setCurrentRate(null);
+        setRateError("Could not find that code in the database, add a new salary code with its rate.");
+      } finally {
+        setRateLoading(false);
+      }
+    };
 
   /** ---------------- Multipliers ---------------- */
-  const [multiplierYear, setMultiplierYear] = useState("");
-  const [eba, setEba] = useState("");
-  const [salaryRateMultiplier, setSalaryRateMultiplier] = useState("");
-  const [multiplierLoading, setMultiplierLoading] = useState(false);
-  const [multiplierError, setMultiplierError] = useState("");
+    const [multiplierYear, setMultiplierYear] = useState("");
+    const [multiplierUnit, setMultiplierUnit] = useState("");
+    const [eba, setEba] = useState("");
+    const [currentEba, setCurrentEba] = useState<number | null>(null);
+    const [salaryRateMultiplier, setSalaryRateMultiplier] = useState("");
+    const [currentSalMultiplier, setCurrentSalMultiplier] = useState<number | null>(
+      null
+    );
+    const [ebaMultiplierLoading, setEbaMultiplierLoading] = useState(false);
+    const [salMultiplierLoading, setSalMultiplierLoading] = useState(false);
+    const [salMultiplierError, setSalMultiplierError] = useState("");
+    const [ebaMultiplierError, setEbaMultiplierError] = useState("");
 
-  const handleMultiplierYearChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const year = e.target.value;
-    setMultiplierYear(year);
-    setMultiplierLoading(true);
-    setMultiplierError("");
+    const handleMultiplierYearChange = async (
+      e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+      const year = e.target.value;
+      setMultiplierYear(year);
+      setEbaMultiplierLoading(true);
+      setEbaMultiplierError("");
 
-    if (!year.trim()) {
-      setEba("");
-      setSalaryRateMultiplier("");
-      setMultiplierLoading(false);
-      return;
-    }
+      if (!year.trim()) {
+        setEba("");
+        setCurrentEba(null);
+        setEbaMultiplierLoading(false);
+        return;
+      }
 
-    try {
-      const ebaRes = await fetch(`${endpoints.eba}/${encodeURIComponent(year)}`);
-      if (!ebaRes.ok) throw new Error("Not found");
-      const ebaData = await ebaRes.json();
+      try {
+        const ebaRes = await fetch(`${endpoints.eba}/${encodeURIComponent(year)}`);
+        if (!ebaRes.ok) throw new Error("Not found");
+        const ebaData = await ebaRes.json();
 
-      setEba(ebaData.ebaIncrease.toString());
-      setSalaryRateMultiplier(ebaData.ebaMultiplier.toString());
-    } catch {
-      setEba("");
-      setSalaryRateMultiplier("");
-      setMultiplierError("Could not find multipliers for that year.");
-    } finally {
-      setMultiplierLoading(false);
-    }
-  };
+        setEba(ebaData.ebaMultiplier?.toString() ?? "");
+        setCurrentEba(ebaData.ebaMultiplier ?? null);
+      } catch {
+        setEba("");
+        setCurrentEba(null);
+        setEbaMultiplierError(
+          "Could not find eba multiplier for that year, add a new year with its multiplier."
+        );
+      } finally {
+        setEbaMultiplierLoading(false);
+      }
+    };
+
+    const handleMultiplierUnitChange = async (
+      e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+      const unit = e.target.value;
+      setMultiplierUnit(unit);
+      setSalMultiplierLoading(true);
+      setSalMultiplierError("");
+
+      if (!unit.trim()) {
+        setSalaryRateMultiplier("");
+        setCurrentSalMultiplier(null);
+        setSalMultiplierLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `${endpoints.salaryRateMultipliers}/${encodeURIComponent(unit)}`
+        );
+        if (!res.ok) throw new Error("Not found");
+        const data = await res.json();
+
+        setSalaryRateMultiplier(data.multiplier?.toString() ?? "");
+        setCurrentSalMultiplier(data.multiplier ?? null);
+      } catch {
+        setSalaryRateMultiplier("");
+        setCurrentSalMultiplier(null);
+        setSalMultiplierError(
+          "Could not find salary rate multiplier for that unit type, add a new unit with its multiplier."
+        );
+      } finally {
+        setSalMultiplierLoading(false);
+      }
+    };
 
   /** ---------------- Employment Settings ---------------- */
   const [employmentYear, setEmploymentYear] = useState("");
@@ -158,7 +207,7 @@ export function AdminSettingsPage() {
     } catch {
       setStipendRate("");
       setPayrollTax("");
-      setEmploymentError("Could not find employment settings for that year.");
+      setEmploymentError("Could not find employment settings for that year, add a new year with its employment settings.");
     } finally {
       setEmploymentLoading(false);
     }
@@ -212,15 +261,276 @@ export function AdminSettingsPage() {
       setParentalLeave("");
       setLongServiceLeave("");
       setAnnualLeave("");
-      setStaffError("Could not find staff benefits for that type.");
+      setStaffError("Could not find staff benefits for that type, choose a current staff type or enter new benefits for your new type.");
     } finally {
       setStaffLoading(false);
     }
   };
 
+  /** ---------------- Save Handler ---------------- */
+  /** ---------------- Save Handler with Validation ---------------- */
+  const handleSave = async (title: string) => {
+    console.log("Attempting to save section:", title);
+
+    const titleToKey: Record<string, SectionTitle | SectionTitle[]> = {
+      "Salary Rates": "salaryRates",
+      "Eba Multipliers": "eba",
+      "Salary Rate Multipliers": "salaryRateMultipliers",
+      "Employment Settings": ["stipends", "payrollTax"],
+      "Staff Benefits": "staffBenefits",
+    };
+
+    const key = titleToKey[title];
+    if (!key) {
+      toast({
+        title: "Error",
+        description: `No endpoint found for ${title}`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    let payload: Record<string, any> = {};
+
+    switch (title) {
+      case "Salary Rates":
+        if (!code.trim() || isNaN(parseFloat(rate))) {
+          toast({
+            title: "Invalid data",
+            description: "Please enter a valid code and numeric rate.",
+            variant: "destructive"
+          });
+          return;
+        }
+        const parts = code.match(/[A-Z][a-z]+|[A-Z]+(?![a-z])|\d+\.\d+/g);
+        if (!parts || parts.length < 3) {
+            throw new Error("Invalid salary code format");
+          }
+        const salaryRatePayload = {
+          code,
+          name: parts.slice(2).join(" "),
+          payrollType: parts[0],
+          category: parts[1],
+          hourlyRate: parseFloat(rate)
+        };
+
+        try {
+            const res = await fetch(endpoints.salaryRates, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(salaryRatePayload),
+            });
+            if (!res.ok) throw new Error(`Salary rate save failed (${res.status})`);
+
+            toast({
+              title: "Saved successfully!",
+              description: "Salary rate updated.",
+              duration: 2500,
+            });
+            } catch (err: any) {
+            toast({
+              title: "Error",
+              description: err.message,
+              variant: "destructive",
+            });
+            }
+            return;
+
+      /** ----------- EBA Multipliers ----------- */
+        case "Eba Multipliers":
+          if (!multiplierYear.trim() || isNaN(parseFloat(eba))) {
+            toast({
+              title: "Invalid data",
+              description: "Please enter a valid year and EBA increase.",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          // Payload for EBA
+          const ebaPayload = {
+            year: parseInt(multiplierYear),
+            ebaIncrease: 0.03, // default 0.03
+            ebaMultiplier: parseFloat(eba)
+          };
+
+          try {
+            const res = await fetch(endpoints.eba, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(ebaPayload),
+            });
+            if (!res.ok) throw new Error(`EBA save failed (${res.status})`);
+
+            toast({
+              title: "Saved successfully!",
+              description: "EBA multiplier updated.",
+              duration: 2500,
+            });
+          } catch (err: any) {
+            toast({
+              title: "Error",
+              description: err.message,
+              variant: "destructive",
+            });
+          }
+          return;
+
+        /** ----------- Salary Rate Multipliers ----------- */
+        case "Salary Rate Multipliers":
+          if (!multiplierUnit.trim() || isNaN(parseFloat(salaryRateMultiplier))) {
+            toast({
+              title: "Invalid data",
+              description: "Please enter a valid unit and multiplier.",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          const multiplierPayload = {
+            unit: multiplierUnit.trim(),
+            multiplier: parseFloat(salaryRateMultiplier),
+          };
+
+          try {
+            const res = await fetch(endpoints.salaryRateMultipliers, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(multiplierPayload),
+            });
+            if (!res.ok) throw new Error(`Salary Rate Multiplier save failed (${res.status})`);
+
+            toast({
+              title: "Saved successfully!",
+              description: "Salary rate multiplier updated.",
+              duration: 2500,
+            });
+          } catch (err: any) {
+            toast({
+              title: "Error",
+              description: err.message,
+              variant: "destructive",
+            });
+          }
+          return;
+
+      case "Employment Settings":
+          if (!employmentYear.trim() || isNaN(parseFloat(stipendRate)) || isNaN(parseFloat(payrollTax))) {
+            toast({
+              title: "Invalid data",
+              description: "Please enter a valid year, stipend rate and payroll tax.",
+              variant: "destructive"
+            });
+            return;
+          }
+
+          // Payloads for separate endpoints
+          const stipendPayload = {
+            year: parseInt(employmentYear),
+            rate: parseFloat(stipendRate),
+          };
+
+          const payrollPayload = {
+            year: parseInt(employmentYear),
+            rate: parseFloat(payrollTax),
+          };
+
+          try {
+            const stipendRes = await fetch(endpoints.stipends, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(stipendPayload),
+            });
+            if (!stipendRes.ok) throw new Error(`Stipend save failed (${stipendRes.status})`);
+
+            const payrollRes = await fetch(endpoints.payrollTax, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payrollPayload),
+            });
+            if (!payrollRes.ok) throw new Error(`Payroll Tax save failed (${payrollRes.status})`);
+
+            toast({
+              title: "Saved successfully!",
+              description: `${title} updated.`,
+              duration: 2500,
+            });
+          } catch (err: any) {
+            toast({
+              title: "Error",
+              description: err.message,
+              variant: "destructive",
+            });
+          }
+          return; // return here so it skips the generic endpoints loop
+
+      case "Staff Benefits":
+        if (
+          !staffType.trim() ||
+          [superannuation, leaveLoading, workCover, parentalLeave, longServiceLeave, annualLeave]
+            .some((v) => isNaN(parseFloat(v)))
+        ) {
+          toast({
+            title: "Invalid data",
+            description: "Please enter valid staff type and numeric values for all benefits.",
+            variant: "destructive"
+          });
+          return;
+        }
+        payload = {
+          staffType: staffType.trim(),
+          superannuation: parseFloat(superannuation),
+          leaveLoading: parseFloat(leaveLoading),
+          workCover: parseFloat(workCover),
+          parentalLeave: parseFloat(parentalLeave),
+          longServiceLeave: parseFloat(longServiceLeave),
+          annualLeave: parseFloat(annualLeave)
+        };
+        break;
+
+      default:
+        toast({
+          title: "Error",
+          description: "Unknown section.",
+          variant: "destructive"
+        });
+        return;
+    }
+
+    console.log("Payload to send:", payload);
+
+    try {
+      const endpointsToCall = Array.isArray(key) ? key : [key];
+      for (const k of endpointsToCall) {
+        console.log("Saving to endpoint:", endpoints[k]);
+        const res = await fetch(endpoints[k], {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Save failed (${res.status}): ${text}`);
+        }
+      }
+      toast({
+        title: "Saved successfully!",
+        description: `${title} updated.`,
+        duration: 2500,
+      });
+    } catch (err: any) {
+      console.error("Save error:", err);
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
-
       {/* Top navigation */}
       <header className="w-full flex items-center justify-between px-10 py-5 border-b bg-white shadow-sm">
         <div className="flex items-center gap-4">
@@ -254,7 +564,8 @@ export function AdminSettingsPage() {
               <CardTitle className="text-lg font-semibold">Admin Settings</CardTitle>
             </div>
             <CardDescription className="text-gray-500 text-sm">
-              Locate the section of the data that must be adjusted and enter in the new values.
+              Locate the section of the data that must be adjusted.
+              Current values will get prefilled upon entering an existing code or year in the lookup table.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -265,7 +576,7 @@ export function AdminSettingsPage() {
         {/* Salary Rates */}
         <SectionCard
           title="Salary Rates"
-          description="Update a salary rate based on its code. Eg 'CasualAcademicRA Grade 1.1' or 'CasualAcademicLevel E.1' etc."
+          description="Update a salary rate based on its code. Eg. 'FortnightProfessionalUOM 1.1' etc."
           fields={[
             {
               label: "Code",
@@ -285,17 +596,42 @@ export function AdminSettingsPage() {
               placeholder: "Enter the new salary rate",
               value: rate,
               onChange: (e: React.ChangeEvent<HTMLInputElement>) => setRate(e.target.value),
-              extra: currentRate !== null && !rateLoading
-                ? <>Current FTE rate for <strong>{code}</strong>: ${currentRate.toLocaleString()}</>
-                : null,
             },
           ]}
+          onSave={() => handleSave("Salary Rates")}
         />
 
         {/* Multipliers */}
         <SectionCard
-          title="Multipliers"
-          description="Update the pricing multipliers based on year."
+          title="Salary Rate Multipliers"
+          description="Update the Salary Rate Multipliers based on unit."
+          fields={[
+            {
+              label: "Unit",
+              type: "input",
+              placeholder: "FTE, Casual, Hourly",
+              value: multiplierUnit,
+              onChange: handleMultiplierUnitChange,
+              extra: salMultiplierLoading
+                ? "Fetching current multiplier..."
+                : salMultiplierError
+                ? <span className="text-red-500">{salMultiplierError}</span>
+                : null,
+            },
+            {
+              label: "Salary Rate Multiplier",
+              type: "input",
+              placeholder: "Enter new salary rate multiplier",
+              value: salaryRateMultiplier,
+              onChange: (e: React.ChangeEvent<HTMLInputElement>) => setSalaryRateMultiplier(e.target.value),
+            },
+          ]}
+          onSave={() => handleSave("Salary Rate Multipliers")}
+        />
+
+        <SectionCard
+          title="Eba Multipliers"
+          description="Update the EBA Multipliers based on year."
           fields={[
             {
               label: "Year",
@@ -303,27 +639,21 @@ export function AdminSettingsPage() {
               placeholder: "Enter the year",
               value: multiplierYear,
               onChange: handleMultiplierYearChange,
-              extra: multiplierLoading
-                ? "Fetching current multipliers..."
-                : multiplierError
-                ? <span className="text-red-500">{multiplierError}</span>
+              extra: ebaMultiplierLoading
+                ? "Fetching current multiplier..."
+                : ebaMultiplierError
+                ? <span className="text-red-500">{ebaMultiplierError}</span>
                 : null,
             },
             {
               label: "EBA Multiplier",
               type: "input",
-              placeholder: "Enter new eba multiplier (eg. 1.12551)",
+              placeholder: "Enter new eba multiplier",
               value: eba,
               onChange: (e: React.ChangeEvent<HTMLInputElement>) => setEba(e.target.value),
             },
-            {
-              label: "Salary Rate Multiplier",
-              type: "input",
-              placeholder: "Enter new salary rate multiplier (FTE)",
-              value: salaryRateMultiplier,
-              onChange: (e: React.ChangeEvent<HTMLInputElement>) => setSalaryRateMultiplier(e.target.value),
-            },
           ]}
+          onSave={() => handleSave("Eba Multipliers")}
         />
 
         {/* Employment Settings */}
@@ -358,6 +688,7 @@ export function AdminSettingsPage() {
               onChange: (e: React.ChangeEvent<HTMLInputElement>) => setPayrollTax(e.target.value),
             },
           ]}
+          onSave={() => handleSave("Employment Settings")}
         />
 
         {/* Staff Benefits */}
@@ -384,6 +715,7 @@ export function AdminSettingsPage() {
             { label: "Long-Service Leave", placeholder: "Enter weekly rate as a dollar amount", type: "input", value: longServiceLeave, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setLongServiceLeave(e.target.value) },
             { label: "Annual Leave", placeholder: "Enter weekly rate as a dollar amount", type: "input", value: annualLeave, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setAnnualLeave(e.target.value) },
           ]}
+          onSave={() => handleSave("Staff Benefits")}
         />
       </main>
     </div>
@@ -394,7 +726,8 @@ export function AdminSettingsPage() {
 function SectionCard({
   title,
   description,
-  fields
+  fields,
+  onSave
 }: {
   title: string;
   description?: string;
@@ -406,46 +739,10 @@ function SectionCard({
     type?: "input" | "select";
     placeholder?: string;
   }[];
+    onSave: (title: string) => void;
 }) {
-  const { toast } = useToast();
   const colsClass = fields.length >= 8 ? "grid-cols-4" : fields.length >= 4 ? "grid-cols-4" : "grid-cols-3";
   const [values, setValues] = useState<Record<string, any>>({});
-  const titleToKey: Record<string, SectionTitle | SectionTitle[]> = {
-    "Salary Rates": "salaryRates",
-    "Multipliers": ["eba", "salaryRateMultipliers"],
-    "Employment Settings": ["stipends", "payrollTax"],
-    "Staff Benefits": "staffBenefits",
-  };
-
-  /** ---------------- Save Handler ---------------- */
-  const handleSave = async () => {
-    const key = titleToKey[title];
-    if (!key) throw new Error(`No endpoint found for ${title}`);
-
-    try {
-      const endpointsToCall = Array.isArray(key) ? key : [key];
-      for (const k of endpointsToCall) {
-        const res = await fetch(endpoints[k], {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
-        });
-        if (!res.ok) throw new Error("Save failed");
-      }
-      toast({
-        title: "Saved successfully!",
-        description: `${title} updated.`,
-        duration: 2500,
-      });
-      setValues({});
-    } catch (err: any) {
-      toast({
-        title: "Error",
-        description: err.message,
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <Card className="border border-gray-200 shadow-sm rounded-2xl">
@@ -457,6 +754,7 @@ function SectionCard({
           </CardDescription>
         )}
       </CardHeader>
+
       <CardContent className="space-y-5 pt-2">
         <div className={`grid ${colsClass} gap-4`}>
           {fields.map((f, idx) => (
@@ -472,11 +770,13 @@ function SectionCard({
             </div>
           ))}
         </div>
+
         <div className="flex items-center justify-end gap-4 pt-1">
-          <Button onClick={handleSave} className="bg-black text-white px-6">
+          <Button onClick={() => onSave(title)} className="bg-black text-white px-6">
             Save
           </Button>
         </div>
+
       </CardContent>
     </Card>
   );
