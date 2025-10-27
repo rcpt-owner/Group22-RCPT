@@ -3,7 +3,7 @@
 // Base URL is hardcoded to the local backend.
 // For production, replace this string with your deployed API URL (e.g. 'https://api.myapp.com')
 // or swap to an environment-based value during the build/deploy step.
-export const BASE_URL = 'http://localhost:8080';
+export const BASE_URL = 'https://group22-rcpt-backend.onrender.com';
 
 // Minimal API helper object used for fetching
 export const api = {
