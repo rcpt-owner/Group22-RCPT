@@ -17,7 +17,9 @@ public class CorsSecurityConfig {
            .allowedOrigins(
              "http://localhost:8080",
              "http://localhost:3000",
-             "http://localhost:3001"
+             "http://localhost:3001,",
+             "https://group22-rcpt-backend.onrender.com",
+             "https://group22-rcpt.onrender.com"
            )
            .allowedMethods("GET","POST","PATCH","PUT","DELETE","OPTIONS")
            .allowedHeaders("*")

@@ -33,15 +33,15 @@ type SectionTitle =
 
 // Define all endpoints
 const endpoints: Record<SectionTitle, string> = {
-  departments: "http://localhost:8080/api/departments",
-  eba: "http://localhost:8080/api/eba",
-  payrollTax: "http://localhost:8080/api/payroll-tax",
-  regions: "http://localhost:8080/api/regions",
-  salaryRates: "http://localhost:8080/api/salary-rates",
-  salaryRateMultipliers: "http://localhost:8080/api/salary-rate-multipliers",
-  staffBenefits: "http://localhost:8080/api/staff-benefits",
-  stipends: "http://localhost:8080/api/stipends",
-  users: "http://localhost:8080/api/users",
+  departments: "https://group22-rcpt-backend.onrender.com/api/departments",
+  eba: "https://group22-rcpt-backend.onrender.com/api/eba",
+  payrollTax: "https://group22-rcpt-backend.onrender.com/api/payroll-tax",
+  regions: "https://group22-rcpt-backend.onrender.com/api/regions",
+  salaryRates: "https://group22-rcpt-backend.onrender.com/api/salary-rates",
+  salaryRateMultipliers: "https://group22-rcpt-backend.onrender.com/api/salary-rate-multipliers",
+  staffBenefits: "https://group22-rcpt-backend.onrender.com/api/staff-benefits",
+  stipends: "https://group22-rcpt-backend.onrender.com/api/stipends",
+  users: "https://group22-rcpt-backend.onrender.com/api/users",
 };
 
 export type { SectionTitle };

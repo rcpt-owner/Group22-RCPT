@@ -12,7 +12,7 @@ type ExportTabProps = {
 
 export default function ExportTab({ projectId}: ExportTabProps) {
   const [downloading, setDownloading] = useState(false)
-  const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8080"
+  const API_BASE = import.meta.env.VITE_API_BASE || "https://group22-rcpt-backend.onrender.com"
 
   const handleDownloadPdf = async () => {
     setDownloading(true)
