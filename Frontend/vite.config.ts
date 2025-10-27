@@ -9,13 +9,7 @@ export default defineConfig({
   server: {
     host: true,    // binds to 0.0.0.0 so Docker can expose it
     port: 3000,    // dev server port
-  },
-  preview: {
-    host: '0.0.0.0',    // binds the preview server to all network interfaces
-    port: 3000,
-    allowedHosts: [
-      'group22-rcpt.onrender.com' // add your Render domain here
-    ]
+    allowedHosts: ['group22-rcpt.onrender.com']
   },
   resolve: {
     alias: {
