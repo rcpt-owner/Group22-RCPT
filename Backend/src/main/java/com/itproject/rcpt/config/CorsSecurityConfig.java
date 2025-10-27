@@ -15,10 +15,8 @@ public class CorsSecurityConfig {
       public void addCorsMappings(CorsRegistry reg) {
         reg.addMapping("/api/**")
            .allowedOrigins(
-             "http://localhost:8080",
              "http://localhost:3000",
-             "http://localhost:3001,",
-             "https://group22-rcpt-backend.onrender.com",
+             "http://localhost:3001",
              "https://group22-rcpt.onrender.com"
            )
            .allowedMethods("GET","POST","PATCH","PUT","DELETE","OPTIONS")
