@@ -8,7 +8,8 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 // Firebase Security Rules / backend token verification, not by hiding this key.
 
 // Read API key from Vite env variables (populated from .env in development)
-const FIREBASE_API_KEY = import.meta.env.VITE_FIREBASE_API_KEY as string | undefined;
+const FIREBASE_API_KEY = import.meta.env.VITE_FIREBASE_API_KEY;
+console.log("Firebase API Key:", import.meta.env.VITE_FIREBASE_API_KEY);
 // Fail fast if the key is missing to avoid silent misconfigurations
 if (!FIREBASE_API_KEY) {
   throw new Error(
