@@ -1,219 +1,127 @@
-# **Frontend Overall Architecture**
+# Frontend — RCPT (React + TypeScript + Vite)
 
-- **`components/`** → Reusable building blocks (buttons, modals, cards).
-- **`features/`** → Each feature has its own **UI + logic** substructure (keeps things modular).
-- **`hooks/`** → Cross-cutting stateful utilities (e.g. `useLocalStorage`, `useAuth`).
-- **`utils/`** → Generic helpers, shared utilities like API clients, constants, formatting helpers.
-- **`pages/`** → Screens that bring together components/features into a full page.
-- **`assets/`** → Static images, fonts, etc.
-```
-rcpt/
-│
-├── public/                      # Static files
-│
-├── src/
-│   ├── assets/              # Images, fonts, static files imported in code
-│   │
-│   ├── components/              # Reusable UI
-│   │   ├── Card.tsx
-│   │   ├── InputField.tsx
-│   │   └── ...
-│   │
-│   ├── features/                # Feature-specific UI + logic
-│   │   ├── Staff/
-│   │   │   ├── StaffTab.tsx
-│   │   │   └── staffLogic.ts
-│   │   ├── Equipment/
-│   │   │   ├── EquipmentTab.tsx
-│   │   │   └── equipmentLogic.ts
-│   │   └── Summary/
-│   │       ├── SummaryTab.tsx
-│   │       └── summaryLogic.ts
-|   |
-│   ├── context/                 # Global state/context
-│   │   └── ProjectContext.tsx
-│   │
-│   ├── services/                # Shared helpers / Shared utilities (API clients, config, helpers)
-│   │   ├── pdfService.ts
-│   │   ├── api.ts
-│   │   └── storageService.ts
-│   │
-│   ├── utils/                   # Generic helpers
-│   │   ├── calculations.ts
-│   │   └── validations.ts
-│   │   ├── constants.ts
-│   │   └── ...
-│   │
-│   ├── styles/                   # Styles (tailwind)
-│   │   ├── global.css
-│   │
-│   ├── App.tsx                  # Root App
-│   └── main.tsx                 # Entry point
-│
-├── tailwind.config.js
-├── tsconfig.json
-├── package.json
+One-line summary
+A React + TypeScript + Vite frontend for the RCPT project — responsible for the web UI, dynamic JSON-driven forms, and client-side API integration.
 
+Quick start — run locally
+Prereqs
+- Node.js v16+ (recommended)
+- npm or pnpm
+- (Optional) Docker / docker-compose for containerized development
+
+Install and run in development:
+```bash
+# from repo/Frontend
+npm install
+npm run dev
 ```
 
----
+By default Vite serves the app on the dev port defined in vite.config.ts (commonly http://localhost:5173). See [vite.config.ts](vite.config.ts).
 
-# Global CSS Utilities
-
-This section explains how to **add new utility classes** to the global CSS and how to use the existing variables, using the `Card` component as an example.
-
----
-
-## 1. Adding New Utility Classes
-
-All global CSS variables are defined under `:root` in your `globals.css`. These can be mapped to **namespaced utility classes** to avoid collisions with Tailwind or other libraries.
-
-**Steps:**
-
-1. **Define a variable (if needed):**a
-
-```css
-:root {
-  --highlight: #fffae6;
-}
-
+Build & production
+Build the production bundle:
+```bash
+npm run build
 ```
-
-2. **Use it in a React component:**
-
-```tsx
-<div className={cn("bg-highlight p-4 rounded-lg")}>
-  Highlighted section
-</div>
-
+Preview the built output locally:
+```bash
+npm run preview
 ```
-    - `bg-highlight` will use --highlight variable 
-**Tip:** Always prefix custom utilities (e.g., `card-`, `popover-`, `sidebar-`) to prevent conflicts.
+Note: the production backend/base URL is configured in [src/services/config.ts](src/services/config.ts). Override with environment variables described in the Environment variables section.
 
----
-
-## 2. Example: Card Component
-
-Your `Card` uses these utilities:
-
-```tsx
-<Card className={cn("bg-card text-card-foreground rounded-xl border shadow-sm")}>
-  <CardHeader>
-    <CardTitle>Title</CardTitle>
-  </CardHeader>
-  <CardContent>
-    Card content goes here.
-  </CardContent>
-</Card>
-
+Docker
+A Dockerfile and compose setup are available for containerized builds and local stacks:
+- Dockerfile: `Docker/frontend.Dockerfile`
+- Example compose command:
+```bash
+# from repo root
+docker compose up --build frontend
 ```
+If using docker-compose, ensure any backend services referenced by the frontend are also brought up or that you configure appropriate API URLs.
 
-- `bg-card`: background color from `-card`
-- `text-card`: text color from `-card-foreground`
-- `rounded-xl-card`: border-radius from `-radius`
-- `border-card`: border color from `-border`
+Project structure (key files & folders)
+- src/main.tsx — app entrypoint (mount + providers) ([src/main.tsx](src/main.tsx))
+- src/App.tsx — root component and router ([src/App.tsx](src/App.tsx))
+- src/styles/globals.css — global CSS & Tailwind variables ([src/styles/globals.css](src/styles/globals.css))
+- src/components/ — reusable UI and form components
+  - src/components/ui/* — shared UI primitives (buttons, inputs, Toaster, ToastProvider)
+  - src/components/forms/DynamicForm.tsx — dynamic JSON-driven form renderer ([src/components/forms/DynamicForm.tsx](src/components/forms/DynamicForm.tsx))
+  - src/components/forms/DynamicFormField.tsx — per-field renderer and mapping to inputs ([src/components/forms/DynamicFormField.tsx](src/components/forms/DynamicFormField.tsx))
+- src/features/RCPT — feature area and core UI for Research Costing Tool ([src/features/RCPT/ResearchCostingTool.tsx](src/features/RCPT/ResearchCostingTool.tsx))
+- src/services/ — API clients, config, and helpers:
+  - [src/services/config.ts](src/services/config.ts) — base URLs and env-aware config
+  - [src/services/projectService.ts](src/services/projectService.ts) — project-related API calls
+  - [src/services/firebaseConfig.ts](src/services/firebaseConfig.ts) — Firebase configuration (if used)
+- src/utils/zodSchemaBuilder.ts — builds runtime Zod schemas from JSON field schemas
+- public/api — mock JSON used during development (forms, fixtures)
 
----
+Notable helpers
+- ToastProvider / Toaster: notification primitives live under `src/components/ui` (e.g., `use-toast.tsx`, `toaster.tsx`).
 
-## 3. Global CSS Variables and Utilities
+Environment variables
+- The project reads .env files in the conventional Vite way. See the repo-level [.env](.env) for examples.
+- Important keys:
+  - VITE_API_BASE_URL (or whatever is referenced in [src/services/config.ts](src/services/config.ts))
+  - Any Firebase keys used in [src/services/firebaseConfig.ts](src/services/firebaseConfig.ts)
+- When running Docker, pass env values via docker-compose or Dockerfile build args as needed.
 
-Current: 
+Tooling & configuration
+- Vite config: [vite.config.ts](vite.config.ts)
+- Tailwind config: [tailwind.config.js](tailwind.config.js)
+- PostCSS: [postcss.config.js](postcss.config.js)
+- ESLint: eslint.config.mjs
+- TypeScript: tsconfig.json
 
-| Variable / Utility | CSS Variable | Description / Usage | Example Class |
-| --- | --- | --- | --- |
-| Background | `--background` | Base body background | `bg-background` |
-| Foreground / Text | `--foreground` | Base text colour | `text-foreground` |
-| Card Background | `--card` | Card component background | `card-bg` |
-| Card Foreground / Text | `--card-foreground` | Card text colour | `card-text` |
-| Muted Text | `--muted-foreground` | Subtle text, e.g., descriptions | `card-text-muted` |
-| Border | `--border` | Default border colour | `card-border` |
-| Input Background | `--input-background` | Forms, input fields | `input-bg` (custom) |
-| Focus / Ring | `--ring` | Outline on focus | `focus-outline` (custom) |
-| Radius | `--radius` | Default border-radius for rounded elements | `card-rounded-xl` |
-| Font Weights | `--font-weight-normal` / `--font-weight-medium` | Default weights for body and headings | `font-normal` / `font-medium` |
-| Popover Colors | `--popover`, `--popover-foreground` | Popover backgrounds and text | `popover-bg`, `popover-text` |
-| Primary / Secondary Colors | `--primary`, `--primary-foreground`, `--secondary`, `--secondary-foreground` | Theme colours | `text-primary`, `bg-secondary` |
-| Accent / Destructive | `--accent`, `--accent-foreground`, `--destructive`, `--destructive-foreground` | Highlights, errors, delete actions | `text-accent`, `bg-destructive` |
-| Sidebar Colors | `--sidebar`, `--sidebar-foreground`, etc. | Sidebar background / text / borders | `sidebar-bg`, `sidebar-text` |
-
-> Note: You can add any new variable and map it to a namespaced class to keep codebase consistent and prevent conflicts with Tailwind.
-> 
-
----
-
-## 4. Best Practices
-
-- **Always use namespaced utility classes** for custom variables (e.g., `card-`, `popover-`, `sidebar-`)
-- **Combine with `cn` helper** in utils for dynamic class merging:
-- **Prefer global variables for colours, spacing, and typography**, rather than hardcoding in components.
-- **Use the table above as a reference** when adding new components or styles.
-
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Testing & linting
+- Lint:
+```bash
+npm run lint
 ```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Format:
+```bash
+npm run format
 ```
+- Tests: There are limited tests at present. Add unit / integration tests under `src/` and wire up test scripts (Jest / Vitest) as needed. Consider adding CI hooks once coverage increases.
+
+Contributing & development notes
+- Adding components:
+  - Place reusable UI primitives in `src/components/ui`.
+  - New feature pages or widgets belong under `src/features/<FeatureName>`.
+- Adding forms & schemas:
+  - Dynamic JSON form schemas live under `public/api/forms` (used for mock data and can be served in dev).
+  - The Dynamic Form system accepts a FormSchema and uses `src/utils/zodSchemaBuilder.ts` to build a Zod schema at runtime. This allows adding new fields by extending the JSON schema and, if necessary, the `FieldDefinition` union and `DynamicFormField` mapping.
+- Styling:
+  - Follow Tailwind-first rules in `src/styles/globals.css`. Keep component styles within the component or via utility classes.
+- Naming conventions:
+  - Prefer kebab/feature-based folders for features: `src/features/<feature-name>/…`.
+  - Component files: PascalCase and match exported component name.
+
+Why Dynamic Forms?
+The `DynamicForm` system was built to allow rapid creation and iteration of forms driven by JSON schemas. Benefits:
+- Backend-driven or mock-driven forms without new code per form.
+- Single source of validation via Zod builder (`src/utils/zodSchemaBuilder.ts`).
+- Centralized rendering & field mapping in `DynamicFormField.tsx` so new input types only require a renderer and optional schema mapping.
+
+Troubleshooting & common issues
+- Dev server port conflicts: Vite defaults to 5173. If the port is in use, Vite will prompt — or set PORT env before starting:
+```bash
+PORT=5174 npm run dev
+```
+- CORS / backend URL: If the frontend can't reach APIs, verify `VITE_API_BASE_URL` and [src/services/config.ts](src/services/config.ts) point to the correct host and that the backend allows CORS from the dev origin.
+- Docker pitfalls: Missing env keys or incorrect network configuration will cause failures. Check docker-compose environment setup and logs (`docker compose logs frontend`).
+
+Links & references
+- Repo root README: [../README.md](../README.md)
+- Docker README: [Docker/README.md](../Docker/README.md)
+- Key files:
+  - [vite.config.ts](vite.config.ts)
+  - [src/services/config.ts](src/services/config.ts)
+  - [src/components/forms/DynamicForm.tsx](src/components/forms/DynamicForm.tsx)
+  - [src/utils/zodSchemaBuilder.ts](src/utils/zodSchemaBuilder.ts)
+  - [public/api](public/api)
+
+Last updated
+2025-10-29
+
+Changelog
+- v0.1 — Initial Frontend README (placeholder for future updates)
