@@ -120,7 +120,7 @@ The backend requires a `.env` file to configure runtime settings for local or Do
 | `FIREBASE_API_KEY` | API key for Firebase Admin SDK to enable user authentication. |  
 | `PORT` | The port on which the backend runs (default is `8080`). |  
 
-** Example `.env` file**
+**Example `.env` file**
 
 ```
 env
@@ -133,7 +133,7 @@ FIREBASE_API_KEY=your_firebase_api_key
 PORT=8080
 ```
 
-** 🧪 **Testing**
+## 🧪 **Testing**
 
 Run all backend tests using Maven:
 ```
