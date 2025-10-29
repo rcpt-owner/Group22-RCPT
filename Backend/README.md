@@ -30,9 +30,7 @@ Databases (MongoDB + PostgreSQL)
 **Core Modules**
 - `ProjectController` – CRUD operations for projects  
 - `ApprovalController` – Handles submission and approval stages  
-- `LookupService` – Provides cost multipliers and lookup data  
-- `CalculationService` – Computes total costs and pricing summaries  
-- `AuthService` – Validates Firebase tokens and manages roles  
+- `FirebaseUserService` – Validates Firebase tokens and manages roles  
 
 ---
 
