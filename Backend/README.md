@@ -143,8 +143,8 @@ or through local API calls, see below for an example walkthrough:
 https://teamtwentytwo.atlassian.net/wiki/spaces/GTTP/pages/87392257/Local+MongoDB+Testing
 
 **Links and References**
-* Repo root README: ../README.md
-* Docker README: Docker/README.md
+* Repo root README: [../README.md](https://github.com/rcpt-owner/Group22-RCPT/blob/refactor/repo-documentation-fix/README.md)
+* Docker README: [Docker/README.md](https://github.com/rcpt-owner/Group22-RCPT/blob/refactor/repo-documentation-fix/Docker/README.md)
 
 | **File / Directory** | **Purpose** |
 |------------------------|-------------|
