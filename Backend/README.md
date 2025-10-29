@@ -65,14 +65,13 @@ Databases (MongoDB + PostgreSQL)
    - Backend maps DTOs → domain models using MapStruct.
 
 3. **Cost Calculation**
-   - `CalculationService` computes total salary + non-salary costs.
    - `PriceSummary` is generated dynamically per project.
 
-4. **Persistence**
+5. **Persistence**
    - Project data is stored in MongoDB as a nested JSON document.
    - Lookup data (salary rates, multipliers) is fetched from PostgreSQL.
 
-5. **Approval Workflow**
+6. **Approval Workflow**
    - Approvers change the project’s `status` field and add `ApprovalEntry` logs.
    - Updates trigger changes to the `ApprovalTracker`.
 
