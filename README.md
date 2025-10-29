@@ -1,16 +1,19 @@
 # Research Pricing and Costing Tool (RPCT) - Group22
 
-## 🚧 Project Status
-This repository is under active development for a University of Melbourne (UoM) client (Research, Innovation & Commercialisation – RIC).  
-The `main` branch is a placeholder and is not stable or production-ready.  
-All current work occurs on the `dev` branch. Pull from `dev` for the latest implementation.  
-Breaking changes, incomplete features, and temporary scaffolding are expected at this stage.
+## 🚦 Project status — Stable release (with caveats)
+This repository is now published as a stable development release suitable for evaluation and internal use. Many core features are implemented and the application can be used end-to-end in typical scenarios.
+
+Known limitations in this release:
+- Caching and some session snapshot behaviour is intentionally minimal or incomplete (see Frontend notes).
+- Some resources are still loaded from mock JSON (public/api) rather than the backend for a few form schemas and lookups.
+- Staff cost calculation is implemented as a basic summation and does not yet include full business logic (on-costs, rates, complex FTE handling) — treat pricing figures as provisional.
+- The backend integration points exist but several API paths remain to be wired/verified in production (see Backend service TODOs below).
+
+Continue to use this branch for stable development; breakages should be rare but please review the "Known limitations" when evaluating outputs.
 
 ## 📦 Overview
 The RPCT replaces a legacy Excel-based costing/pricing workbook used for preparing research project budgets.  
-Current pain points: version fragmentation, manual formula errors, limited auditability, no workflow visibility, poor multi-user support, duplication when re-costing, and difficulty exporting consistent outputs.  
-The new web-based system centralises logic, enforces validation, supports role-based workflows, enables structured exports (e.g. for grants, pricing justifications), and improves transparency and maintainability.  
-Although internally hosted for UoM users, its outputs (cost summaries, pricing breakdowns) can be embedded in grant applications or used in negotiations.
+Core goals remain: accurate costing, flexible pricing, scenario comparisons, simplified export and review workflows.
 
 ## 🎯 Objectives
 - Accurate research project costing (personnel, non‑personnel, indirects/overheads)
@@ -58,8 +61,8 @@ Secondary / Consulted:
    git clone https://github.com/maxChiv/Group22-RCPT.git  
    cd Group22-RCPT
    ```
-2. Switch to development branch:  
-   ``` git checkout dev ```
+2. Switch to main or dev branch:  
+   ``` git checkout main ```
 3. Frontend (Vite + React + TypeScript):  
     ```
    cd Frontend  
@@ -72,53 +75,57 @@ Secondary / Consulted:
    ./mvnw spring-boot:run
     ```
 
+Docker (optional):
+```bash
+# from repo root
+docker compose up --build frontend
+```
+
 Dependencies, environment variables, and Docker images are provisional and will be formalised when architecture stabilises.
 
-## 🗺️ Roadmap
+## Stability & Known Limitations (details)
+- Caching: The frontend rcptEngine/rcptCache provides a local snapshot mechanism. Some cache behaviours and TTLs are conservative and certain forms still prefer runtime mock merges. Expect improvements in subsequent releases.
+- Backend loading: Several form schemas and lookup sets are served from public/api during development. When integrating with production backend, update BASE_URL / VITE_API_BASE_URL and confirm endpoints in src/services/*.
+- Staff cost calculation: Current engine does basic per-year aggregation. It does not yet apply institutional rates, on-costs, fringe, or advanced FTE conversion rules. Validate outputs before downstream use.
+- Tests & CI: Coverage is limited; more unit/integration tests will be added for the costing and pricing logic.
 
-### 🔗 Trello / Issue Reference
-Link to the related Trello board: [**Trello Board Group 22**](https://trello.com/b/QYEytkjl/team-22)
+## 📄 What’s in this repo (key references)
+- Frontend app: Frontend/ — React + TypeScript + Vite
+  - Frontend README: Frontend/README.md
+  - Dynamic Forms guide: Frontend/src/components/forms/README.md
+  - Dockerfile for frontend: Docker/frontend.Dockerfile
+- Backend services: Backend/ — Spring Boot APIs (domain + controllers)
+- Docs & infra: Docker/README.md, CI and config files
 
-### Upcoming To-do
-- [ ] Core costing module
-- [ ] Pricing module
-- [ ] Static implementation
-- [ ] Backend integration
-- [ ] Export and integrations
-- [ ] Stable release on `main`
-- [ ] Improvements
+Important files (frontend):
+- Frontend/src/components/forms/DynamicForm.tsx — JSON-driven form renderer
+- Frontend/src/utils/zodSchemaBuilder.ts — runtime Zod builder for form validation
+- Frontend/src/features/RCPT/rcptEngine.ts — local engine, persistence mirrors and simple totals
+- Frontend/public/api — mock form JSON used in development
 
-(Items will be updated as features progress; initial placeholders.)
+## Roadmap (high level)
+- Stabilise server-side schema endpoints (swap mock JSON for API)
+- Complete caching behaviour and TTL semantics
+- Implement full staff cost calculation rules (on-costs, graded rates, time-basis conversions)
+- Add more tests around pricing engine and exports
+- Harden CI and release process
 
-## 📄 Project Scope
-In-Scope (MVP):
-- Cost input (personnel FTE, salaries, non-personnel items, indirects)
-- Pricing logic (margin / recovery adjustments)
-- Approval workflow (draft → review → approved/final)
-- Export (structured costing + summary formats)
-- Role-based access & basic notifications
-- Reference data management (rates, lookup tables)
+## How to help / contribute
+- Report issues with precise repro steps and expected behaviour
+- Add unit tests for rcptEngine totals and zod schema builder
+- Replace mock forms in public/api with backend endpoints and update optionsUrl usages
+- Implement missing staff cost business rules in Backend and reflect in Frontend totals
 
-Out-of-Scope (Current Phase):
-- Full integration with HR/Finance live systems
-- Real-time multi-user collaborative editing
-- Post-award budget tracking / variance monitoring
-- Automated grant submission portals
-- Multi-currency compatibility
-- Advanced analytics dashboards
-- Multi-language/localisation
-- Audit logging & minimal reporting
+## Links & references
+- Frontend README: Frontend/README.md
+- Dynamic Forms guide: Frontend/src/components/forms/README.md
+- Docker README: Docker/README.md
+- Frontend dynamic schema & validation: Frontend/src/utils/zodSchemaBuilder.ts
+- Engine & snapshot logic: Frontend/src/features/RCPT/rcptEngine.ts
 
-Under Consideration (TBD):
-- API endpoints for external tooling
-- Bulk import (CSV → cost lines)
-- Advanced scenario simulation (probabilistic costing)
-- Integration hooks (future financial system connectors)
+Last updated
+2025-10-29
 
 ---
-**Note:**
-First iteration README. Content will evolve as architecture, deployment model, and stakeholder requirements are confirmed. For latest implementation details always consult the `dev` branch and project issue tracker.
-
---- 
 
 > Research Costing and Pricing Tool (RCPT) – A web-based application by Group 22 of COMP30022 for the University of Melbourne’s RIC Office. It supports research project costing and pricing with an intuitive interface, database integration, and collaborative workflows. Developed as part of COMP30022 (IT Project) by Group 22. Repository for internal use only. Do not distribute without permission.
