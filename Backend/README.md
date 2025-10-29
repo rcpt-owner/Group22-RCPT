@@ -102,9 +102,9 @@ bash
 docker compose up --build backend
 ```
 **Default Ports**
-    •   Backend → http://localhost:8080
-    •   MongoDB → 27017
-    •   PostgreSQL → 5432
+* Backend → http://localhost:8080
+* MongoDB → 27017
+* PostgreSQL → 5432
 
 ## ⚙️ Environment Variables
 
@@ -143,8 +143,8 @@ or through local API calls, see below for an example walkthrough:
 https://teamtwentytwo.atlassian.net/wiki/spaces/GTTP/pages/87392257/Local+MongoDB+Testing
 
 **Links and References**
-Repo root README: ../README.md
-Docker README: Docker/README.md
+* Repo root README: ../README.md
+* Docker README: Docker/README.md
 
 | **File / Directory** | **Purpose** |
 |------------------------|-------------|
