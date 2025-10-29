@@ -118,6 +118,7 @@ Important files (frontend):
 
 ## Links & references
 - Frontend README: Frontend/README.md
+- Backend README: Backend/README.md
 - Dynamic Forms guide: Frontend/src/components/forms/README.md
 - Docker README: Docker/README.md
 - Frontend dynamic schema & validation: Frontend/src/utils/zodSchemaBuilder.ts
